@@ -27,9 +27,11 @@ function updateStreakUI() {
   $('#streakVal').textContent = s > 0 ? `${faNum(s)} روز پیاپی` : 'اولین تیک رو بزن';
 }
 
+/* ── نمودار هفته: فقط بار اول انیمیشن، بعدش آپدیت نرم ── */
+let chartInitialized = false;
+
 function renderChart() {
   const chart = $('#chart');
-  chart.innerHTML = '';
   const days = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
@@ -41,24 +43,45 @@ function renderChart() {
     });
   }
   const max = Math.max(...days.map(x => x.n), 1);
+
+  // بار اول: ساخت ستون‌ها
+  if (!chartInitialized) {
+    chart.innerHTML = '';
+    days.forEach((c, i) => {
+      const col = document.createElement('div');
+      col.className = 'col' + (c.today ? ' today' : '');
+      col.title = `${faNum(c.n)} کار انجام‌شده${c.mood ? ' · حال: ' + MOODS[c.mood - 1].label : ''}`;
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (c.n ? '' : ' zero');
+      bar.style.height = '6%';
+      const lbl = document.createElement('span');
+      lbl.textContent = c.letter;
+      const md = document.createElement('i');
+      md.className = 'mdot';
+      md.style.background = c.mood ? MOODS[c.mood - 1].color : 'transparent';
+      col.appendChild(bar); col.appendChild(lbl); col.appendChild(md);
+      chart.appendChild(col);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        bar.style.transitionDelay = (i * 55) + 'ms';
+        bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
+      }));
+    });
+    chartInitialized = true;
+    return;
+  }
+
+  // بارهای بعدی: آپدیت نرم بدون بازسازی
+  const cols = chart.querySelectorAll('.col');
   days.forEach((c, i) => {
-    const col = document.createElement('div');
-    col.className = 'col' + (c.today ? ' today' : '');
+    const col = cols[i];
+    if (!col) return;
+    const bar = col.querySelector('.bar');
+    const md = col.querySelector('.mdot');
     col.title = `${faNum(c.n)} کار انجام‌شده${c.mood ? ' · حال: ' + MOODS[c.mood - 1].label : ''}`;
-    const bar = document.createElement('div');
     bar.className = 'bar' + (c.n ? '' : ' zero');
-    bar.style.height = '6%';
-    const lbl = document.createElement('span');
-    lbl.textContent = c.letter;
-    const md = document.createElement('i');
-    md.className = 'mdot';
+    bar.style.transitionDelay = '0ms';
+    bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
     md.style.background = c.mood ? MOODS[c.mood - 1].color : 'transparent';
-    col.appendChild(bar); col.appendChild(lbl); col.appendChild(md);
-    chart.appendChild(col);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      bar.style.transitionDelay = (i * 55) + 'ms';
-      bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
-    }));
   });
 }
 

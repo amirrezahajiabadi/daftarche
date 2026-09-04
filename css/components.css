@@ -7,14 +7,14 @@
   background:conic-gradient(var(--accent) calc(var(--pct) * 1%),var(--accent-soft) 0);
   transition:--pct .8s cubic-bezier(.22,1,.36,1)}
 .ring-inner{position:relative;width:72px;height:72px;background:var(--surface);border-radius:50%;display:grid;place-items:center;z-index:2;box-shadow:inset 0 2px 6px rgba(0,0,0,.04);transition:background .5s}
-.ring-text{font-weight:900;font-size:22px;color:var(--text);font-feature-settings:"tnum";line-height:1;display:flex;align-items:baseline;gap:2px;z-index:3}
-.ring-text small{font-size:11px;opacity:.6;font-weight:700}
+.ring-text{font-family:var(--font-fun);font-weight:400;font-size:24px;color:var(--text);line-height:1;display:flex;align-items:baseline;gap:2px;z-index:3}
+.ring-text small{font-size:11px;opacity:.6;font-weight:400}
 .ring-wrap.complete{animation:breathe 2.5s ease-in-out infinite}
 .ring-wrap.complete .ring-inner::after{content:'✓';position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;background:var(--green);color:#fff;border-radius:50%;font-size:13px;display:grid;place-items:center;border:3px solid var(--surface);animation:popIn .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(127,176,105,.4)}
 @keyframes breathe{0%,100%{box-shadow:0 0 0 0 var(--accent-soft)}50%{box-shadow:0 0 0 8px rgba(244,112,58,0)}}
 @property --pct{syntax:'<number>';initial-value:0;inherits:false}
 
-.progress-info strong{display:block;font-size:16px;margin-bottom:4px;letter-spacing:-.2px}
+.progress-info strong{display:block;font-family:var(--font-fun);font-size:18px;font-weight:400;margin-bottom:4px;letter-spacing:.3px}
 .progress-info span{color:var(--muted);font-size:13px;line-height:1.5}
 #editName{border:none;background:transparent;color:var(--muted);cursor:pointer;width:18px;height:18px;vertical-align:middle;margin-inline-start:6px;opacity:.6;transition:all .2s;display:inline-grid;place-items:center}
 #editName:hover{opacity:1;color:var(--accent);transform:rotate(-10deg) scale(1.1)}
@@ -22,8 +22,8 @@
 /* ═══ هفتهٔ من ═══ */
 .week-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);transition:background .5s}
 .week-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
-.week-head strong{font-size:14px}
-.streak{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--bg);padding:5px 12px;border-radius:99px;transition:all .4s;white-space:nowrap}
+.week-head strong{font-family:var(--font-fun);font-size:16px;font-weight:400}
+.streak{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-fun);font-size:13px;font-weight:400;color:var(--muted);background:var(--bg);padding:5px 12px;border-radius:99px;transition:all .4s;white-space:nowrap}
 .streak.hot{color:#d84a4a;background:rgba(255,93,93,.12)}
 html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .streak.hot svg{animation:flicker 1.8s ease-in-out infinite}
@@ -40,7 +40,7 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 
 /* ═══ مود روزانه ═══ */
 .mood-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:13px;border-top:1.5px dashed var(--border);flex-wrap:wrap}
-.mood-label{font-size:12px;color:var(--muted);font-weight:700;line-height:1.6}
+.mood-label{font-family:var(--font-fun);font-size:14px;font-weight:400;color:var(--muted);line-height:1.6}
 .moods{display:flex;gap:8px}
 .moods button{
   width:40px;height:40px;border-radius:14px;
@@ -95,12 +95,12 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .add-line{display:flex;gap:10px}
 .add-line input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:14.5px;color:var(--text);padding:10px 12px}
 .add-line input::placeholder{color:var(--muted)}
-.add-btn{width:46px;height:46px;border:none;border-radius:15px;background:var(--accent);color:#fff;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s}
+.add-btn{width:46px;height:46px;border:none;border-radius:15px;background:var(--accent);color:#fff;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;font-family:var(--font-fun);font-size:22px}
 .add-btn:hover{transform:translateY(-2px) scale(1.03)}
 .add-btn:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 .add-form.shake,.name-card.shake{animation:shake .3s ease;border-color:var(--danger)!important}
 
-/* ── ردیف اولویت: انیمیشن جذاب انتخاب ── */
+/* ── ردیف اولویت ── */
 .pri-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
 .pri-row>span{font-size:11.5px;color:var(--muted);flex-shrink:0}
 .pri-row button{
@@ -184,7 +184,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 /* ═══ نوار دسته‌ها ═══ */
 .cats{display:flex;gap:8px;overflow-x:auto;padding:3px 1px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .cats::-webkit-scrollbar{display:none}
-.cat-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;font-weight:700;padding:6px 13px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .25s;box-shadow:var(--shadow-sm)}
+.cat-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-fun);font-size:13px;font-weight:400;padding:6px 13px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .25s;box-shadow:var(--shadow-sm)}
 .cat-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--cc)}
 .cat-chip .cnt{font-size:10px;opacity:.75;font-weight:800}
 .cat-chip:hover{transform:translateY(-2px)}
@@ -193,31 +193,34 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 
 /* ═══ فیلترها ═══ */
 .filters{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:5px;position:relative;box-shadow:var(--shadow-sm);transition:background .5s}
-.filters button{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:9px 0;cursor:pointer;border-radius:12px;position:relative;z-index:1;transition:color .3s}
+.filters button{flex:1;border:none;background:transparent;font-family:var(--font-fun);font-size:14px;font-weight:400;color:var(--muted);padding:9px 0;cursor:pointer;border-radius:12px;position:relative;z-index:1;transition:color .3s}
 .filters button.active{color:var(--accent)}
 .filter-pill{position:absolute;left:0;top:5px;bottom:5px;border-radius:12px;background:var(--accent-soft);z-index:0;transition:transform .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1)}
 
 /* ═══ ریسپانسیو موبایل ═══ */
 @media (max-width: 400px) {
   body{padding:24px 12px}
-  h1{font-size:24px}
+  h1{font-size:28px}
   .subtitle{font-size:11.5px}
   .progress-card{padding:18px 14px;gap:16px}
   .ring-wrap{width:72px;height:72px}
   .ring-inner{width:58px;height:58px}
-  .ring-text{font-size:18px}
-  .progress-info strong{font-size:14px}
+  .ring-text{font-size:20px}
+  .progress-info strong{font-size:16px}
   .progress-info span{font-size:12px}
   .week-card{padding:14px 14px}
+  .week-head strong{font-size:14px}
+  .streak{font-size:12px}
   .chart{height:64px;gap:5px}
   .col .bar{max-width:20px}
   .col span{font-size:9.5px}
   .mood-row{gap:8px}
+  .mood-label{font-size:12px}
   .moods button{width:32px;height:32px;border-radius:10px}
   .moods button svg{width:16px;height:16px}
   .add-form{padding:8px 8px 6px;gap:5px}
   .add-line input{font-size:13.5px;padding:9px 10px}
-  .add-btn{width:42px;height:42px;border-radius:13px}
+  .add-btn{width:42px;height:42px;border-radius:13px;font-size:18px}
   .pri-row{gap:5px;padding:2px 4px 3px}
   .pri-row button{font-size:10.5px;padding:4px 10px;gap:5px}
   .pri-row .ic{width:11px;height:11px}
@@ -230,7 +233,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
   .dice{width:30px;height:30px;border-radius:9px}
   .dice svg{width:15px;height:15px}
   .cats{gap:6px}
-  .cat-chip{font-size:11px;padding:5px 11px}
+  .cat-chip{font-size:12px;padding:5px 11px}
   .cat-chip .dot{width:7px;height:7px}
   .filters button{font-size:12px;padding:8px 0}
   .frog{padding:10px 12px;gap:10px}

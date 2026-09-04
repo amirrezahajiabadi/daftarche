@@ -1,4 +1,3 @@
-/* ═══ پنجره‌های رو ═══ */
 .overlay{position:fixed;inset:0;z-index:100;background:rgba(46,41,33,.35);backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px;animation:fadeIn .3s ease}
 .overlay[hidden]{display:none}
 @keyframes fadeIn{from{opacity:0}}
@@ -6,30 +5,28 @@
 
 .name-card,.roll-card,.focus-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px 28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:var(--shadow-lg);animation:popCard .5s cubic-bezier(.34,1.56,.64,1)}
 .name-card .badge{width:54px;height:54px;border-radius:18px;background:var(--accent-soft);display:grid;place-items:center;margin:0 auto;color:var(--accent)}
-.name-card h2{font-size:19px;font-weight:900;margin:14px 0 6px}
+.name-card h2{font-family:var(--font-fun);font-size:22px;font-weight:400;margin:14px 0 6px}
 .name-card>p{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.8}
 .name-card input{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:14px;padding:12px 16px;font-family:inherit;font-size:15px;text-align:center;color:var(--text);outline:none;transition:border-color .3s,box-shadow .3s}
 .name-card input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
-.name-card .go{margin-top:12px;width:100%;border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:800;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
+.name-card .go{margin-top:12px;width:100%;border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-size:17px;font-weight:400;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
 .name-card .go:hover{transform:translateY(-2px)}
 .name-card .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
-.skip{margin-top:14px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer}
+.skip{margin-top:14px;background:none;border:none;color:var(--muted);font-family:var(--font-fun);font-size:13px;font-weight:400;cursor:pointer}
 .skip:hover{color:var(--accent)}
 
-/* ═══ رولت شانس ═══ */
 .roll-card{padding:28px 24px 22px}
-.roll-title{color:var(--muted);font-size:13px;margin-bottom:14px;font-weight:600}
+.roll-title{color:var(--muted);font-family:var(--font-fun);font-size:15px;font-weight:400;margin-bottom:14px}
 .roll-box{min-height:88px;display:grid;place-items:center;background:var(--bg);border:2px dashed var(--border);border-radius:16px;padding:16px;font-size:15px;font-weight:700;line-height:1.9;transition:border-color .3s}
 .roll-box.tick{animation:tickPop .16s ease}
 @keyframes tickPop{from{transform:scale(.955)}}
 .roll-box.landed{border-color:var(--accent);border-style:solid;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
 .roll-actions{display:flex;gap:8px;margin-top:14px}
-.roll-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:inherit;font-weight:800;font-size:14px;padding:11px;border-radius:13px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
+.roll-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-weight:400;font-size:15px;padding:11px;border-radius:13px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
 .roll-actions .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
-.roll-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:13px;padding:11px;border-radius:13px;cursor:pointer;transition:all .2s}
+.roll-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:11px;border-radius:13px;cursor:pointer;transition:all .2s}
 .roll-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
 
-/* ═══ تایمر تمرکز ═══ */
 .focus-card{padding:26px 24px 20px}
 .focus-task{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px;line-height:1.8}
 .focus-ring{position:relative;width:180px;height:180px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
@@ -37,18 +34,17 @@
   transition:--fp .3s linear}
 @property --fp{syntax:'<number>';initial-value:0;inherits:false}
 .focus-inner{width:158px;height:158px;background:var(--surface);border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 2px 6px rgba(0,0,0,.04);transition:background .5s}
-.focus-time{font-size:34px;font-weight:900;font-feature-settings:"tnum";line-height:1.1}
-.focus-state{font-size:11px;color:var(--muted);font-weight:600;margin-top:5px}
+.focus-time{font-family:var(--font-fun);font-size:38px;font-weight:400;line-height:1.1}
+.focus-state{font-family:var(--font-fun);font-size:12px;color:var(--muted);font-weight:400;margin-top:5px}
 .focus-presets{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:18px;flex-wrap:wrap;transition:opacity .3s}
 .focus-presets.locked{opacity:.45;pointer-events:none}
-.focus-presets button{font-family:inherit;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s}
+.focus-presets button{font-family:var(--font-fun);font-size:13px;font-weight:400;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s}
 .focus-presets button:hover{transform:translateY(-2px)}
 .focus-presets button.sel{background:var(--accent);border-color:var(--accent);color:#fff}
 .focus-presets input{width:64px;font-family:inherit;font-size:12px;font-weight:700;text-align:center;border:1.5px dashed var(--border);background:transparent;color:var(--text);border-radius:99px;padding:5px 6px;outline:none;transition:border-color .2s}
 .focus-presets input:focus{border-color:var(--accent)}
 
-/* ═══ قرص شناور تایمر ═══ */
-.focus-pill{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);z-index:96;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:inherit;font-weight:800;font-size:13px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
+.focus-pill{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);z-index:96;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
 .focus-pill svg{color:var(--accent)}
 .focus-pill.running::after{content:'';position:absolute;inset:-1.5px;border-radius:99px;border:1.5px solid var(--accent);animation:pillWave 1.8s ease-out infinite}
 @keyframes pillIn{from{opacity:0;transform:translateX(50%) translateY(24px)}}
