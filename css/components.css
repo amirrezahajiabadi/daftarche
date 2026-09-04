@@ -19,7 +19,7 @@
 #editName{border:none;background:transparent;color:var(--muted);cursor:pointer;width:18px;height:18px;vertical-align:middle;margin-inline-start:6px;opacity:.6;transition:all .2s;display:inline-grid;place-items:center}
 #editName:hover{opacity:1;color:var(--accent);transform:rotate(-10deg) scale(1.1)}
 
-/* ═══ هفتهٔ من: استریک، نمودار، مود ═══ */
+/* ═══ هفتهٔ من ═══ */
 .week-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);transition:background .5s}
 .week-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .week-head strong{font-size:14px}
@@ -38,12 +38,56 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .col.today span{color:var(--accent)}
 .col .mdot{width:7px;height:7px;border-radius:50%}
 
+/* ═══ مود روزانه ═══ */
 .mood-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:13px;border-top:1.5px dashed var(--border);flex-wrap:wrap}
-.mood-label{font-size:12px;color:var(--muted);font-weight:700}
-.moods{display:flex;gap:6px}
-.moods button{width:36px;height:36px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:all .25s}
-.moods button:hover{transform:translateY(-3px) scale(1.08);color:var(--mc)}
-.moods button.sel{color:var(--mc);background:var(--accent-soft);background:color-mix(in srgb,var(--mc) 14%,transparent);border-color:var(--mc);animation:pop .4s ease}
+.mood-label{font-size:12px;color:var(--muted);font-weight:700;line-height:1.6}
+.moods{display:flex;gap:8px}
+.moods button{
+  width:40px;height:40px;border-radius:14px;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  cursor:pointer;display:grid;place-items:center;
+  transition:all .3s cubic-bezier(.22,1,.36,1);
+  position:relative;
+}
+.moods button svg{width:22px;height:22px;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.moods button:hover{
+  transform:translateY(-3px);
+  border-color:var(--mc);
+  color:var(--mc);
+  box-shadow:0 4px 12px -3px rgba(0,0,0,.1);
+}
+.moods button:hover svg{transform:scale(1.15) rotate(-5deg)}
+.moods button.sel{
+  color:var(--mc);
+  background:color-mix(in srgb,var(--mc) 12%,transparent);
+  border-color:var(--mc);
+  box-shadow:0 2px 10px -2px rgba(0,0,0,.08);
+}
+.moods button.sel svg{animation:moodBounce .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes moodBounce{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.3) rotate(-8deg)}
+  60%{transform:scale(.9) rotate(3deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+.moods button[data-sub]:hover::after{
+  content:attr(data-sub);
+  position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%);
+  background:var(--text);color:var(--bg);
+  font-size:10.5px;font-weight:600;line-height:1.5;
+  padding:5px 10px;border-radius:8px;
+  white-space:nowrap;pointer-events:none;
+  animation:tooltipIn .2s ease;
+  z-index:10;
+}
+.moods button[data-sub]:hover::before{
+  content:'';position:absolute;bottom:calc(100% + 3px);left:50%;
+  transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--text);
+  pointer-events:none;animation:tooltipIn .2s ease;z-index:10;
+}
+@keyframes tooltipIn{from{opacity:0;transform:translateX(-50%) translateY(4px)}}
 
 /* ═══ فرم افزودن ═══ */
 .add-form{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 10px 8px;box-shadow:var(--shadow-sm);transition:box-shadow .3s,border-color .3s,background .5s}
@@ -56,25 +100,75 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .add-btn:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 .add-form.shake,.name-card.shake{animation:shake .3s ease;border-color:var(--danger)!important}
 
-.pri-row,.cat-row,.due-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px}
-.pri-row>span,.cat-row>span,.due-row>span{font-size:11.5px;color:var(--muted);flex-shrink:0}
-.pri-row button,.due-row button{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:4px 11px;cursor:pointer;transition:all .25s}
-.pri-row button:hover,.due-row button:hover{transform:translateY(-2px)}
-.pri-row .ic{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.pri-row button.sel.low{background:rgba(127,176,105,.16);border-color:var(--green);color:#5f8f4d}
-.pri-row button.sel.mid{background:rgba(255,180,92,.18);border-color:#ffb45c;color:#c07b21}
-.pri-row button.sel.high{background:rgba(255,93,93,.14);border-color:#ff5d5d;color:#d84a4a}
-.due-row button.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+/* ── ردیف اولویت: انیمیشن جذاب انتخاب ── */
+.pri-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
+.pri-row>span{font-size:11.5px;color:var(--muted);flex-shrink:0}
+.pri-row button{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:inherit;font-size:11.5px;font-weight:600;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  border-radius:99px;padding:5px 12px;cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:all .3s cubic-bezier(.22,1,.36,1);
+}
+.pri-row .ic{
+  width:13px;height:13px;
+  stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  flex-shrink:0;
+}
+.pri-row button:hover{transform:translateY(-2px);border-color:var(--muted)}
+.pri-row button:hover .ic{transform:scale(1.35) rotate(8deg)}
+.pri-row button[data-p="low"]:hover .ic{filter:drop-shadow(0 0 4px rgba(127,176,105,.5))}
+.pri-row button[data-p="mid"]:hover .ic{filter:drop-shadow(0 0 4px rgba(255,180,92,.5))}
+.pri-row button[data-p="high"]:hover .ic{filter:drop-shadow(0 0 4px rgba(255,93,93,.5))}
+.pri-row button::before{
+  content:'';position:absolute;
+  inset-inline-start:6px;top:50%;
+  width:22px;height:22px;
+  border-radius:50%;
+  transform:translateY(-50%) scale(0);
+  opacity:0;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  z-index:0;
+}
+.pri-row button .ic,
+.pri-row button span:not(.ic){position:relative;z-index:1}
+.pri-row button.sel.low{border-color:var(--green);color:#4a7a3a;background:rgba(127,176,105,.08)}
+.pri-row button.sel.low::before{background:rgba(127,176,105,.25);transform:translateY(-50%) scale(1);opacity:1}
+.pri-row button.sel.low .ic{stroke:var(--green);transform:scale(1.2);filter:drop-shadow(0 0 5px rgba(127,176,105,.4))}
+.pri-row button.sel.mid{border-color:#ffb45c;color:#b06a10;background:rgba(255,180,92,.08)}
+.pri-row button.sel.mid::before{background:rgba(255,180,92,.3);transform:translateY(-50%) scale(1);opacity:1}
+.pri-row button.sel.mid .ic{stroke:#e8a030;transform:scale(1.2);filter:drop-shadow(0 0 5px rgba(255,180,92,.4))}
+.pri-row button.sel.high{border-color:#ff5d5d;color:#c93a3a;background:rgba(255,93,93,.08)}
+.pri-row button.sel.high::before{background:rgba(255,93,93,.25);transform:translateY(-50%) scale(1);opacity:1}
+.pri-row button.sel.high .ic{stroke:#ff5d5d;transform:scale(1.2);filter:drop-shadow(0 0 5px rgba(255,93,93,.4))}
 html[data-theme="dark"] .pri-row button.sel.low{color:#9ccc86}
 html[data-theme="dark"] .pri-row button.sel.mid{color:#ffcd8a}
 html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 
+.cat-row,.due-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
+.cat-row>span,.due-row>span{font-size:11.5px;color:var(--muted);flex-shrink:0}
+.due-row button{
+  display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  border-radius:99px;padding:4px 11px;cursor:pointer;
+  transition:all .25s cubic-bezier(.22,1,.36,1);
+}
+.due-row button:hover{transform:translateY(-2px);box-shadow:0 3px 8px -2px rgba(0,0,0,.1);border-color:var(--muted)}
+.due-row button.sel{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px -2px rgba(244,112,58,.4)}
+
 .cat-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
 .cat-scroll::-webkit-scrollbar{display:none}
-.cat-scroll button{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11px;font-weight:600;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:3px 10px;cursor:pointer;transition:all .25s}
-.cat-scroll button:hover{transform:translateY(-2px)}
+.cat-scroll button{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11px;font-weight:600;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  border-radius:99px;padding:3px 10px;cursor:pointer;
+  transition:all .25s cubic-bezier(.22,1,.36,1);
+}
+.cat-scroll button:hover{transform:translateY(-2px);box-shadow:0 3px 8px -2px rgba(0,0,0,.1);border-color:var(--muted)}
 .cat-scroll .dot{width:7px;height:7px;border-radius:50%;background:var(--cc)}
-.cat-scroll button.sel{background:var(--cc);border-color:var(--cc);color:#fff}
+.cat-scroll button.sel{background:var(--cc);border-color:var(--cc);color:#fff;box-shadow:0 2px 8px -2px rgba(0,0,0,.15)}
 .cat-scroll button.sel .dot{background:rgba(255,255,255,.85)}
 
 /* ═══ جستجو + تاس ═══ */
@@ -102,3 +196,82 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .filters button{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:9px 0;cursor:pointer;border-radius:12px;position:relative;z-index:1;transition:color .3s}
 .filters button.active{color:var(--accent)}
 .filter-pill{position:absolute;left:0;top:5px;bottom:5px;border-radius:12px;background:var(--accent-soft);z-index:0;transition:transform .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1)}
+
+/* ═══ ریسپانسیو موبایل ═══ */
+@media (max-width: 400px) {
+  body{padding:24px 12px}
+  h1{font-size:24px}
+  .subtitle{font-size:11.5px}
+  .progress-card{padding:18px 14px;gap:16px}
+  .ring-wrap{width:72px;height:72px}
+  .ring-inner{width:58px;height:58px}
+  .ring-text{font-size:18px}
+  .progress-info strong{font-size:14px}
+  .progress-info span{font-size:12px}
+  .week-card{padding:14px 14px}
+  .chart{height:64px;gap:5px}
+  .col .bar{max-width:20px}
+  .col span{font-size:9.5px}
+  .mood-row{gap:8px}
+  .moods button{width:32px;height:32px;border-radius:10px}
+  .moods button svg{width:16px;height:16px}
+  .add-form{padding:8px 8px 6px;gap:5px}
+  .add-line input{font-size:13.5px;padding:9px 10px}
+  .add-btn{width:42px;height:42px;border-radius:13px}
+  .pri-row{gap:5px;padding:2px 4px 3px}
+  .pri-row button{font-size:10.5px;padding:4px 10px;gap:5px}
+  .pri-row .ic{width:11px;height:11px}
+  .pri-row button::before{width:18px;height:18px;inset-inline-start:5px}
+  .cat-row,.due-row{gap:5px;padding:2px 4px 3px}
+  .due-row button{font-size:10.5px;padding:3px 9px}
+  .cat-scroll button{font-size:10px;padding:3px 8px}
+  .search{padding:6px 12px 6px 6px}
+  .search input{font-size:12.5px}
+  .dice{width:30px;height:30px;border-radius:9px}
+  .dice svg{width:15px;height:15px}
+  .cats{gap:6px}
+  .cat-chip{font-size:11px;padding:5px 11px}
+  .cat-chip .dot{width:7px;height:7px}
+  .filters button{font-size:12px;padding:8px 0}
+  .frog{padding:10px 12px;gap:10px}
+  .frog-ico{width:36px;height:36px;border-radius:11px}
+  .frog-ico svg{width:22px;height:22px}
+  .frog-txt strong{font-size:10.5px}
+  .frog-txt span{font-size:12px}
+  .frog-go{font-size:11px;padding:7px 12px}
+  .task{padding:12px 14px;gap:10px;margin-bottom:8px;border-radius:16px}
+  .title{font-size:13.5px}
+  .cat-tag,.due-chip{font-size:9.5px;padding:2px 8px}
+  .check{width:24px;height:24px}
+  .focus-btn,.del{width:28px;height:28px;border-radius:8px}
+  .pri-dot{width:10px;height:10px}
+  .empty{padding:22px 8px;font-size:12.5px}
+  .empty .art svg{width:80px;height:80px}
+  .list-footer{font-size:11.5px}
+  .name-card,.roll-card,.focus-card{padding:24px 18px 18px;border-radius:20px}
+  .name-card h2{font-size:17px}
+  .name-card>p{font-size:12px}
+  .name-card input{font-size:14px;padding:10px 14px}
+  .name-card .go{font-size:14px;padding:11px}
+  .focus-ring{width:150px;height:150px}
+  .focus-inner{width:132px;height:132px}
+  .focus-time{font-size:28px}
+  .focus-presets button{font-size:11px;padding:4px 10px}
+  .focus-presets input{width:56px;font-size:11px}
+  .roll-box{min-height:72px;font-size:14px;padding:14px}
+  .roll-actions .go,.roll-actions .ghost{font-size:12px;padding:10px}
+  .focus-pill{padding:8px 14px;font-size:12px;bottom:12px}
+  .focus-pill svg{width:13px;height:13px}
+}
+
+@media (min-width: 401px) and (max-width: 520px) {
+  body{padding:32px 16px}
+  .progress-card{padding:20px 16px;gap:20px}
+  .ring-wrap{width:80px;height:80px}
+  .ring-inner{width:66px;height:66px}
+  .ring-text{font-size:20px}
+  .task{padding:13px 16px}
+  .focus-ring{width:165px;height:165px}
+  .focus-inner{width:145px;height:145px}
+  .focus-time{font-size:30px}
+}

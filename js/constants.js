@@ -1,5 +1,3 @@
-/* ═══ ثابت‌ها و داده‌های استاتیک اپ ═══ */
-
 export const APP_TITLE = 'دَفتَرچه — لیست کارهای خودمون';
 
 export const STORAGE_KEYS = {
@@ -24,24 +22,23 @@ export const CATS = [
 ];
 
 export const MOODS = [
-  { label: 'خراب',         color: '#e4584f' },
-  { label: 'نه‌چندان خوب', color: '#f07850' },
-  { label: 'معمولی',       color: '#eab13c' },
-  { label: 'خوب',          color: '#a8c66c' },
-  { label: 'عالی',         color: '#7fb069' },
+  { label: 'حالوم خرابه مشتی', sub: 'ناراحت نباش، یه روز خوب میاد!', color: '#e4584f' },
+  { label: 'هعی',               sub: '',                                color: '#f07850' },
+  { label: 'بد نیستم',          sub: '',                                color: '#eab13c' },
+  { label: 'خوبم',              sub: '',                                color: '#a8c66c' },
+  { label: 'میزان میزان',       sub: 'همیشه میزان باشی گل!',           color: '#7fb069' },
 ];
 
 export const FACES = [
-  `<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.2 8.4l2-1.1M15.8 8.4l-2-1.1"/><path d="M8.5 16.6c1-1.3 2.2-2 3.5-2s2.5.7 3.5 2"/>`,
-  `<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.7 16.2c1-1 2.1-1.5 3.3-1.5s2.3.5 3.3 1.5"/>`,
-  `<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.7 15.3h6.6"/>`,
-  `<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.5 14.3c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"/>`,
-  `<circle cx="12" cy="12" r="9"/><path d="M7.6 10.4c.4-.9 1.1-1.4 1.9-1.4s1.5.5 1.9 1.4"/><path d="M12.6 10.4c.4-.9 1.1-1.4 1.9-1.4s1.5.5 1.9 1.4"/><path d="M8 14c1.1 1.9 2.4 2.8 4 2.8s2.9-.9 4-2.8"/>`,
+  `<circle cx="12" cy="12" r="9.5" stroke-width="2"/><circle cx="8.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><path d="M7 8.5l3-1.5" stroke-width="2" stroke-linecap="round"/><path d="M17 8.5l-3-1.5" stroke-width="2" stroke-linecap="round"/><path d="M8.5 17c1-1.8 2.2-2.5 3.5-2.5s2.5.7 3.5 2.5" stroke-width="2" stroke-linecap="round"/>`,
+  `<circle cx="12" cy="12" r="9.5" stroke-width="2"/><circle cx="8.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><path d="M7.5 8l3 .5" stroke-width="2" stroke-linecap="round"/><path d="M16.5 8l-3 .5" stroke-width="2" stroke-linecap="round"/><path d="M9 16h6" stroke-width="2" stroke-linecap="round"/>`,
+  `<circle cx="12" cy="12" r="9.5" stroke-width="2"/><circle cx="8.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><path d="M9.5 15.5c.8.6 1.6.9 2.5.9s1.7-.3 2.5-.9" stroke-width="2" stroke-linecap="round"/>`,
+  `<circle cx="12" cy="12" r="9.5" stroke-width="2"/><path d="M7 10.5c.5-1 1.2-1.5 2-1.5s1.5.5 2 1.5" stroke-width="2" stroke-linecap="round"/><path d="M13 10.5c.5-1 1.2-1.5 2-1.5s1.5.5 2 1.5" stroke-width="2" stroke-linecap="round"/><path d="M8.5 15c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2" stroke-width="2" stroke-linecap="round"/>`,
+  `<circle cx="12" cy="12" r="9.5" stroke-width="2"/><path d="M8.5 9l.6 1.2 1.3.2-1 .9.3 1.3-1.2-.7-1.2.7.3-1.3-1-.9 1.3-.2z" fill="currentColor" stroke="none"/><path d="M15.5 9l.6 1.2 1.3.2-1 .9.3 1.3-1.2-.7-1.2.7.3-1.3-1-.9 1.3-.2z" fill="currentColor" stroke="none"/><path d="M8 14.5c1.1 2 2.4 3 4 3s2.9-1 4-3" stroke-width="2" stroke-linecap="round"/><circle cx="6.5" cy="14" r="1.2" fill="currentColor" opacity=".2" stroke="none"/><circle cx="17.5" cy="14" r="1.2" fill="currentColor" opacity=".2" stroke="none"/>`,
 ];
 
 export const WEEKDAY_LETTERS = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش'];
 
-/* آیکون‌های مشترک تسک‌ها */
 export const ICONS = {
   grip:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>`,
   check: `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`,

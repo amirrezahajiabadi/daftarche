@@ -19,6 +19,35 @@ export const visible = () => state.tasks.filter(t =>
   (!state.query || t.text.includes(state.query))
 );
 
+/* ── انیمیشن‌های بازخورد ── */
+function animateChipSelect(btn) {
+  btn.classList.remove('just-selected');
+  void btn.offsetWidth; // force reflow
+  btn.classList.add('just-selected');
+  setTimeout(() => btn.classList.remove('just-selected'), 450);
+}
+
+function animateRowFlash(row) {
+  row.classList.remove('row-flash');
+  void row.offsetWidth;
+  row.classList.add('row-flash');
+  setTimeout(() => row.classList.remove('row-flash'), 400);
+}
+
+function animatePriDotChange(dot) {
+  dot.classList.remove('changed');
+  void dot.offsetWidth;
+  dot.classList.add('changed');
+  setTimeout(() => dot.classList.remove('changed'), 650);
+}
+
+function animateChipFlip(chip) {
+  chip.classList.remove('flipped');
+  void chip.offsetWidth;
+  chip.classList.add('flipped');
+  setTimeout(() => chip.classList.remove('flipped'), 450);
+}
+
 /* ── مهلت ── */
 function dueLabel(key) {
   if (!key) return null;
@@ -156,10 +185,12 @@ export function initTasks() {
     else if (e.target.closest('.del')) collapse(li, task.id);
     else if (e.target.closest('.focus-btn')) openFocus(task.id);
     else if (e.target.closest('.pri-dot')) {
+      const dot = e.target.closest('.pri-dot');
       task.p = P_CYCLE[task.p || 'mid'];
       save();
       li.dataset.p = task.p;
-      e.target.title = `اولویت: ${P_LABEL[task.p]} — کلیک برای تغییر`;
+      dot.title = `اولویت: ${P_LABEL[task.p]} — کلیک برای تغییر`;
+      animatePriDotChange(dot);
     }
     else if (e.target.closest('.cat-tag')) {
       const btn = e.target.closest('.cat-tag');
@@ -170,13 +201,16 @@ export function initTasks() {
       btn.style.setProperty('--cc', nxt.color);
       btn.textContent = nxt.label;
       btn.title = `دسته: ${nxt.label} — کلیک برای تغییر`;
+      animateChipFlip(btn);
       notify();
       if (state.catFilter !== 'all' && state.catFilter !== nxt.key) setTimeout(() => collapse(li, task.id), 500);
     }
     else if (e.target.closest('.due-chip')) {
+      const btn = e.target.closest('.due-chip');
       task.due = nextDue(task.due);
       save();
       refreshDueChip(li, task);
+      animateChipFlip(btn);
       notify();
     }
   });
@@ -239,14 +273,18 @@ function buildCatRow() {
 }
 
 export function initAddForm() {
+  /* اولویت */
   $('#priRow').addEventListener('click', e => {
     const b = e.target.closest('button[data-p]');
     if (!b) return;
     document.querySelector('.pri-row .sel')?.classList.remove('sel');
     b.classList.add('sel');
     state.selPri = b.dataset.p;
+    animateChipSelect(b);
+    animateRowFlash($('#priRow'));
   });
 
+  /* دسته */
   buildCatRow();
   $('#catRow').addEventListener('click', e => {
     const b = e.target.closest('button[data-cat]');
@@ -254,16 +292,22 @@ export function initAddForm() {
     $('#catRow .sel')?.classList.remove('sel');
     b.classList.add('sel');
     state.selCat = b.dataset.cat;
+    animateChipSelect(b);
+    animateRowFlash($('#catRow'));
   });
 
+  /* مهلت */
   $('#dueRow').addEventListener('click', e => {
     const b = e.target.closest('button[data-due]');
     if (!b) return;
     $('#dueRow .sel')?.classList.remove('sel');
     b.classList.add('sel');
     state.selDue = b.dataset.due;
+    animateChipSelect(b);
+    animateRowFlash($('#dueRow'));
   });
 
+  /* ثبت تسک */
   $('#addForm').addEventListener('submit', e => {
     e.preventDefault();
     const input = $('#taskInput'), text = input.value.trim();

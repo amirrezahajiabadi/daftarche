@@ -1,5 +1,3 @@
-/* ═══ هفتهٔ من: نمودار، استریک، مود ═══ */
-
 import { state } from './state.js';
 import { saveHistory, saveMoods } from './store.js';
 import { $, faNum, dayKey } from './utils.js';
@@ -18,7 +16,7 @@ function calcStreak() {
   const set = new Set(state.history);
   let s = 0;
   const d = new Date();
-  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1); // امروز هنوز فرصت هست
+  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
   while (set.has(dayKey(d))) { s++; d.setDate(d.getDate() - 1); }
   return s;
 }
@@ -37,9 +35,7 @@ function renderChart() {
     const d = new Date(); d.setDate(d.getDate() - i);
     const k = dayKey(d);
     days.push({
-      k,
-      letter: WEEKDAY_LETTERS[d.getDay()],
-      today: i === 0,
+      k, letter: WEEKDAY_LETTERS[d.getDay()], today: i === 0,
       n: state.tasks.filter(t => t.done && t.doneAt && dayKey(new Date(t.doneAt)) === k).length,
       mood: state.moods[k] || 0,
     });
@@ -66,12 +62,6 @@ function renderChart() {
   });
 }
 
-function renderMoods() {
-  const cur = state.moods[dayKey(new Date())] || 0;
-  document.querySelectorAll('#moods button').forEach((b, i) => b.classList.toggle('sel', i + 1 === cur));
-  $('#moodLabel').textContent = cur ? `حال امروزت: ${MOODS[cur - 1].label}` : 'حال امروزت چطوره؟';
-}
-
 function buildMoods() {
   const wrap = $('#moods');
   MOODS.forEach((m, i) => {
@@ -79,7 +69,8 @@ function buildMoods() {
     b.type = 'button';
     b.title = m.label;
     b.style.setProperty('--mc', m.color);
-    b.innerHTML = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">${FACES[i]}</svg>`;
+    if (m.sub) b.dataset.sub = m.sub;
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${FACES[i]}</svg>`;
     b.onclick = () => {
       state.moods[dayKey(new Date())] = i + 1;
       saveMoods(state.moods);
@@ -88,6 +79,23 @@ function buildMoods() {
     };
     wrap.appendChild(b);
   });
+}
+
+function renderMoods() {
+  const cur = state.moods[dayKey(new Date())] || 0;
+  const buttons = document.querySelectorAll('#moods button');
+  buttons.forEach((b, i) => {
+    b.classList.toggle('sel', i + 1 === cur);
+    const mood = MOODS[i];
+    if (mood.sub) b.dataset.sub = mood.sub;
+    else delete b.dataset.sub;
+  });
+  if (cur) {
+    const m = MOODS[cur - 1];
+    $('#moodLabel').innerHTML = `حال امروزت: <strong style="color:${m.color}">${m.label}</strong>`;
+  } else {
+    $('#moodLabel').textContent = 'حال امروزت چطوره؟';
+  }
 }
 
 export function initWeek() {

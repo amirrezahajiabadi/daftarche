@@ -26,10 +26,15 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .grip{color:var(--muted);opacity:.4;cursor:grab;display:grid;place-items:center;flex-shrink:0}
 .task.dragging{opacity:.45;transform:scale(1.02);cursor:grabbing}
 
-.pri-dot{width:11px;height:11px;border-radius:50%;background:var(--pr);border:none;cursor:pointer;flex-shrink:0;transition:transform .25s}
+/* نقطه اولویت: ناحیه کلیک بزرگ‌تر + انیمیشن بانس هنگام تغییر */
+.pri-dot{width:11px;height:11px;border-radius:50%;background:var(--pr);border:none;cursor:pointer;flex-shrink:0;position:relative;transition:transform .25s,background .3s}
+.pri-dot::after{content:'';position:absolute;inset:-10px;border-radius:50%}
 .pri-dot:hover{transform:scale(1.6)}
 .task[data-p="high"] .pri-dot{animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,93,.45)}50%{box-shadow:0 0 0 7px rgba(255,93,93,0)}}
+.pri-dot.changed{animation:priBounce .5s cubic-bezier(.34,1.56,.64,1),priPulse .6s ease}
+@keyframes priBounce{0%{transform:scale(1)}30%{transform:scale(2.2)}60%{transform:scale(.85)}100%{transform:scale(1)}}
+@keyframes priPulse{0%{box-shadow:0 0 0 0 var(--pr)}50%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
 
 .check{width:26px;height:26px;flex-shrink:0;border-radius:9px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;transition:all .35s cubic-bezier(.34,1.56,.64,1)}
 .check:hover{border-color:var(--green);transform:scale(1.12)}
@@ -44,8 +49,10 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .task.done .title::after{width:100%}
 .title-input{flex:1;font-family:inherit;font-size:14.5px;border:none;outline:none;background:var(--accent-soft);border-radius:8px;padding:5px 10px;color:var(--text)}
 
+/* چیپ دسته + مهلت: فلیپ هنگام تغییر */
 .cat-tag{flex-shrink:0;font-family:inherit;font-size:10.5px;font-weight:700;line-height:1.4;color:var(--cc);background:var(--accent-soft);background:color-mix(in srgb,var(--cc) 12%,transparent);border:1px solid transparent;border-color:color-mix(in srgb,var(--cc) 28%,transparent);padding:3px 10px;border-radius:99px;cursor:pointer;transition:transform .2s}
 .cat-tag:hover{transform:scale(1.07)}
+.cat-tag.flipped{animation:chipFlip .4s ease}
 
 .due-chip{flex-shrink:0;font-family:inherit;font-size:10.5px;font-weight:700;line-height:1.4;padding:3px 10px;border-radius:99px;border:1px solid transparent;cursor:pointer;transition:transform .2s;background:transparent;color:var(--muted)}
 .due-chip:hover{transform:scale(1.07)}
@@ -54,6 +61,14 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .due-chip.soon,.due-chip.far{color:var(--muted);background:var(--bg);border-color:var(--border)}
 .due-chip.late{color:#d84a4a;background:rgba(255,93,93,.12);border-color:rgba(255,93,93,.35)}
 html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
+.due-chip.flipped{animation:chipFlip .4s ease}
+
+@keyframes chipFlip{
+  0%{transform:scale(1) rotateY(0)}
+  40%{transform:scale(.85) rotateY(90deg)}
+  60%{transform:scale(.85) rotateY(90deg)}
+  100%{transform:scale(1) rotateY(0)}
+}
 
 .focus-btn{border:none;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:10px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:.55;transition:all .25s}
 .task:hover .focus-btn{opacity:1}
