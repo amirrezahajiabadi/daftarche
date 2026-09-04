@@ -1,0 +1,97 @@
+/* ═══ هفتهٔ من: نمودار، استریک، مود ═══ */
+
+import { state } from './state.js';
+import { saveHistory, saveMoods } from './store.js';
+import { $, faNum, dayKey } from './utils.js';
+import { MOODS, FACES, WEEKDAY_LETTERS } from './constants.js';
+import { subscribe } from './bus.js';
+
+export function recordDay() {
+  const k = dayKey(new Date());
+  if (!state.history.includes(k)) {
+    state.history.push(k);
+    saveHistory(state.history);
+  }
+}
+
+function calcStreak() {
+  const set = new Set(state.history);
+  let s = 0;
+  const d = new Date();
+  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1); // امروز هنوز فرصت هست
+  while (set.has(dayKey(d))) { s++; d.setDate(d.getDate() - 1); }
+  return s;
+}
+
+function updateStreakUI() {
+  const s = calcStreak();
+  $('#streakChip').classList.toggle('hot', s > 0);
+  $('#streakVal').textContent = s > 0 ? `${faNum(s)} روز پیاپی` : 'اولین تیک رو بزن';
+}
+
+function renderChart() {
+  const chart = $('#chart');
+  chart.innerHTML = '';
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = dayKey(d);
+    days.push({
+      k,
+      letter: WEEKDAY_LETTERS[d.getDay()],
+      today: i === 0,
+      n: state.tasks.filter(t => t.done && t.doneAt && dayKey(new Date(t.doneAt)) === k).length,
+      mood: state.moods[k] || 0,
+    });
+  }
+  const max = Math.max(...days.map(x => x.n), 1);
+  days.forEach((c, i) => {
+    const col = document.createElement('div');
+    col.className = 'col' + (c.today ? ' today' : '');
+    col.title = `${faNum(c.n)} کار انجام‌شده${c.mood ? ' · حال: ' + MOODS[c.mood - 1].label : ''}`;
+    const bar = document.createElement('div');
+    bar.className = 'bar' + (c.n ? '' : ' zero');
+    bar.style.height = '6%';
+    const lbl = document.createElement('span');
+    lbl.textContent = c.letter;
+    const md = document.createElement('i');
+    md.className = 'mdot';
+    md.style.background = c.mood ? MOODS[c.mood - 1].color : 'transparent';
+    col.appendChild(bar); col.appendChild(lbl); col.appendChild(md);
+    chart.appendChild(col);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bar.style.transitionDelay = (i * 55) + 'ms';
+      bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
+    }));
+  });
+}
+
+function renderMoods() {
+  const cur = state.moods[dayKey(new Date())] || 0;
+  document.querySelectorAll('#moods button').forEach((b, i) => b.classList.toggle('sel', i + 1 === cur));
+  $('#moodLabel').textContent = cur ? `حال امروزت: ${MOODS[cur - 1].label}` : 'حال امروزت چطوره؟';
+}
+
+function buildMoods() {
+  const wrap = $('#moods');
+  MOODS.forEach((m, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.title = m.label;
+    b.style.setProperty('--mc', m.color);
+    b.innerHTML = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">${FACES[i]}</svg>`;
+    b.onclick = () => {
+      state.moods[dayKey(new Date())] = i + 1;
+      saveMoods(state.moods);
+      renderMoods();
+      renderChart();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+export function initWeek() {
+  buildMoods();
+  renderMoods();
+  subscribe(() => { updateStreakUI(); renderChart(); });
+}

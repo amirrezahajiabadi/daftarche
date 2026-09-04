@@ -1,0 +1,60 @@
+/* ═══ پایه: ریست، متغیرها، بدنه، بافت کاغذ، دودل‌ها، هدر ═══ */
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#f6efe3; --surface:#fffcf5; --text:#2e2921; --muted:#a79c8a;
+  --accent:#f4703a; --accent-2:#ffb45c; --accent-soft:rgba(244,112,58,.13);
+  --green:#7fb069; --danger:#e4584f; --border:rgba(80,60,30,.1);
+  --tape:rgba(255,196,120,.5);
+  --shadow-lg:0 24px 50px -24px rgba(122,80,35,.35);
+  --shadow-sm:0 4px 14px -6px rgba(122,80,35,.18);
+  --radius:20px;
+}
+html[data-theme="dark"]{
+  --bg:#171310; --surface:#221d17; --text:#f4ecdd; --muted:#8f8574;
+  --accent:#ff8a50; --accent-2:#ffbe6e; --accent-soft:rgba(255,138,80,.15);
+  --tape:rgba(255,190,110,.22); --border:rgba(255,220,180,.09);
+  --shadow-lg:0 24px 50px -24px rgba(0,0,0,.7);
+  --shadow-sm:0 4px 14px -6px rgba(0,0,0,.5);
+}
+
+body{font-family:'Vazirmatn',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:44px 20px;overflow-x:hidden;transition:background .5s,color .5s}
+
+/* بافت کاغذ */
+body::after{content:'';position:fixed;inset:0;z-index:97;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* دودل‌های پس‌زمینه */
+.doodle{position:fixed;z-index:0;pointer-events:none;color:var(--accent)}
+.d-sun{top:5%;inset-inline-start:4%;opacity:.3;animation:spin 45s linear infinite}
+.d-star1{top:22%;inset-inline-end:7%;opacity:.4;animation:twinkle 3s ease-in-out infinite}
+.d-star2{bottom:16%;inset-inline-start:6%;opacity:.35;animation:twinkle 4s ease-in-out infinite 1.2s}
+.d-squig{bottom:6%;inset-inline-end:5%;opacity:.3;animation:floaty 5s ease-in-out infinite}
+
+.app{width:100%;max-width:480px;position:relative;z-index:1;display:flex;flex-direction:column;gap:16px;animation:appIn .7s cubic-bezier(.22,1,.36,1)}
+
+header{display:flex;align-items:flex-start;justify-content:space-between}
+h1{font-size:30px;font-weight:900;line-height:1.2}
+h1 .underline{display:block;width:110px;height:10px;color:var(--accent);margin-top:2px}
+h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw 1s ease .4s forwards}
+.subtitle{color:var(--muted);font-size:12.5px;margin-top:6px}
+
+.theme-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .3s,background .5s}
+.theme-btn:hover{transform:translateY(-2px) rotate(8deg)}
+.theme-btn svg{position:absolute;transition:transform .5s cubic-bezier(.5,-.5,.5,1.5),opacity .3s}
+.theme-btn .sun{transform:translateY(-150%) rotate(-90deg);opacity:0}
+html[data-theme="dark"] .theme-btn .sun{transform:none;opacity:1}
+html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg);opacity:0}
+
+/* انیمیشن‌های مشترک */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.12;transform:scale(.8) rotate(0deg)}50%{opacity:.5;transform:scale(1.15) rotate(20deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(4deg)}}
+@keyframes appIn{from{opacity:0;transform:translateY(24px)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(5px)}75%{transform:translateX(-5px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes popIn{from{transform:scale(0)}}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
