@@ -5,17 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <title>دَفتَرچه — لیست کارهای خودمون</title>
-<!-- فاوآیکون (رفع خطای 404) -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>%F0%9F%93%93</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<style>
-.textLayer{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;user-select:text;-webkit-user-select:text;z-index:2}
-.textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
-.textLayer ::selection{background:rgba(244,112,58,.45);color:transparent}
-</style>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/tasks.css">
@@ -59,7 +52,7 @@
   </div>
 </div>
 
-<!-- ═══ صفحهٔ ۱: کارها ═══ -->
+<!-- ═══ صفحه ۱: کارها ══ -->
 <div class="page active" id="page-tasks">
   <main class="app">
     <header>
@@ -173,7 +166,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحه ۲: آمار ═══ -->
+<!-- ═══ صفحهٔ ۲: آمار ═══ -->
 <div class="page" id="page-stats">
   <main class="app">
     <header>
@@ -224,13 +217,14 @@
         <h1>کتابخانه
           <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
         </h1>
-        <p class="subtitle">بخون، هایلایت کن، برس به هدفت</p>
+        <p class="subtitle">بخون، یادداشت بذار، برس به هدفت</p>
       </div>
-      <button class="import-btn" id="importBtn">+ افزودن کتاب</button>
+      <button class="import-btn" id="importBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>افزودن کتاب</button>
       <input type="file" id="bookFile" accept="application/pdf" hidden>
     </header>
 
     <div id="shelfView">
+      <div class="shelf-head"><strong>قفسهٔ من</strong><span id="shelfCount"></span></div>
       <div id="lastReadSlot"></div>
       <div class="shelf-grid" id="shelfGrid"></div>
       <div class="empty" id="shelfEmpty" hidden>
@@ -260,9 +254,7 @@
       <div class="reader-stage mode-light" id="readerStage">
         <div class="reader-loading" id="readerLoading" hidden><div class="spinner"></div></div>
         <div class="page-wrap" id="pageWrap">
-          <canvas id="pdfCanvas"></canvas>
-          <div class="hl-layer" id="hlLayer"></div>
-          <div class="textLayer" id="textLayer"></div>
+          <iframe id="pdfFrame" title="مطالعهٔ کتاب"></iframe>
         </div>
       </div>
       <div class="reader-bar">
@@ -276,16 +268,9 @@
         <button class="r-icon" id="zoomOut">−</button>
         <button class="r-icon" id="zoomIn">+</button>
         <span class="bar-sep"></span>
+        <button class="r-icon" id="addNoteBtn" title="یادداشت این صفحه">📝</button>
         <button class="rtimer" id="readTimerBtn">▶</button>
       </div>
-    </div>
-
-    <div class="hl-toolbar" id="hlToolbar" hidden>
-      <button data-c="#ffd97d" style="--hc:#ffd97d"></button>
-      <button data-c="#a8c66c" style="--hc:#a8c66c"></button>
-      <button data-c="#f6a5c0" style="--hc:#f6a5c0"></button>
-      <button data-c="#9ecbff" style="--hc:#9ecbff"></button>
-      <button class="hl-note" id="hlNoteBtn">📝</button>
     </div>
 
     <div class="overlay" id="noteOverlay" hidden>
@@ -300,7 +285,7 @@
 
     <div class="sheet" id="notesSheet" hidden>
       <div class="sheet-head">
-        <strong>هایلایت‌ها و یادداشت‌ها</strong>
+        <strong>یادداشت‌ها و هایلایت‌ها</strong>
         <div>
           <button class="b-ghost" id="notesExport">خروجی Markdown</button>
           <button class="r-icon" id="notesClose">✕</button>
@@ -321,7 +306,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۴: تمرکز ═══ -->
+<!-- ═══ صفحه ۴: تمرکز ══ -->
 <div class="page" id="page-focus">
   <div class="scenes" aria-hidden="true">
     <div class="scene scene-rain"><div class="rain-drops" id="rainDrops"></div></div>

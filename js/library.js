@@ -41,12 +41,14 @@ async function delBookBlob(id) {
 }
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const TRASH = `<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6"/></svg>`;
+const BOOK_ICON = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`;
 
-/* ── آمار کلی کتاب ── */
+/* ── آمار کلی کتاب (یادداشت‌های جدید + هایلایت‌های قدیمی) ── */
 function bookTotals(b) {
   let minutes = 0;
   Object.values(b.stats || {}).forEach(s => { minutes += s.minutes || 0; });
-  return { minutes, highlights: (b.highlights || []).length };
+  return { minutes, notes: (b.highlights || []).length + (b.notes || []).length };
 }
 
 /* ── قفسه + آخرین مطالعه ── */
@@ -54,6 +56,8 @@ export function renderShelf() {
   const grid = $('#shelfGrid');
   grid.innerHTML = '';
   $('#shelfEmpty').hidden = books.length > 0;
+  const cnt = $('#shelfCount');
+  if (cnt) cnt.textContent = books.length ? `${faNum(books.length)} کتاب` : 'خالی';
 
   /* کارت آخرین مطالعه */
   const slot = $('#lastReadSlot');
@@ -69,7 +73,7 @@ export function renderShelf() {
       <div class="lr-info">
         <div class="lr-top"><span class="lr-title">${esc(last.title)}</span><span class="lr-pct">${faNum(pct)}٪</span></div>
         <div class="lr-track"><i style="width:${pct}%"></i></div>
-        <span class="lr-sub">صفحهٔ ${faNum(last.lastPage || 1)} از ${faNum(last.numPages)} · ${faNum(t.minutes)} دقیقه مطالعه · ${faNum(t.highlights)} هایلایت</span>
+        <span class="lr-sub">صفحهٔ ${faNum(last.lastPage || 1)} از ${faNum(last.numPages)} · ${faNum(t.minutes)} دقیقه · ${faNum(t.notes)} یادداشت</span>
       </div>
       <button class="lr-btn">ادامه مطالعه</button>`;
     card.addEventListener('click', () => window.dispatchEvent(new CustomEvent('open-book', { detail: last.id })));
@@ -85,27 +89,27 @@ export function renderShelf() {
     card.style.animationDelay = (i * 60) + 'ms';
     card.innerHTML = `
       <div class="book-cover">
-        ${b.cover ? `<img src="${b.cover}" alt="">` : `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`}
+        ${b.cover ? `<img src="${b.cover}" alt="">` : BOOK_ICON}
         <span class="book-prog" style="width:${pct}%"></span>
         ${pct > 0 ? `<span class="book-pct-badge">${faNum(pct)}٪</span>` : ''}
       </div>
       <div class="book-title">${esc(b.title)}</div>
       <div class="book-meta">
-        <span>${b.numPages ? `${faNum(b.lastPage || 1)} از ${faNum(b.numPages)} صفحه` : 'خوانده نشده'}</span>
+        <span>${b.numPages ? `${faNum(b.lastPage || 1)} از ${faNum(b.numPages)} ص` : 'خوانده نشده'}</span>
         ${t.minutes ? `<span>· ${faNum(t.minutes)} دقیقه</span>` : ''}
-        ${t.highlights ? `<span>· ${faNum(t.highlights)} هایلایت</span>` : ''}
+        ${t.notes ? `<span>· ${faNum(t.notes)} یادداشت</span>` : ''}
       </div>
       <div class="book-actions">
-        <button class="b-go" data-act="open">${(b.lastPage || 1) > 1 ? 'ادامه مطالعه' : 'شروع مطالعه'}</button>
+        <button class="b-go" data-act="open">${(b.lastPage || 1) > 1 ? 'ادامه' : 'شروع'}</button>
         <button class="b-ghost" data-act="goal">هدف</button>
-        <button class="b-del" data-act="del" aria-label="حذف">🗑</button>
+        <button class="b-del" data-act="del" aria-label="حذف">${TRASH}</button>
       </div>`;
     card.addEventListener('click', e => {
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'open') window.dispatchEvent(new CustomEvent('open-book', { detail: b.id }));
       if (act === 'goal') openGoal(b.id);
       if (act === 'del') {
-        if (confirm(`«${b.title}» با همهٔ هایلایت‌هاش حذف بشه؟`)) {
+        if (confirm(`«${b.title}» با همهٔ یادداشت‌هاش حذف بشه؟`)) {
           delBookBlob(b.id);
           books = books.filter(x => x.id !== b.id);
           saveMeta(); renderShelf();

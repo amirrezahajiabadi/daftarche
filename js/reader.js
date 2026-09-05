@@ -1,20 +1,19 @@
 /* ═══ مطالعهٔ PDF ═══
-   نمایش خود PDF با ویوئر داخلی مرورگر انجام می‌شه (iframe روی blob فایل)، نه با رندر دستی —
-   چون رندر دستی (canvas + pdf.js) روی بعضی فایل‌ها متن رو بهم می‌ریخت، حتی بعد از امتحان چند فیکس.
-   ویوئر مرورگر همون موتوریه که خود مرورگر برای باز کردن PDF استفاده می‌کنه، پس همیشه درست نمایش می‌ده.
-   pdf.js فقط برای یه کار سبک و کاملاً بی‌خطر نگه داشته شده: شمردن تعداد صفحه‌ها (بدون رندر متن/فونت).
-   نتیجه: هایلایت‌کردن مستقیم روی متن PDF دیگه ممکن نیست (چون ویوئر مرورگر یه جعبهٔ بسته‌ست)،
-   ولی یادداشت per-page جایگزینش شده. */
+نمایش خود PDF با ویوئر داخلی مرورگر انجام می‌شه (iframe روی blob فایل)، نه با رندر دستی —
+چون رندر دستی (canvas + pdf.js) روی بعضی فایل‌ها متن فارسی رو بهم می‌ریخت.
+ویوئر مرورگر همون موتوریِ که خود مرورگر برای باز کردن PDF استفاده می‌کنه، پس همیشه درست نمایش می‌ده.
+pdf.js فقط برای شمردن تعداد صفحه‌ها نگه داشته شده (بدون رندر متن/فونت).
+نتیجه: هایلایت مستقیم روی متن PDF دیگه ممکن نیست (ویوئر مرورگر جعبهٔ بسته‌ست)،
+ولی یادداشت per-page جایگزینش شده و هایلایت‌های قدیمی هم در پنل یادداشت‌ها حفظ می‌شن. */
 import { $, faNum, faDigits, dayKey } from './utils.js';
 import { getBook, updateBook, getBookBlob, renderShelf } from './library.js';
 import { recordDay } from './week.js';
-
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-/* نسخهٔ pdf.js — فقط برای getDocument (متادیتا/تعداد صفحه)، هیچ رندری باهاش انجام نمی‌شه */
 import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs';
+
 const PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/build/pdf.worker.min.mjs`;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let curBook = null, curPage = 1, zoom = 1;
 let pdfObjectUrl = null;
@@ -39,7 +38,7 @@ export function initReader() {
     if (e.key === 'ArrowLeft') gotoPage(curPage - 1);
   });
 
-  // بستن reader وقتی از قفسه می‌ریم بیرون
+  // بستن reader وقتی از کتابخانه می‌ریم بیرون
   $('#bottomNav').addEventListener('click', e => {
     const tab = e.target.closest('.nav-tab');
     if (tab && tab.dataset.page !== 'library' && !$('#readerView').hidden) closeReader();
@@ -82,16 +81,14 @@ async function openReader(id) {
   $('#readerTitle').textContent = curBook.title;
   const thumb = $('#readerThumb');
   if (curBook.cover) { thumb.src = curBook.cover; thumb.hidden = false; } else thumb.hidden = true;
-
   $('#readerLoading').hidden = false;
+
   const blob = await getBookBlob(id);
   if (!blob) { alert('فایل کتاب پیدا نشد!'); closeReader(); return; }
-
   if (pdfObjectUrl) URL.revokeObjectURL(pdfObjectUrl);
   pdfObjectUrl = URL.createObjectURL(blob);
 
-  // فقط برای گرفتن تعداد صفحه‌ها؛ اگه به هر دلیلی (مثلاً قطعی اینترنت/CDN) شکست بخوره،
-  // بازم می‌شه بدون شمارهٔ کل صفحه‌ها کتاب رو باز کرد و ورق زد.
+  // فقط برای گرفتن تعداد صفحه‌ها؛ اگه شکست بخوره باز می‌شه کتاب رو باز کرد
   if (!curBook.numPages) {
     try {
       const data = await blob.arrayBuffer();
@@ -103,7 +100,6 @@ async function openReader(id) {
       console.warn('گرفتن تعداد صفحه‌ها ممکن نشد:', e);
     }
   }
-
   $('#pageRange').max = curBook.numPages || 999999;
   curPage = Math.min(curBook.lastPage || 1, curBook.numPages || curBook.lastPage || 1);
   applyMode();
@@ -121,11 +117,10 @@ function closeReader() {
   renderShelf();
 }
 
-/* ── نمایش صفحه با ویوئر داخلی مرورگر ──
-   فراگمنت‌های #page= و #zoom= استاندارد PDF Open Parameters هستن و توسط ویوئرهای
-   داخلی کروم/فایرفاکس/اج پشتیبانی می‌شن. */
+/* ── نمایش با ویوئر داخلی مرورگر (#page= و #zoom= استاندارد PDF Open Parameters) ── */
 function renderFrame() {
   const frame = $('#pdfFrame');
+  if (!pdfObjectUrl) return;
   const z = Math.round(zoom * 100);
   frame.src = `${pdfObjectUrl}#page=${curPage}&zoom=${z}`;
   updatePageUI();
@@ -201,7 +196,7 @@ function stopTimerSession() {
   updateGoalBar();
 }
 
-/* ── یادداشت (per-page، بدون اتکا به انتخاب متن داخل PDF) ── */
+/* ── یادداشت per-page ── */
 function openNoteForCurrentPage() {
   $('#noteForText').textContent = `یادداشت صفحهٔ ${faNum(curPage)}`;
   $('#noteInput').value = '';
@@ -209,9 +204,7 @@ function openNoteForCurrentPage() {
   setTimeout(() => $('#noteInput').focus(), 200);
 }
 
-/* ── پنل یادداشت‌ها ──
-   هایلایت‌های قدیمی (از نسخهٔ قبلی اپ که مبتنی بر انتخاب متن بود) هم اینجا نشون داده می‌شن
-   تا کسی که قبلاً هایلایت ثبت کرده، دیتاش رو از دست نده — فقط دیگه نمی‌شه هایلایت جدید ساخت. */
+/* ── پنل یادداشت‌ها (یادداشت‌های جدید + هایلایت‌های قدیمی) ── */
 function allNoteItems() {
   const legacy = (curBook.highlights || []).map(h => ({
     id: h.id, page: h.page, text: h.text, note: h.note, color: h.color, source: 'highlights',
