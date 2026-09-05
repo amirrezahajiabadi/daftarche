@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <title>دَفتَرچه — لیست کارهای خودمون</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,7 @@
 
 <canvas id="confetti"></canvas>
 
+<!-- پنجرهٔ اسم -->
 <div class="overlay" id="nameOverlay" hidden>
   <div class="name-card" id="nameCard">
     <span class="badge">
@@ -37,6 +38,7 @@
   </div>
 </div>
 
+<!-- پنجرهٔ رولت -->
 <div class="overlay" id="rollOverlay" hidden>
   <div class="roll-card">
     <p class="roll-title">کار بعدیت چیه؟</p>
@@ -49,167 +51,268 @@
   </div>
 </div>
 
-<div class="overlay" id="focusOverlay" hidden>
-  <div class="focus-card">
-    <p class="focus-task" id="focusTaskName"></p>
-    <div class="focus-ring" id="focusRing" style="--fp:0">
-      <div class="focus-inner">
-        <div>
-          <div class="focus-time" id="focusTime"></div>
-          <div class="focus-state" id="focusState">آمادهٔ شروع؟</div>
-        </div>
+<!-- ═══════════════════════════════════════════
+     صفحهٔ ۱: کارها
+     ═══════════════════════════════════════════ -->
+<div class="page active" id="page-tasks">
+  <main class="app">
+    <header>
+      <div>
+        <h1>دَفتَرچه
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">لیست کارهای خودم و رفقا — <span id="dateLine"></span></p>
       </div>
-    </div>
-    <div class="focus-presets" id="focusPresets">
-      <button type="button" data-min="15">۱۵ دقیقه</button>
-      <button type="button" data-min="25">۲۵ دقیقه</button>
-      <button type="button" data-min="45">۴۵ دقیقه</button>
-      <button type="button" data-min="60">۶۰ دقیقه</button>
-      <input id="customMin" type="number" min="1" max="180" placeholder="سفارشی"/>
-    </div>
-    <div class="roll-actions">
-      <button class="go" id="focusStart">شروع</button>
-      <button class="ghost" id="focusReset">از اول</button>
-    </div>
-    <button class="skip" id="focusClose">بستن (تایمر ادامه می‌ده)</button>
-  </div>
-</div>
+      <button class="theme-btn" id="themeBtn" aria-label="تغییر تم">
+        <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </header>
 
-<button class="focus-pill" id="focusPill" hidden>
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 13V9"/><path d="M12 5V3M9 3h6"/></svg>
-  <span id="pillTime"></span>
-</button>
-
-<main class="app">
-  <header>
-    <div>
-      <h1>دَفتَرچه
-        <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-      </h1>
-      <p class="subtitle">کار های خودت رو به سبک دفترچه مدیریت کن!— <span id="dateLine"></span></p>
-    </div>
-    <button class="theme-btn" id="themeBtn" aria-label="تغییر تم">
-      <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
-      <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-    </button>
-  </header>
-
-  <div class="progress-card">
-    <div class="ring-wrap" id="ringWrap" style="--pct: 0">
-      <div class="ring-inner">
-        <div class="ring-text">
-          <span id="percentVal">۰</span><small>٪</small>
-        </div>
+    <form class="add-form" id="addForm" autocomplete="off">
+      <div class="add-line">
+        <input id="taskInput" type="text" maxlength="120" placeholder="یه کار جدید بنویس…"/>
+        <button class="add-btn" type="submit" aria-label="افزودن">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
       </div>
-    </div>
-    <div class="progress-info">
-      <strong><span id="greetText"></span><button id="editName" title="تغییر اسم" aria-label="تغییر اسم"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button></strong>
-      <span id="stats">در حال محاسبه...</span>
-    </div>
-  </div>
+      <div class="pri-row" id="priRow">
+        <span>اولویت:</span>
+        <button type="button" data-p="low"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20v-7"/><path d="M12 13c0-3.4 2.4-5.6 6.4-5.6 0 3.4-2.4 5.6-6.4 5.6z"/><path d="M12 13c0-3.4-2.4-5.6-6.4-5.6 0 3.4 2.4 5.6 6.4 5.6z"/></svg>کم</button>
+        <button type="button" data-p="mid" class="sel"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 5 13.5h5.5L9 22l8-11.5h-5.5L13 2z"/></svg>متوسط</button>
+        <button type="button" data-p="high"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3c1 2.4-.2 3.9-1.4 5.3C9.4 9.7 8 11.2 8 13.4a4.2 4.2 0 0 0 8.4 0c0-2.2-1.4-3.7-2.6-5.1C12.6 7 11.4 5.4 12 3z"/></svg>زیاد</button>
+      </div>
+      <div class="cat-row" id="catRow">
+        <span>دسته:</span>
+        <div class="cat-scroll"></div>
+      </div>
+      <div class="due-row" id="dueRow">
+        <span>مهلت:</span>
+        <button type="button" data-due="none" class="sel">ندارد</button>
+        <button type="button" data-due="0">امروز</button>
+        <button type="button" data-due="1">فردا</button>
+        <button type="button" data-due="7">هفتهٔ بعد</button>
+      </div>
+    </form>
 
-  <div class="week-card">
-    <div class="week-head">
-      <strong>هفتهٔ من</strong>
-      <span class="streak" id="streakChip" title="روزهای پیاپی که حداقل یک کار تمام شده">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/></svg>
-        <span id="streakVal"></span>
-      </span>
-    </div>
-    <div class="chart" id="chart"></div>
-    <div class="mood-row">
-      <span class="mood-label" id="moodLabel">حال امروزت چطوره؟</span>
-      <div class="moods" id="moods"></div>
-    </div>
-  </div>
-
-  <form class="add-form" id="addForm" autocomplete="off">
-    <div class="add-line">
-      <input id="taskInput" type="text" maxlength="120" placeholder="یه کار جدید بنویس…"/>
-      <button class="add-btn" type="submit" aria-label="افزودن">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="جستجو بین کارها…"/>
+      <button class="dice" id="diceBtn" title="کار بعدی چیه؟" aria-label="انتخاب شانسی کار بعدی">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/></svg>
       </button>
     </div>
-    <div class="pri-row" id="priRow">
-      <span>اولویت:</span>
-      <button type="button" data-p="low"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20v-7"/><path d="M12 13c0-3.4 2.4-5.6 6.4-5.6 0 3.4-2.4 5.6-6.4 5.6z"/><path d="M12 13c0-3.4-2.4-5.6-6.4-5.6 0 3.4 2.4 5.6 6.4 5.6z"/></svg>کم</button>
-      <button type="button" data-p="mid" class="sel"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 5 13.5h5.5L9 22l8-11.5h-5.5L13 2z"/></svg>متوسط</button>
-      <button type="button" data-p="high"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3c1 2.4-.2 3.9-1.4 5.3C9.4 9.7 8 11.2 8 13.4a4.2 4.2 0 0 0 8.4 0c0-2.2-1.4-3.7-2.6-5.1C12.6 7 11.4 5.4 12 3z"/></svg>زیاد</button>
+
+    <div class="cats" id="cats"></div>
+
+    <div class="filters" id="filters">
+      <div class="filter-pill" id="pill"></div>
+      <button class="active" data-filter="all">همه</button>
+      <button data-filter="active">در حال انجام</button>
+      <button data-filter="done">انجام شده</button>
     </div>
-    <div class="cat-row" id="catRow">
-      <span>دسته:</span>
-      <div class="cat-scroll"></div>
+
+    <div class="frog" id="frog" hidden>
+      <span class="frog-ico">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="7" cy="6.5" r="2.8"/><circle cx="17" cy="6.5" r="2.8"/>
+          <circle cx="7" cy="6.5" r=".7" fill="currentColor" stroke="none"/><circle cx="17" cy="6.5" r=".7" fill="currentColor" stroke="none"/>
+          <path d="M4 12c0 4.5 3.6 7.2 8 7.2s8-2.7 8-7.2"/>
+          <path d="M9.5 14.5c.8.8 1.6 1.2 2.5 1.2s1.7-.4 2.5-1.2"/>
+        </svg>
+      </span>
+      <div class="frog-txt">
+        <strong>قورباغهٔ امروز — اول این رو قورت بده</strong>
+        <span id="frogName"></span>
+      </div>
+      <button class="frog-go" id="frogGo">بریم</button>
     </div>
-    <div class="due-row" id="dueRow">
-      <span>مهلت:</span>
-      <button type="button" data-due="none" class="sel">ندارد</button>
-      <button type="button" data-due="0">امروز</button>
-      <button type="button" data-due="1">فردا</button>
-      <button type="button" data-due="7">هفتهٔ بعد</button>
+
+    <ul class="tasks" id="taskList"></ul>
+
+    <div class="empty" id="empty" hidden>
+      <span class="art" id="artEmpty">
+        <svg width="104" height="104" viewBox="0 0 110 110" fill="none">
+          <rect class="fill-soft stroke-a" x="26" y="18" width="60" height="78" rx="10" stroke-width="2.5"/>
+          <path class="stroke-a" d="M42 18v78" stroke-width="2" opacity=".3"/>
+          <path class="stroke-a" d="M52 42h24M52 54h20M52 66h14" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+          <circle class="fill-a spark" cx="94" cy="30" r="3"/>
+          <circle class="fill-d spark s2" cx="16" cy="72" r="2.5"/>
+        </svg>
+      </span>
+      <span class="art" id="artDone" hidden>
+        <svg width="104" height="100" viewBox="0 0 110 104" fill="none">
+          <path class="stroke-a" d="M34 96V14" stroke-width="3" stroke-linecap="round"/>
+          <path class="fill-soft stroke-a" stroke-width="2.5" stroke-linejoin="round" d="M34 16c9-5 18 3 28-1 7-3 12-1 16 1v24c-4-2-9-4-16-1-10 4-19-4-28 1z"/>
+          <circle class="fill-a spark" cx="88" cy="62" r="3"/>
+          <circle class="fill-d spark s2" cx="20" cy="44" r="2.5"/>
+        </svg>
+      </span>
+      <p id="emptyMsg"></p>
     </div>
-  </form>
 
-  <div class="search">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="searchInput" placeholder="جستجو بین کارها…"/>
-    <button class="dice" id="diceBtn" title="کار بعدی چیه؟" aria-label="انتخاب شانسی کار بعدی">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/></svg>
-    </button>
-  </div>
-
-  <div class="cats" id="cats"></div>
-
-  <div class="filters" id="filters">
-    <div class="filter-pill" id="pill"></div>
-    <button class="active" data-filter="all">همه</button>
-    <button data-filter="active">در حال انجام</button>
-    <button data-filter="done">انجام شده</button>
-  </div>
-
-  <div class="frog" id="frog" hidden>
-    <span class="frog-ico">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="7" cy="6.5" r="2.8"/><circle cx="17" cy="6.5" r="2.8"/>
-        <circle cx="7" cy="6.5" r=".7" fill="currentColor" stroke="none"/><circle cx="17" cy="6.5" r=".7" fill="currentColor" stroke="none"/>
-        <path d="M4 12c0 4.5 3.6 7.2 8 7.2s8-2.7 8-7.2"/>
-        <path d="M9.5 14.5c.8.8 1.6 1.2 2.5 1.2s1.7-.4 2.5-1.2"/>
-      </svg>
-    </span>
-    <div class="frog-txt">
-      <strong>قورباغهٔ امروز — اول این رو قورت بده</strong>
-      <span id="frogName"></span>
+    <div class="list-footer">
+      <span id="counter"></span>
+      <button class="clear-btn" id="clearBtn">پاک‌کردن انجام‌شده‌ها</button>
     </div>
-    <button class="frog-go" id="frogGo">بریم</button>
-  </div>
+  </main>
+</div>
 
-  <ul class="tasks" id="taskList"></ul>
+<!-- ═══════════════════════════════════════════
+     صفحهٔ ۲: آمار
+     ═══════════════════════════════════════════ -->
+<div class="page" id="page-stats">
+  <main class="app">
+    <header>
+      <div>
+        <h1>آمار من
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">نگاهی به عملکردت</p>
+      </div>
+    </header>
 
-  <div class="empty" id="empty" hidden>
-    <span class="art" id="artEmpty">
-      <svg width="104" height="104" viewBox="0 0 110 110" fill="none">
-        <rect class="fill-soft stroke-a" x="26" y="18" width="60" height="78" rx="10" stroke-width="2.5"/>
-        <path class="stroke-a" d="M42 18v78" stroke-width="2" opacity=".3"/>
-        <path class="stroke-a" d="M52 42h24M52 54h20M52 66h14" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
-        <circle class="fill-a spark" cx="94" cy="30" r="3"/>
-        <circle class="fill-d spark s2" cx="16" cy="72" r="2.5"/>
-      </svg>
-    </span>
-    <span class="art" id="artDone" hidden>
-      <svg width="104" height="100" viewBox="0 0 110 104" fill="none">
-        <path class="stroke-a" d="M34 96V14" stroke-width="3" stroke-linecap="round"/>
-        <path class="fill-soft stroke-a" stroke-width="2.5" stroke-linejoin="round" d="M34 16c9-5 18 3 28-1 7-3 12-1 16 1v24c-4-2-9-4-16-1-10 4-19-4-28 1z"/>
-        <circle class="fill-a spark" cx="88" cy="62" r="3"/>
-        <circle class="fill-d spark s2" cx="20" cy="44" r="2.5"/>
-      </svg>
-    </span>
-    <p id="emptyMsg"></p>
-  </div>
+    <div class="progress-card">
+      <div class="ring-wrap" id="ringWrap" style="--pct: 0">
+        <div class="ring-inner">
+          <div class="ring-text">
+            <span id="percentVal">۰</span><small>٪</small>
+          </div>
+        </div>
+      </div>
+      <div class="progress-info">
+        <strong><span id="greetText"></span><button id="editName" title="تغییر اسم" aria-label="تغییر اسم"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button></strong>
+        <span id="stats">در حال محاسبه...</span>
+      </div>
+    </div>
 
-  <div class="list-footer">
-    <span id="counter"></span>
-    <button class="clear-btn" id="clearBtn">پاک‌کردن انجام‌شده‌ها</button>
-  </div>
-</main>
+    <div class="week-card">
+      <div class="week-head">
+        <strong>هفتهٔ من</strong>
+        <span class="streak" id="streakChip" title="روزهای پیاپی که حداقل یک کار تمام شده">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/></svg>
+          <span id="streakVal"></span>
+        </span>
+      </div>
+      <div class="chart" id="chart"></div>
+      <div class="mood-row">
+        <span class="mood-label" id="moodLabel">حال امروزت چطوره؟</span>
+        <div class="moods" id="moods"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     صفحهٔ ۳: تمرکز
+     ═══════════════════════════════════════════ -->
+<div class="page" id="page-focus">
+  <main class="app app-focus">
+    <header>
+      <div>
+        <h1>تمرکز
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">روی یه کار تمرکز کن</p>
+      </div>
+    </header>
+
+    <div class="focus-page-card">
+      <p class="focus-task" id="focusTaskName">یه کار از لیست انتخاب کن</p>
+      <div class="focus-ring" id="focusRing" style="--fp:0">
+        <div class="focus-inner">
+          <div>
+            <div class="focus-time" id="focusTime">۲۵:۰۰</div>
+            <div class="focus-state" id="focusState">آمادهٔ شروع؟</div>
+          </div>
+        </div>
+      </div>
+      <div class="focus-presets" id="focusPresets">
+        <button type="button" data-min="15">۱۵ دقیقه</button>
+        <button type="button" data-min="25" class="sel">۲۵ دقیقه</button>
+        <button type="button" data-min="45">۴۵ دقیقه</button>
+        <button type="button" data-min="60">۶۰ دقیقه</button>
+        <input id="customMin" type="number" min="1" max="180" placeholder="سفارشی"/>
+      </div>
+      <div class="focus-page-actions">
+        <button class="go" id="focusStart">شروع</button>
+        <button class="ghost" id="focusReset">از اول</button>
+      </div>
+      <div class="focus-task-picker">
+        <span>کار مورد نظر:</span>
+        <select id="focusTaskSelect"></select>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     صفحهٔ ۴: تنظیمات
+     ═══════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <main class="app">
+    <header>
+      <div>
+        <h1>تنظیمات
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">شخصی‌سازی دَفتَرچه</p>
+      </div>
+    </header>
+
+    <div class="settings-card">
+      <div class="settings-row">
+        <span class="settings-label">اسم</span>
+        <div class="settings-value">
+          <span id="settingsName">—</span>
+          <button class="settings-btn" id="settingsEditName">تغییر</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">تم</span>
+        <div class="settings-value">
+          <span id="settingsTheme">روشن</span>
+          <button class="settings-btn" id="settingsToggleTheme">تغییر</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">زمان پیش‌فرض تمرکز</span>
+        <div class="settings-value">
+          <span id="settingsPomo">۲۵ دقیقه</span>
+        </div>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="settings-row danger">
+        <span class="settings-label">پاک‌کردن همهٔ داده‌ها</span>
+        <button class="settings-btn danger" id="settingsClearAll">پاک کن</button>
+      </div>
+      <div class="settings-divider"></div>
+      <p class="settings-about">دَفتَرچه — ساخته‌شده با 🧡 برای خودمون و رفقا</p>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     نوار ناوبری پایین
+     ═══════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-tab active" data-page="tasks">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <span>کارها</span>
+  </button>
+  <button class="nav-tab" data-page="stats">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+    <span>آمار</span>
+  </button>
+  <button class="nav-tab" data-page="focus">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span>تمرکز</span>
+  </button>
+  <button class="nav-tab" data-page="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span>تنظیمات</span>
+  </button>
+</nav>
 
 <script type="module" src="js/app.js"></script>
 </body>
