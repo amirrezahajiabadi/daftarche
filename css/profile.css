@@ -1,0 +1,46 @@
+/* ═══ پروفایل ═══ */
+.header-avatar{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow-sm);cursor:pointer;overflow:hidden;padding:5px;transition:transform .3s}
+.header-avatar:hover{transform:translateY(-2px) rotate(-6deg)}
+.header-avatar svg,.header-avatar img{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block}
+
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px 18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.avatar-big{width:104px;height:104px;border-radius:50%;border:2.5px dashed var(--accent);background:var(--bg);cursor:pointer;overflow:hidden;position:relative;transition:transform .3s;padding:0}
+.avatar-big:hover{transform:scale(1.06) rotate(-2deg)}
+.avatar-big svg,.avatar-big img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-big::after{content:'✎';position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--accent);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:12px;border:2px solid var(--surface)}
+.profile-name-row{display:flex;align-items:center;gap:10px}
+.profile-name-row strong{font-family:var(--font-fun);font-size:22px;font-weight:400}
+.profile-sub{color:var(--muted);font-size:11.5px}
+
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-chip{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow-sm);transition:transform .3s}
+.stat-chip:hover{transform:translateY(-2px)}
+.stat-chip b{font-family:var(--font-fun);font-size:20px;font-weight:400;color:var(--accent)}
+.stat-chip span{font-size:11px;color:var(--muted)}
+
+/* نشان‌ها */
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge{position:relative;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;transition:all .3s}
+.badge svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.badge b{font-size:11px;font-weight:700}
+.badge span{font-size:9.5px;color:var(--muted);line-height:1.5}
+.badge.locked{opacity:.4;filter:grayscale(1)}
+.badge.locked::after{content:'🔒';position:absolute;top:6px;inset-inline-end:6px;font-size:10px}
+.badge.unlocked{border-color:var(--accent);background:var(--accent-soft);animation:pop .4s}
+
+/* انتخاب آواتار */
+.avatar-card{max-width:400px}
+.avatar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.avatar-opt{border:2.5px solid transparent;background:var(--bg);border-radius:16px;padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .25s}
+.avatar-opt svg{width:56px;height:56px}
+.avatar-opt span{font-size:10.5px;color:var(--muted)}
+.avatar-opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.avatar-opt:hover{transform:translateY(-3px)}
+
+@media (max-width:400px){
+  .avatar-big{width:92px;height:92px}
+  .profile-name-row strong{font-size:19px}
+  .badges{gap:8px}
+  .badge b{font-size:10px}
+  .avatar-opt svg{width:48px;height:48px}
+}

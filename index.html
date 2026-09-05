@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <title>دَفتَرچه — لیست کارهای خودمون</title>
+<!-- فاوآیکون (رفع خطای 404) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>%F0%9F%93%93</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-<!-- همهٔ فایل‌های pdf.js (لایبرری اصلی + worker + cMap + فونت‌ها) باید از یک منبع و یک نسخه باشن،
-     وگرنه ممکنه resolve شدن گلیف‌ها بهم بریزه. نسخه اینجا باید با PDFJS_VERSION توی js/reader.js یکی باشه. -->
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
-/* لایهٔ متن PDF — حیاتی، همیشه حاضر حتی بدون فایل CSS */
 .textLayer{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;user-select:text;-webkit-user-select:text;z-index:2}
 .textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
 .textLayer ::selection{background:rgba(244,112,58,.45);color:transparent}
@@ -22,6 +21,7 @@
 <link rel="stylesheet" href="css/tasks.css">
 <link rel="stylesheet" href="css/overlays.css">
 <link rel="stylesheet" href="css/library.css">
+<link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
 
@@ -69,10 +69,13 @@
         </h1>
         <p class="subtitle">لیست کارهای خودم و رفقا — <span id="dateLine"></span></p>
       </div>
-      <button class="theme-btn" id="themeBtn" aria-label="تغییر تم">
-        <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
-        <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="header-avatar" id="headerAvatar" aria-label="پروفایل"></button>
+        <button class="theme-btn" id="themeBtn" aria-label="تغییر تم">
+          <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+          <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
     </header>
 
     <form class="add-form" id="addForm" autocomplete="off">
@@ -90,7 +93,7 @@
       </div>
       <div class="cat-row" id="catRow">
         <span>دسته:</span>
-        <div class="cat-scroll"></div>
+        <div class="cat-scroll" id="catScroll"></div>
       </div>
       <div class="due-row" id="dueRow">
         <span>مهلت:</span>
@@ -170,7 +173,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۲: آمار ═══ -->
+<!-- ═══ صفحه ۲: آمار ═══ -->
 <div class="page" id="page-stats">
   <main class="app">
     <header>
@@ -191,7 +194,7 @@
         </div>
       </div>
       <div class="progress-info">
-        <strong><span id="greetText"></span><button id="editName" title="تغییر اسم" aria-label="تغییر اسم"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button></strong>
+        <strong><span id="greetText"></span></strong>
         <span id="stats">در حال محاسبه...</span>
       </div>
     </div>
@@ -213,7 +216,112 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۳: تمرکز ═══ -->
+<!-- ═══ صفحهٔ ۳: کتابخانه ═══ -->
+<div class="page" id="page-library">
+  <main class="app">
+    <header>
+      <div>
+        <h1>کتابخانه
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">بخون، هایلایت کن، برس به هدفت</p>
+      </div>
+      <button class="import-btn" id="importBtn">+ افزودن کتاب</button>
+      <input type="file" id="bookFile" accept="application/pdf" hidden>
+    </header>
+
+    <div id="shelfView">
+      <div id="lastReadSlot"></div>
+      <div class="shelf-grid" id="shelfGrid"></div>
+      <div class="empty" id="shelfEmpty" hidden>
+        <span class="art">
+          <svg width="104" height="104" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M9 7h7M9 11h5"/></svg>
+        </span>
+        <p>هنوز کتابی نداری؛ یه PDF اضافه کن و شروع کن!</p>
+      </div>
+    </div>
+
+    <div id="readerView" hidden>
+      <div class="reader-top">
+        <button class="r-back" id="readerBack">→ قفسه</button>
+        <img class="reader-thumb" id="readerThumb" alt="" hidden>
+        <div class="reader-titles">
+          <div class="reader-title" id="readerTitle"></div>
+          <div class="reader-sub" id="readerPct"></div>
+        </div>
+        <button class="r-icon" id="readerMode" title="حالت مطالعه">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="r-icon" id="readerNotes" aria-label="یادداشت‌ها">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+      </div>
+      <div class="goal-bar" id="goalBar"></div>
+      <div class="reader-stage mode-light" id="readerStage">
+        <div class="reader-loading" id="readerLoading" hidden><div class="spinner"></div></div>
+        <div class="page-wrap" id="pageWrap">
+          <canvas id="pdfCanvas"></canvas>
+          <div class="hl-layer" id="hlLayer"></div>
+          <div class="textLayer" id="textLayer"></div>
+        </div>
+      </div>
+      <div class="reader-bar">
+        <button class="r-nav" id="prevPage">‹</button>
+        <div class="page-ind">
+          <input type="range" id="pageRange" min="1" value="1">
+          <span id="pageLabel"></span>
+        </div>
+        <button class="r-nav" id="nextPage">›</button>
+        <span class="bar-sep"></span>
+        <button class="r-icon" id="zoomOut">−</button>
+        <button class="r-icon" id="zoomIn">+</button>
+        <span class="bar-sep"></span>
+        <button class="rtimer" id="readTimerBtn">▶</button>
+      </div>
+    </div>
+
+    <div class="hl-toolbar" id="hlToolbar" hidden>
+      <button data-c="#ffd97d" style="--hc:#ffd97d"></button>
+      <button data-c="#a8c66c" style="--hc:#a8c66c"></button>
+      <button data-c="#f6a5c0" style="--hc:#f6a5c0"></button>
+      <button data-c="#9ecbff" style="--hc:#9ecbff"></button>
+      <button class="hl-note" id="hlNoteBtn">📝</button>
+    </div>
+
+    <div class="overlay" id="noteOverlay" hidden>
+      <div class="name-card">
+        <h2>یادداشت</h2>
+        <p id="noteForText" style="font-size:12px"></p>
+        <textarea id="noteInput" rows="4" placeholder="چی به ذهنت رسید؟"></textarea>
+        <button class="go" id="noteSave">ذخیره</button>
+        <button class="skip" id="noteClose">بی‌خیال</button>
+      </div>
+    </div>
+
+    <div class="sheet" id="notesSheet" hidden>
+      <div class="sheet-head">
+        <strong>هایلایت‌ها و یادداشت‌ها</strong>
+        <div>
+          <button class="b-ghost" id="notesExport">خروجی Markdown</button>
+          <button class="r-icon" id="notesClose">✕</button>
+        </div>
+      </div>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <div class="overlay" id="goalOverlay" hidden>
+      <div class="name-card">
+        <h2>هدف روزانه</h2>
+        <p>روزی چند صفحه می‌خونی؟</p>
+        <input id="goalPages" type="number" min="1" max="500" placeholder="مثلاً ۱۰">
+        <button class="go" id="goalSave">ثبت هدف</button>
+        <button class="skip" id="goalClose">بی‌خیال</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ صفحهٔ ۴: تمرکز ═══ -->
 <div class="page" id="page-focus">
   <div class="scenes" aria-hidden="true">
     <div class="scene scene-rain"><div class="rain-drops" id="rainDrops"></div></div>
@@ -303,158 +411,67 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۴: تنظیمات ═══ -->
-<div class="page" id="page-settings">
+<!-- ═══ صفحهٔ ۵: پروفایل ═══ -->
+<div class="page" id="page-profile">
   <main class="app">
     <header>
       <div>
-        <h1>تنظیمات
+        <h1>پروفایل
           <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
         </h1>
-        <p class="subtitle">شخصی‌سازی دَفتَرچه</p>
+        <p class="subtitle">شناسنامهٔ دفترچه‌ات</p>
       </div>
     </header>
 
-    <div class="settings-card">
-      <div class="settings-row">
-        <span class="settings-label">اسم</span>
-        <div class="settings-value">
-          <span id="settingsName">—</span>
-          <button class="settings-btn" id="settingsEditName">تغییر</button>
-        </div>
+    <div class="profile-card">
+      <button class="avatar-big" id="avatarBig" aria-label="تغییر آواتار"></button>
+      <div class="profile-name-row">
+        <strong id="profileName">—</strong>
+        <button class="settings-btn" id="profileEditName">تغییر اسم</button>
       </div>
+      <p class="profile-sub" id="profileSub"></p>
+    </div>
+
+    <div class="stats-row" id="profileStats"></div>
+
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>نشان‌ها</strong></div>
+      <div class="badges" id="badges"></div>
+    </div>
+
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>تنظیمات</strong></div>
       <div class="settings-row">
         <span class="settings-label">تم</span>
         <div class="settings-value">
-          <span id="settingsTheme">روشن</span>
-          <button class="settings-btn" id="settingsToggleTheme">تغییر</button>
+          <span id="profTheme">روشن</span>
+          <button class="settings-btn" id="profThemeBtn">تغییر</button>
         </div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">زمان پیش‌فرض تمرکز</span>
-        <div class="settings-value">
-          <span id="settingsPomo">۲۵ دقیقه</span>
-        </div>
+        <span class="settings-label">پیش‌فرض تمرکز</span>
+        <div class="settings-value"><span id="profPomo"></span></div>
       </div>
       <div class="settings-divider"></div>
       <div class="settings-row danger">
         <span class="settings-label">پاک‌کردن همهٔ داده‌ها</span>
-        <button class="settings-btn danger" id="settingsClearAll">پاک کن</button>
+        <button class="settings-btn danger" id="profClear">پاک کن</button>
       </div>
-      <div class="settings-divider"></div>
-      <p class="settings-about">دَفتَرچه — ساخته‌شده با 🧡 برای خودمون و رفقا</p>
     </div>
+    <p class="settings-about">دَفتَرچه — ساخته‌شده با 🧡 برای خودمون و رفقا</p>
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۵: کتابخانه ═══ -->
-<div class="page" id="page-library">
-  <main class="app">
-    <header>
-      <div>
-        <h1>کتابخانه
-          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-        </h1>
-        <p class="subtitle">بخون، هایلایت کن، برس به هدفت</p>
-      </div>
-      <button class="import-btn" id="importBtn">+ افزودن کتاب</button>
-      <input type="file" id="bookFile" accept="application/pdf" hidden>
-    </header>
-
-    <div id="shelfView">
-      <div id="lastReadSlot"></div>
-      <div class="shelf-grid" id="shelfGrid"></div>
-      <div class="empty" id="shelfEmpty" hidden>
-        <span class="art">
-          <svg width="104" height="104" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M9 7h7M9 11h5"/></svg>
-        </span>
-        <p>هنوز کتابی نداری؛ یه PDF اضافه کن و شروع کن!</p>
-      </div>
-    </div>
-
-    <!-- نمای مطالعه (تمام‌صفحه) -->
-    <div id="readerView" hidden>
-      <div class="reader-top">
-        <button class="r-back" id="readerBack">→ قفسه</button>
-        <img class="reader-thumb" id="readerThumb" alt="" hidden>
-        <div class="reader-titles">
-          <div class="reader-title" id="readerTitle"></div>
-          <div class="reader-sub" id="readerPct"></div>
-        </div>
-        <button class="r-icon" id="readerMode" title="حالت مطالعه">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-        </button>
-        <button class="r-icon" id="readerNotes" aria-label="یادداشت‌ها">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
-        </button>
-      </div>
-      <div class="goal-bar" id="goalBar"></div>
-      <div class="reader-stage mode-light" id="readerStage">
-        <div class="reader-loading" id="readerLoading" hidden><div class="spinner"></div></div>
-        <div class="page-wrap" id="pageWrap">
-          <canvas id="pdfCanvas"></canvas>
-          <div class="hl-layer" id="hlLayer"></div>
-          <div class="textLayer" id="textLayer"></div>
-        </div>
-      </div>
-      <div class="reader-bar">
-        <button class="r-nav" id="prevPage">‹</button>
-        <div class="page-ind">
-          <input type="range" id="pageRange" min="1" value="1">
-          <span id="pageLabel"></span>
-        </div>
-        <button class="r-nav" id="nextPage">›</button>
-        <span class="bar-sep"></span>
-        <button class="r-icon" id="zoomOut">−</button>
-        <button class="r-icon" id="zoomIn">+</button>
-        <span class="bar-sep"></span>
-        <button class="rtimer" id="readTimerBtn">▶</button>
-      </div>
-    </div>
-
-    <!-- تولبار هایلایت -->
-    <div class="hl-toolbar" id="hlToolbar" hidden>
-      <button data-c="#ffd97d" style="--hc:#ffd97d"></button>
-      <button data-c="#a8c66c" style="--hc:#a8c66c"></button>
-      <button data-c="#f6a5c0" style="--hc:#f6a5c0"></button>
-      <button data-c="#9ecbff" style="--hc:#9ecbff"></button>
-      <button class="hl-note" id="hlNoteBtn">📝</button>
-    </div>
-
-    <!-- یادداشت روی هایلایت -->
-    <div class="overlay" id="noteOverlay" hidden>
-      <div class="name-card">
-        <h2>یادداشت</h2>
-        <p id="noteForText" style="font-size:12px"></p>
-        <textarea id="noteInput" rows="4" placeholder="چی به ذهنت رسید؟"></textarea>
-        <button class="go" id="noteSave">ذخیره</button>
-        <button class="skip" id="noteClose">بی‌خیال</button>
-      </div>
-    </div>
-
-    <!-- پنل یادداشت‌ها -->
-    <div class="sheet" id="notesSheet" hidden>
-      <div class="sheet-head">
-        <strong>هایلایت‌ها و یادداشت‌ها</strong>
-        <div>
-          <button class="b-ghost" id="notesExport">خروجی Markdown</button>
-          <button class="r-icon" id="notesClose">✕</button>
-        </div>
-      </div>
-      <div class="notes-list" id="notesList"></div>
-    </div>
-
-    <!-- هدف مطالعه -->
-    <div class="overlay" id="goalOverlay" hidden>
-      <div class="name-card">
-        <h2>هدف روزانه</h2>
-        <p>روزی چند صفحه می‌خونی؟</p>
-        <input id="goalPages" type="number" min="1" max="500" placeholder="مثلاً ۱۰">
-        <button class="go" id="goalSave">ثبت هدف</button>
-        <button class="skip" id="goalClose">بی‌خیال</button>
-      </div>
-    </div>
-  </main>
+<!-- ═══ انتخاب آواتار ═══ -->
+<div class="overlay" id="avatarOverlay" hidden>
+  <div class="name-card avatar-card">
+    <h2>آواتارت رو انتخاب کن</h2>
+    <p>کارکترهای اختصاصی دَفتَرچه</p>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <label class="add-music" for="avatarFile" style="margin:0 auto">📷 آپلود عکس شخصی</label>
+    <input type="file" id="avatarFile" accept="image/*" hidden>
+    <button class="skip" id="avatarClose">بستن</button>
+  </div>
 </div>
 
 <!-- ═══ نوار ناوبری پایین ═══ -->
@@ -475,13 +492,12 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     <span>تمرکز</span>
   </button>
-  <button class="nav-tab" data-page="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    <span>تنظیمات</span>
+  <button class="nav-tab" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>پروفایل</span>
   </button>
 </nav>
 
-<!-- توست بازگردانی -->
 <div class="toast" id="undoToast" hidden>
   <span class="toast-text">حذف شد</span>
   <button class="toast-btn" id="undoBtn">پشیمون شدم!</button>
