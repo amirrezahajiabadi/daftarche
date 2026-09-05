@@ -9,6 +9,7 @@
   --shadow-sm:0 4px 14px -6px rgba(122,80,35,.18);
   --radius:20px;
   --nav-height:64px;
+  --glass-hover:rgba(255,255,255,.35);
   --font-body:'Lalezar','Vazirmatn',system-ui,sans-serif;
   --font-fun:'Lalezar','Vazirmatn',system-ui,sans-serif;
 }
@@ -18,6 +19,7 @@ html[data-theme="dark"]{
   --tape:rgba(255,190,110,.22); --border:rgba(255,220,180,.09);
   --shadow-lg:0 24px 50px -24px rgba(0,0,0,.7);
   --shadow-sm:0 4px 14px -6px rgba(0,0,0,.5);
+  --glass-hover:rgba(255,255,255,.06);
 }
 
 html{scroll-behavior:smooth}
@@ -53,52 +55,71 @@ h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw 1s 
 html[data-theme="dark"] .theme-btn .sun{transform:none;opacity:1}
 html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg);opacity:0}
 
-/* ═══ داک شیشه‌ای شناور (ناوبری) ═══ */
+/* ═══ داک شیشه‌ای شناور — افکت شیشهٔ نرم در هر دو تم ═══ */
 .bottom-nav{
   position:fixed;
-  bottom:calc(8px + env(safe-area-inset-bottom,0));
+  bottom:calc(10px + env(safe-area-inset-bottom,0));
   left:50%;transform:translateX(-50%);
   z-index:98;
   display:flex;align-items:stretch;gap:2px;
-  padding:6px;border-radius:24px;
-  background:color-mix(in srgb,var(--surface) 62%,transparent);
-  backdrop-filter:blur(18px) saturate(1.5);
-  -webkit-backdrop-filter:blur(18px) saturate(1.5);
-  border:1px solid color-mix(in srgb,var(--text) 10%,transparent);
-  box-shadow:0 12px 32px -12px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  padding:6px;border-radius:26px;
+  /* شیشهٔ روشن: گرادیان شفاف کرمی با بلور عمیق */
+  background:linear-gradient(135deg, rgba(255,252,245,.62), rgba(255,252,245,.38));
+  backdrop-filter:blur(24px) saturate(1.7);
+  -webkit-backdrop-filter:blur(24px) saturate(1.7);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:
+    0 18px 44px -18px rgba(122,80,35,.32),
+    0 4px 18px -8px rgba(122,80,35,.16),
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -1px 0 rgba(255,255,255,.28);
   max-width:calc(100vw - 20px);
+  transition:background .5s,border-color .5s,box-shadow .5s;
 }
+/* شیشهٔ تاریک: دودیِ گرم با برق ملایم بالا */
 html[data-theme="dark"] .bottom-nav{
-  background:color-mix(in srgb,var(--surface) 70%,transparent);
-  box-shadow:0 12px 32px -12px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.07);
+  background:linear-gradient(135deg, rgba(34,29,23,.66), rgba(34,29,23,.44));
+  border-color:rgba(255,220,180,.14);
+  box-shadow:
+    0 18px 44px -18px rgba(0,0,0,.72),
+    0 4px 18px -8px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.1),
+    inset 0 -1px 0 rgba(255,255,255,.04);
 }
 
-/* کپسول کشویی تب فعال */
+/* کپسول کشویی تب فعال — شیشهٔ رنگی نرم */
 .nav-glider{
   position:absolute;top:6px;bottom:6px;left:0;
-  border-radius:18px;
-  background:var(--accent-soft);
-  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  border-radius:20px;
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--accent) 24%,transparent),
+    color-mix(in srgb,var(--accent) 12%,transparent));
+  border:1px solid color-mix(in srgb,var(--accent) 32%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
   transition:transform .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1);
   pointer-events:none;
+}
+html[data-theme="dark"] .nav-glider{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .nav-tab{
   position:relative;z-index:1;flex:0 0 auto;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   min-width:50px;padding:7px 9px;
-  border:none;background:transparent;border-radius:18px;
+  border:none;background:transparent;border-radius:20px;
   color:var(--muted);
   font-family:var(--font-fun);font-size:9.5px;font-weight:400;
-  cursor:pointer;transition:color .25s;
+  cursor:pointer;transition:color .25s,background .25s;
   -webkit-tap-highlight-color:transparent;
 }
+.nav-tab:hover{background:var(--glass-hover)}
 .nav-tab svg{width:19px;height:19px;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
 .nav-tab:active{transform:scale(.9)}
 .nav-tab.active{color:var(--accent)}
 .nav-tab.active svg{transform:translateY(-1px) scale(1.1)}
 
-/* ═══ صفحهٔ تمرکز ═══ */
+/* ═══ صفحه تمرکز ═══ */
 .app-focus{align-items:center;padding-top:12px}
 .focus-page-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;align-items:center;gap:18px}
 .focus-page-card .focus-task{font-size:14px;color:var(--muted);font-weight:400;line-height:1.8}
@@ -142,10 +163,10 @@ html[data-theme="dark"] .bottom-nav{
   .page{padding:24px 12px calc(var(--nav-height) + 16px)}
   .subtitle{font-size:11.5px}
   .theme-btn{width:40px;height:40px;border-radius:12px}
-  .bottom-nav{gap:1px;padding:5px;border-radius:20px}
-  .nav-tab{min-width:44px;padding:6px 7px;font-size:9px}
+  .bottom-nav{gap:1px;padding:5px;border-radius:22px}
+  .nav-tab{min-width:44px;padding:6px 7px;font-size:9px;border-radius:17px}
   .nav-tab svg{width:18px;height:18px}
-  .nav-glider{top:5px;bottom:5px;border-radius:15px}
+  .nav-glider{top:5px;bottom:5px;border-radius:17px}
   .focus-page-card{padding:22px 16px;gap:14px}
   .focus-page-actions .go{font-size:14px;padding:11px}
   .focus-page-actions .ghost{font-size:13px;padding:11px}
