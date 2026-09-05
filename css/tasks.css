@@ -8,6 +8,8 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .frog-txt span{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .frog-go{border:none;background:var(--green);color:#fff;font-family:var(--font-fun);font-size:13px;font-weight:400;padding:8px 14px;border-radius:99px;cursor:pointer;box-shadow:0 3px 0 0 rgba(90,130,75,.5);transition:transform .18s;flex-shrink:0}
 .frog-go:active{transform:translateY(2px);box-shadow:none}
+.frog-close{border:none;background:transparent;color:var(--green);opacity:.5;width:26px;height:26px;border-radius:8px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .25s}
+.frog-close:hover{opacity:1;background:rgba(127,176,105,.2);transform:scale(1.15) rotate(90deg)}
 
 .tasks{list-style:none}
 .task{position:relative;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow-sm);transition:transform .3s,box-shadow .3s,opacity .3s,background .5s;animation:taskIn .5s cubic-bezier(.22,1,.36,1) backwards}
@@ -15,6 +17,14 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .task:hover{transform:translateY(-2px) rotate(-.4deg);box-shadow:var(--shadow-lg)}
 .task::after{display:none}
 @keyframes taskIn{from{opacity:0;transform:translateY(16px) scale(.96)}}
+
+/* هالهٔ نور تسک جدید */
+.task.just-added{animation:taskGlow 1.4s ease}
+@keyframes taskGlow{
+  0%{box-shadow:0 0 0 0 rgba(244,112,58,0),var(--shadow-sm)}
+  20%{box-shadow:0 0 0 5px rgba(244,112,58,.35),0 8px 24px -6px rgba(244,112,58,.4)}
+  100%{box-shadow:0 0 0 0 rgba(244,112,58,0),var(--shadow-sm)}
+}
 
 .task::before{content:'';position:absolute;inset-inline-start:-1px;top:22%;bottom:22%;width:4px;border-radius:99px;background:var(--pr);transition:top .3s,bottom .3s}
 .task:hover::before{top:12%;bottom:12%}
@@ -98,11 +108,26 @@ html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
 
 .app:has(.focus-pill:not([hidden])) .list-footer{padding-bottom:60px}
 
-/* ═══ ریسپانسیو: تسک‌ها دولایه در موبایل ═══ */
+/* ═══ دکمهٔ پاک کردن جستجو ═══ */
+.search-clear{border:none;background:var(--accent-soft);color:var(--accent);width:26px;height:26px;border-radius:50%;cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .25s}
+.search-clear:hover{background:var(--accent);color:#fff;transform:rotate(90deg) scale(1.1)}
+.search-clear:active{transform:scale(.9)}
+.search-clear[hidden]{display:none}
+
+/* ═══ توست بازگردانی ═══ */
+.toast{position:fixed;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 16px);left:50%;transform:translateX(-50%) translateY(20px);z-index:99;display:flex;align-items:center;gap:12px;background:var(--text);color:var(--bg);font-family:var(--font-fun);font-size:13px;font-weight:400;padding:11px 11px 11px 18px;border-radius:14px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s cubic-bezier(.34,1.56,.64,1);overflow:hidden;max-width:calc(100vw - 24px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast-text{white-space:nowrap}
+.toast-btn{border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-size:12px;font-weight:400;padding:7px 14px;border-radius:99px;cursor:pointer;transition:transform .2s;white-space:nowrap}
+.toast-btn:hover{transform:scale(1.05)}
+.toast-btn:active{transform:scale(.95)}
+.toast-bar{position:absolute;bottom:0;left:0;height:3px;background:var(--accent);width:100%;transform-origin:left;animation:toastCountdown 5s linear forwards}
+@keyframes toastCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ═══ ریسپانسیو ═══ */
 @media (max-width:480px){
   .task{flex-wrap:wrap;row-gap:8px;column-gap:10px;padding:12px 14px;margin-bottom:8px;border-radius:16px}
   .grip{display:none}
-  /* جداکنندهٔ نامرئی برای شکستن خط */
   .task::after{content:'';display:block;order:4;flex-basis:100%;height:0}
   .check{order:0;width:24px;height:24px}
   .title{order:1;font-size:13.5px}
@@ -122,6 +147,8 @@ html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
   .empty .art svg{width:84px}
   .list-footer{font-size:12px}
   .clear-btn{font-size:12px}
+  .toast{font-size:12px;padding:9px 9px 9px 14px;gap:10px}
+  .toast-btn{font-size:11px;padding:6px 12px}
 }
 @media (max-width:360px){
   .task{column-gap:8px;padding:11px 12px}
