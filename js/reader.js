@@ -100,15 +100,28 @@ async function openReader(id) {
   if (!blob) { alert('فایل کتاب پیدا نشد!'); closeReader(); return; }
   const data = await blob.arrayBuffer();
 
-  /* ── رفع بهم‌ریختگی متن فارسی: cMap + فونت‌های استاندارد ── */
+  /* ── تنظیمات فونت/CMap برای متن فارسی/عربی ──
+     نکته: «useSystemFonts» فقط توی Node.js اثر داره و توی مرورگر بی‌اثره، برای همین حذفش کردیم.
+     «disableFontFace: false» یعنی مرورگر خودش (نه pdf.js با path دستی) گلیف‌ها رو رسم می‌کنه —
+     برای فونت‌های embedded معمولاً دقیق‌تره. «fontExtraProperties» هم برای فونت‌هایی که
+     متریک/عرض حروفشون ناقصه کمک می‌کنه. اگه مشکل «فاصله‌افتادن حروف» ادامه داشت، احتمالاً به
+     نحوهٔ embed شدن فونت فارسی توی همون PDF خاص برمی‌گرده و باید خود فایل رو بررسی کرد. */
   P().GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/build/pdf.worker.min.js`;
-  pdf = await P().getDocument({
-    data,
-    cMapUrl: `${PDFJS_BASE}/cmaps/`,
-    cMapPacked: true,
-    standardFontDataUrl: `${PDFJS_BASE}/standard_fonts/`,
-    useSystemFonts: true,
-  }).promise;
+  try {
+    pdf = await P().getDocument({
+      data,
+      cMapUrl: `${PDFJS_BASE}/cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `${PDFJS_BASE}/standard_fonts/`,
+      disableFontFace: false,
+      fontExtraProperties: true,
+    }).promise;
+  } catch (e) {
+    console.error('PDF load failed:', e);
+    alert('بارگذاری فایل PDF با خطا مواجه شد. اتصال اینترنتت رو چک کن (فونت‌ها و worker از CDN لود می‌شن).');
+    closeReader();
+    return;
+  }
 
   if (!curBook.numPages) {
     updateBook(id, { numPages: pdf.numPages });

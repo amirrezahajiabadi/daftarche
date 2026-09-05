@@ -8,7 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- همهٔ فایل‌های pdf.js (لایبرری اصلی + worker + cMap + فونت‌ها) باید از یک منبع و یک نسخه باشن،
+     وگرنه ممکنه resolve شدن گلیف‌ها بهم بریزه. نسخه اینجا باید با PDFJS_VERSION توی js/reader.js یکی باشه. -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <style>
 /* لایهٔ متن PDF — حیاتی، همیشه حاضر حتی بدون فایل CSS */
 .textLayer{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;user-select:text;-webkit-user-select:text;z-index:2}
