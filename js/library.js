@@ -148,7 +148,7 @@ export function initLibrary() {
     await putBook({ id, blob: f });
     books.unshift({
       id, title: f.name.replace(/\.pdf$/i, ''), addedAt: Date.now(),
-      numPages: 0, lastPage: 1, cover: '', goal: null, stats: {}, highlights: []
+      numPages: 0, lastPage: 1, cover: '', goal: null, stats: {}, highlights: [], notes: []
     });
     saveMeta(); renderShelf();
     e.target.value = '';

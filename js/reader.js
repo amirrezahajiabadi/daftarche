@@ -1,29 +1,35 @@
-/* ═══ مطالعهٔ PDF: رندر شارپ، هایلایت، یادداشت، تایمر، هدف، حالت مطالعه ═══ */
+/* ═══ مطالعهٔ PDF ═══
+   نمایش خود PDF با ویوئر داخلی مرورگر انجام می‌شه (iframe روی blob فایل)، نه با رندر دستی —
+   چون رندر دستی (canvas + pdf.js) روی بعضی فایل‌ها متن رو بهم می‌ریخت، حتی بعد از امتحان چند فیکس.
+   ویوئر مرورگر همون موتوریه که خود مرورگر برای باز کردن PDF استفاده می‌کنه، پس همیشه درست نمایش می‌ده.
+   pdf.js فقط برای یه کار سبک و کاملاً بی‌خطر نگه داشته شده: شمردن تعداد صفحه‌ها (بدون رندر متن/فونت).
+   نتیجه: هایلایت‌کردن مستقیم روی متن PDF دیگه ممکن نیست (چون ویوئر مرورگر یه جعبهٔ بسته‌ست)،
+   ولی یادداشت per-page جایگزینش شده. */
 import { $, faNum, faDigits, dayKey } from './utils.js';
 import { getBook, updateBook, getBookBlob, renderShelf } from './library.js';
 import { recordDay } from './week.js';
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-/* نسخهٔ pdf.js — همهٔ منابع از یک نسخه باشن */
-const PDFJS_VERSION = '3.11.174';
-const PDFJS_BASE = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}`;
+/* نسخهٔ pdf.js — فقط برای getDocument (متادیتا/تعداد صفحه)، هیچ رندری باهاش انجام نمی‌شه */
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs';
+const PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/build/pdf.worker.min.mjs`;
 
-let pdf = null, curBook = null, curPage = 1, zoom = 1, renderTask = null;
-let pending = null, noteFor = null, mode = 0;
+let curBook = null, curPage = 1, zoom = 1;
+let pdfObjectUrl = null;
+let mode = 0;
 const MODES = ['mode-light', 'mode-sepia', 'mode-dark'];
 let timer = { running: false, start: 0, interval: null };
-
-const P = () => window.pdfjsLib;
 
 export function initReader() {
   window.addEventListener('open-book', e => openReader(e.detail));
   $('#readerBack').onclick = closeReader;
   $('#prevPage').onclick = () => gotoPage(curPage - 1);
   $('#nextPage').onclick = () => gotoPage(curPage + 1);
-  $('#zoomIn').onclick = () => { zoom = Math.min(3, zoom * 1.2); renderPage(); };
-  $('#zoomOut').onclick = () => { zoom = Math.max(.6, zoom / 1.2); renderPage(); };
-  $('#pageRange').addEventListener('input', e => gotoPage(parseInt(e.target.value)));
+  $('#zoomIn').onclick = () => { zoom = Math.min(3, +(zoom * 1.2).toFixed(2)); renderFrame(); };
+  $('#zoomOut').onclick = () => { zoom = Math.max(.5, +(zoom / 1.2).toFixed(2)); renderFrame(); };
+  $('#pageRange').addEventListener('change', e => gotoPage(parseInt(e.target.value)));
   $('#readerMode').onclick = () => { mode = (mode + 1) % 3; applyMode(); };
 
   document.addEventListener('keydown', e => {
@@ -33,40 +39,21 @@ export function initReader() {
     if (e.key === 'ArrowLeft') gotoPage(curPage - 1);
   });
 
-  // رندر مجدد موقع تغییر سایز صفحه
-  let rzT;
-  window.addEventListener('resize', () => {
-    if ($('#readerView').hidden) return;
-    clearTimeout(rzT);
-    rzT = setTimeout(() => renderPage(), 250);
-  });
-
-  // بستن reader وقتی از کتابخانه می‌ریم بیرون
+  // بستن reader وقتی از قفسه می‌ریم بیرون
   $('#bottomNav').addEventListener('click', e => {
     const tab = e.target.closest('.nav-tab');
     if (tab && tab.dataset.page !== 'library' && !$('#readerView').hidden) closeReader();
   });
 
-  /* هایلایت */
-  const tl = $('#textLayer');
-  tl.addEventListener('mouseup', onSelection);
-  tl.addEventListener('touchend', onSelection);
-  $('#hlToolbar').addEventListener('click', e => {
-    const b = e.target.closest('button[data-c]');
-    if (b && pending) addHighlight(b.dataset.c);
-  });
-  $('#hlNoteBtn').onclick = () => {
-    if (pending) addHighlight('#ffd97d', true);
-    else if ((curBook.highlights || []).length) openNoteFor(curBook.highlights[curBook.highlights.length - 1].id);
-  };
-  document.addEventListener('mousedown', e => {
-    if (!e.target.closest('#hlToolbar') && !e.target.closest('.textLayer')) hideToolbar();
-  });
-
-  /* یادداشت */
+  /* یادداشت صفحه */
+  $('#addNoteBtn').onclick = openNoteForCurrentPage;
   $('#noteSave').onclick = () => {
-    const h = (curBook.highlights || []).find(x => x.id === noteFor);
-    if (h) { h.note = $('#noteInput').value.trim(); updateBook(curBook.id, { highlights: curBook.highlights }); }
+    const text = $('#noteInput').value.trim();
+    if (text) {
+      curBook.notes = curBook.notes || [];
+      curBook.notes.push({ id: Date.now() + '', page: curPage, text, createdAt: Date.now() });
+      updateBook(curBook.id, { notes: curBook.notes });
+    }
     $('#noteOverlay').hidden = true;
   };
   $('#noteClose').onclick = () => { $('#noteOverlay').hidden = true; };
@@ -96,43 +83,34 @@ async function openReader(id) {
   const thumb = $('#readerThumb');
   if (curBook.cover) { thumb.src = curBook.cover; thumb.hidden = false; } else thumb.hidden = true;
 
+  $('#readerLoading').hidden = false;
   const blob = await getBookBlob(id);
   if (!blob) { alert('فایل کتاب پیدا نشد!'); closeReader(); return; }
-  const data = await blob.arrayBuffer();
 
-  /* ── تنظیمات فونت/CMap برای متن فارسی/عربی ──
-     نکته: «useSystemFonts» فقط توی Node.js اثر داره و توی مرورگر بی‌اثره، برای همین حذفش کردیم.
-     «disableFontFace: false» یعنی مرورگر خودش (نه pdf.js با path دستی) گلیف‌ها رو رسم می‌کنه —
-     برای فونت‌های embedded معمولاً دقیق‌تره. «fontExtraProperties» هم برای فونت‌هایی که
-     متریک/عرض حروفشون ناقصه کمک می‌کنه. اگه مشکل «فاصله‌افتادن حروف» ادامه داشت، احتمالاً به
-     نحوهٔ embed شدن فونت فارسی توی همون PDF خاص برمی‌گرده و باید خود فایل رو بررسی کرد. */
-  P().GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/build/pdf.worker.min.js`;
-  try {
-    pdf = await P().getDocument({
-      data,
-      cMapUrl: `${PDFJS_BASE}/cmaps/`,
-      cMapPacked: true,
-      standardFontDataUrl: `${PDFJS_BASE}/standard_fonts/`,
-      disableFontFace: false,
-      fontExtraProperties: true,
-    }).promise;
-  } catch (e) {
-    console.error('PDF load failed:', e);
-    alert('بارگذاری فایل PDF با خطا مواجه شد. اتصال اینترنتت رو چک کن (فونت‌ها و worker از CDN لود می‌شن).');
-    closeReader();
-    return;
-  }
+  if (pdfObjectUrl) URL.revokeObjectURL(pdfObjectUrl);
+  pdfObjectUrl = URL.createObjectURL(blob);
 
+  // فقط برای گرفتن تعداد صفحه‌ها؛ اگه به هر دلیلی (مثلاً قطعی اینترنت/CDN) شکست بخوره،
+  // بازم می‌شه بدون شمارهٔ کل صفحه‌ها کتاب رو باز کرد و ورق زد.
   if (!curBook.numPages) {
-    updateBook(id, { numPages: pdf.numPages });
-    curBook.numPages = pdf.numPages;
+    try {
+      const data = await blob.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({ data }).promise;
+      updateBook(id, { numPages: doc.numPages });
+      curBook.numPages = doc.numPages;
+      doc.destroy();
+    } catch (e) {
+      console.warn('گرفتن تعداد صفحه‌ها ممکن نشد:', e);
+    }
   }
-  $('#pageRange').max = pdf.numPages;
-  curPage = Math.min(curBook.lastPage || 1, pdf.numPages);
+
+  $('#pageRange').max = curBook.numPages || 999999;
+  curPage = Math.min(curBook.lastPage || 1, curBook.numPages || curBook.lastPage || 1);
   applyMode();
-  renderPage();
+  zoom = 1;
+  renderFrame();
   updateGoalBar();
-  if (!curBook.cover) makeCover();
+  $('#readerLoading').hidden = true;
 }
 
 function closeReader() {
@@ -140,80 +118,35 @@ function closeReader() {
   $('#readerView').hidden = true;
   $('#shelfView').hidden = false;
   $('#notesSheet').hidden = true;
-  hideToolbar();
   renderShelf();
 }
 
-/* ── رندر صفحه (شارپ + مدیریت لغو) ── */
-async function renderPage() {
-  if (!pdf) return;
-  $('#readerLoading').hidden = false;
-  try {
-    const page = await pdf.getPage(curPage);
-    const stage = $('#readerStage');
-    const wrapW = Math.max(200, stage.clientWidth - 28);
-    const base = wrapW / page.getViewport({ scale: 1 }).width;
-    const viewport = page.getViewport({ scale: base * zoom });
-    const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-
-    const canvas = $('#pdfCanvas');
-    canvas.width = Math.floor(viewport.width * dpr);
-    canvas.height = Math.floor(viewport.height * dpr);
-    canvas.style.width = Math.floor(viewport.width) + 'px';
-    canvas.style.height = Math.floor(viewport.height) + 'px';
-
-    const wrap = $('#pageWrap');
-    wrap.style.width = Math.floor(viewport.width) + 'px';
-    wrap.style.height = Math.floor(viewport.height) + 'px';
-
-    if (renderTask) { try { renderTask.cancel(); } catch (e) {} }
-    renderTask = page.render({
-      canvasContext: canvas.getContext('2d'),
-      viewport,
-      transform: [dpr, 0, 0, dpr, 0, 0]
-    });
-    await renderTask.promise;
-
-    const tl = $('#textLayer');
-    tl.innerHTML = '';
-    const tc = await page.getTextContent();
-    const t = P().renderTextLayer({ textContent: tc, container: tl, viewport });
-    if (t && t.promise) await t.promise;
-
-    drawHighlights();
-    updatePageUI();
-  } catch (e) {
-    if (e?.name !== 'RenderingCancelledException') console.error(e);
-  }
-  $('#readerLoading').hidden = true;
+/* ── نمایش صفحه با ویوئر داخلی مرورگر ──
+   فراگمنت‌های #page= و #zoom= استاندارد PDF Open Parameters هستن و توسط ویوئرهای
+   داخلی کروم/فایرفاکس/اج پشتیبانی می‌شن. */
+function renderFrame() {
+  const frame = $('#pdfFrame');
+  const z = Math.round(zoom * 100);
+  frame.src = `${pdfObjectUrl}#page=${curPage}&zoom=${z}`;
+  updatePageUI();
 }
 
 function updatePageUI() {
-  const total = pdf.numPages;
-  const pct = Math.round((curPage / total) * 100);
-  $('#pageLabel').textContent = `${faNum(curPage)} / ${faNum(total)}`;
+  const total = curBook.numPages;
+  $('#pageLabel').textContent = total ? `${faNum(curPage)} / ${faNum(total)}` : faNum(curPage);
   $('#pageRange').value = curPage;
-  $('#readerPct').textContent = `${faNum(pct)}٪ خونده شده`;
-}
-
-async function makeCover() {
-  try {
-    const p1 = await pdf.getPage(1);
-    const vp = p1.getViewport({ scale: .3 });
-    const c = document.createElement('canvas');
-    c.width = vp.width; c.height = vp.height;
-    await p1.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-    const cover = c.toDataURL('image/jpeg', .55);
-    updateBook(curBook.id, { cover });
-    const thumb = $('#readerThumb');
-    thumb.src = cover; thumb.hidden = false;
-  } catch (e) {}
+  if (total) {
+    const pct = Math.round((curPage / total) * 100);
+    $('#readerPct').textContent = `${faNum(pct)}٪ خونده شده`;
+  } else {
+    $('#readerPct').textContent = '';
+  }
 }
 
 /* ── ناوبری + پیشرفت ── */
 function gotoPage(n) {
-  if (!pdf) return;
-  n = Math.max(1, Math.min(pdf.numPages, n));
+  const total = curBook.numPages || Infinity;
+  n = Math.max(1, Math.min(total, n));
   if (n === curPage) return;
   if (n > (curBook.lastPage || 1)) {
     addToday('pages', n - (curBook.lastPage || 1));
@@ -221,7 +154,7 @@ function gotoPage(n) {
     curBook.lastPage = n;
   }
   curPage = n;
-  renderPage();
+  renderFrame();
   updateGoalBar();
 }
 
@@ -268,99 +201,61 @@ function stopTimerSession() {
   updateGoalBar();
 }
 
-/* ── هایلایت ── */
-function onSelection() {
-  setTimeout(() => {
-    const sel = getSelection();
-    if (!sel || sel.isCollapsed || sel.rangeCount < 1) { hideToolbar(); return; }
-    const text = sel.toString().trim();
-    if (!text) { hideToolbar(); return; }
-    const wrap = $('#pageWrap').getBoundingClientRect();
-    const rects = [...sel.getRangeAt(0).getClientRects()].filter(r => r.width > 2).map(r => ({
-      x: +(((r.left - wrap.left) / wrap.width) * 100).toFixed(2),
-      y: +(((r.top - wrap.top) / wrap.height) * 100).toFixed(2),
-      w: +((r.width / wrap.width) * 100).toFixed(2),
-      h: +((r.height / wrap.height) * 100).toFixed(2),
-    }));
-    if (!rects.length) { hideToolbar(); return; }
-    pending = { text, rects };
-    const tb = $('#hlToolbar');
-    tb.hidden = false;
-    const first = sel.getRangeAt(0).getClientRects()[0];
-    const tbW = 210;
-    tb.style.top = Math.max(8, first.top - 54) + 'px';
-    tb.style.left = Math.min(innerWidth - tbW - 8, Math.max(8, first.left)) + 'px';
-  }, 10);
-}
-function hideToolbar() { $('#hlToolbar').hidden = true; pending = null; }
-
-function addHighlight(color, withNote = false) {
-  if (!pending) return;
-  const h = { id: Date.now() + '', page: curPage, ...pending, color, note: '' };
-  curBook.highlights = curBook.highlights || [];
-  curBook.highlights.push(h);
-  updateBook(curBook.id, { highlights: curBook.highlights });
-  drawHighlights();
-  hideToolbar();
-  getSelection()?.removeAllRanges();
-  if (withNote) openNoteFor(h.id);
-}
-function openNoteFor(id) {
-  noteFor = id;
-  const h = (curBook.highlights || []).find(x => x.id === id);
-  $('#noteForText').textContent = '«' + (h?.text || '').slice(0, 80) + '»';
-  $('#noteInput').value = h?.note || '';
+/* ── یادداشت (per-page، بدون اتکا به انتخاب متن داخل PDF) ── */
+function openNoteForCurrentPage() {
+  $('#noteForText').textContent = `یادداشت صفحهٔ ${faNum(curPage)}`;
+  $('#noteInput').value = '';
   $('#noteOverlay').hidden = false;
   setTimeout(() => $('#noteInput').focus(), 200);
 }
-function drawHighlights() {
-  const layer = $('#hlLayer'); layer.innerHTML = '';
-  (curBook.highlights || []).filter(h => h.page === curPage).forEach(h => {
-    h.rects.forEach(r => {
-      const d = document.createElement('div');
-      d.className = 'hl';
-      d.style.left = r.x + '%'; d.style.top = r.y + '%';
-      d.style.width = r.w + '%'; d.style.height = r.h + '%';
-      d.style.background = h.color;
-      layer.appendChild(d);
-    });
-  });
+
+/* ── پنل یادداشت‌ها ──
+   هایلایت‌های قدیمی (از نسخهٔ قبلی اپ که مبتنی بر انتخاب متن بود) هم اینجا نشون داده می‌شن
+   تا کسی که قبلاً هایلایت ثبت کرده، دیتاش رو از دست نده — فقط دیگه نمی‌شه هایلایت جدید ساخت. */
+function allNoteItems() {
+  const legacy = (curBook.highlights || []).map(h => ({
+    id: h.id, page: h.page, text: h.text, note: h.note, color: h.color, source: 'highlights',
+  }));
+  const fresh = (curBook.notes || []).map(n => ({
+    id: n.id, page: n.page, text: n.text, note: '', color: null, source: 'notes',
+  }));
+  return [...legacy, ...fresh].sort((a, b) => a.page - b.page);
 }
 
-/* ── پنل یادداشت‌ها ── */
 function buildNotes() {
   const list = $('#notesList'); list.innerHTML = '';
-  const hs = [...(curBook.highlights || [])].sort((a, b) => a.page - b.page);
-  if (!hs.length) { list.innerHTML = '<p class="notes-empty">هنوز هایلایتی نداری؛ متن رو انتخاب کن!</p>'; return; }
-  hs.forEach(h => {
-    const it = document.createElement('div');
-    it.className = 'note-item';
-    it.innerHTML = `
-      <i class="dot" style="background:${h.color}"></i>
+  const items = allNoteItems();
+  if (!items.length) { list.innerHTML = '<p class="notes-empty">هنوز یادداشتی نداری؛ موقع خوندن از دکمهٔ 📝 استفاده کن!</p>'; return; }
+  items.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'note-item';
+    el.innerHTML = `
+      ${it.color ? `<i class="dot" style="background:${it.color}"></i>` : ''}
       <div class="note-body">
-        <span class="note-text">${esc(h.text)}</span>
-        ${h.note ? `<span class="note-note">📝 ${esc(h.note)}</span>` : ''}
+        <span class="note-text">${esc(it.text)}</span>
+        ${it.note ? `<span class="note-note">📝 ${esc(it.note)}</span>` : ''}
       </div>
-      <span class="note-page">ص ${faNum(h.page)}</span>
+      <span class="note-page">ص ${faNum(it.page)}</span>
       <button class="note-del" aria-label="حذف">✕</button>`;
-    it.addEventListener('click', e => {
+    el.addEventListener('click', e => {
       if (e.target.closest('.note-del')) {
-        curBook.highlights = curBook.highlights.filter(x => x.id !== h.id);
-        updateBook(curBook.id, { highlights: curBook.highlights });
-        buildNotes(); drawHighlights();
+        if (it.source === 'highlights') curBook.highlights = (curBook.highlights || []).filter(x => x.id !== it.id);
+        else curBook.notes = (curBook.notes || []).filter(x => x.id !== it.id);
+        updateBook(curBook.id, { highlights: curBook.highlights, notes: curBook.notes });
+        buildNotes();
         return;
       }
       $('#notesSheet').hidden = true;
-      gotoPage(h.page);
+      gotoPage(it.page);
     });
-    list.appendChild(it);
+    list.appendChild(el);
   });
 }
 
 function exportNotes() {
-  const hs = curBook.highlights || [];
+  const items = allNoteItems();
   let md = `# ${curBook.title}\n\n`;
-  hs.forEach(h => { md += `- صفحه ${h.page}: «${h.text}»${h.note ? ` — ${h.note}` : ''}\n`; });
+  items.forEach(it => { md += `- صفحه ${it.page}: «${it.text}»${it.note ? ` — ${it.note}` : ''}\n`; });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
   a.download = curBook.title + '.md';

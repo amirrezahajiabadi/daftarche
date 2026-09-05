@@ -17,24 +17,43 @@ const safe = (name, fn) => {
   catch (err) { console.error(`[دَفتَرچه] خطا در راه‌اندازی «${name}»:`, err); }
 };
 
-/* ═══ مدیریت صفحات ═══ */
+/* ═══ ناوبری + گلایدر شیشه‌ای ═══ */
 function initNavigation() {
   const nav = $('#bottomNav');
   if (!nav) return;
+
+  /* کپسول کشویی تب فعال */
+  const glider = document.createElement('span');
+  glider.className = 'nav-glider';
+  nav.prepend(glider);
+
+  const moveGlider = () => {
+    const act = nav.querySelector('.nav-tab.active');
+    if (!act) return;
+    glider.style.width = act.offsetWidth + 'px';
+    glider.style.transform = `translateX(${act.offsetLeft}px)`;
+  };
+
   nav.addEventListener('click', e => {
     const tab = e.target.closest('.nav-tab');
     if (!tab || tab.classList.contains('active')) return;
     const page = tab.dataset.page;
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    nav.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     const pg = $(`#page-${page}`);
     if (pg) pg.classList.add('active');
     window.scrollTo({ top: 0 });
+    moveGlider();
     if (page === 'stats') notify();
     if (page === 'focus') syncFocusPage();
     if (page === 'profile') renderProfile();
   });
+
+  addEventListener('resize', moveGlider);
+  addEventListener('load', moveGlider);
+  if (document.fonts?.ready) document.fonts.ready.then(moveGlider);
+  moveGlider();
 }
 
 /* ═══ تم ═══ */
