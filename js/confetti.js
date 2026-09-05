@@ -30,9 +30,18 @@ export function confetti() {
   })();
 }
 
+/* یک AudioContext مشترک برای همهٔ بیپ‌ها — به‌جای ساختن یکی جدید در هر فراخوانی
+   (که context های بلااستفاده رو تجمیع می‌کرد) */
+let beepCtx = null;
+function getBeepCtx() {
+  if (!beepCtx) beepCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (beepCtx.state === 'suspended') beepCtx.resume();
+  return beepCtx;
+}
+
 export function beep() {
   try {
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const ac = getBeepCtx();
     [523.25, 659.25, 783.99].forEach((f, i) => {
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = 'sine'; o.frequency.value = f;

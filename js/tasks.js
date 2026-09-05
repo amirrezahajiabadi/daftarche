@@ -1,7 +1,7 @@
 import { state, getTask } from './state.js';
 import { saveTasks } from './store.js';
-import { $, faNum, startOfToday, dueKeyFromOffset, dayKey } from './utils.js';
-import { P_CYCLE, P_LABEL, CATS, ICONS } from './constants.js';
+import { $, faNum, startOfToday, dueKeyFromOffset, dayKey, normalizeFa } from './utils.js';
+import { P_CYCLE, P_LABEL, CATS, ICONS, STORAGE_KEYS } from './constants.js';
 import { notify } from './bus.js';
 import { confetti } from './confetti.js';
 import { recordDay } from './week.js';
@@ -14,7 +14,7 @@ export const matches = t => state.filter === 'all' || (state.filter === 'active'
 export const visible = () => state.tasks.filter(t =>
   matches(t) &&
   (state.catFilter === 'all' || (t.cat || 'misc') === state.catFilter) &&
-  (!state.query || t.text.includes(state.query))
+  (!state.query || normalizeFa(t.text).includes(normalizeFa(state.query)))
 );
 
 function animatePriDotChange(dot) {
@@ -103,7 +103,7 @@ function toggleTask(li, task) {
   if (task.done) { task.doneAt = Date.now(); recordDay(); } else delete task.doneAt;
   save(); li.classList.toggle('done', task.done); notify();
   if (task.done && state.tasks.every(t => t.done)) confetti();
-  if (!matches(task)) setTimeout(() => collapse(li, task.id), 650);
+  if (!matches(task)) setTimeout(() => hideFromView(li), 650);
 }
 
 /* ── توست بازگردانی ── */
@@ -145,6 +145,17 @@ function performUndo() {
   commitUndo();
 }
 
+/* انیمیشن مشترک خروج آیتم از لیست (فقط ظاهری، بدون تغییر در state) */
+function animateOut(el, onDone) {
+  el.style.height = el.offsetHeight + 'px'; el.style.overflow = 'hidden'; el.style.transition = 'all .32s ease';
+  requestAnimationFrame(() => {
+    el.classList.add('removing');
+    Object.assign(el.style, { height: '0', paddingTop: '0', paddingBottom: '0', marginBottom: '0', opacity: '0', transform: 'translateX(40px) scale(.94)', borderColor: 'transparent' });
+  });
+  setTimeout(() => { el.remove(); updateEmpty(); onDone && onDone(); }, 330);
+}
+
+/* حذف واقعی تسک (دکمهٔ سطل‌آشغال) — از state پاک می‌شود و توست «پشیمون شدم» نشان داده می‌شود */
 export function collapse(el, id) {
   const task = state.tasks.find(t => t.id === id);
   const index = state.tasks.findIndex(t => t.id === id);
@@ -152,14 +163,16 @@ export function collapse(el, id) {
   state.tasks = state.tasks.filter(t => t.id !== id);
   save();
   if (state.focus && state.focus.taskId === id) clearFocus();
-  el.style.height = el.offsetHeight + 'px'; el.style.overflow = 'hidden'; el.style.transition = 'all .32s ease';
-  requestAnimationFrame(() => {
-    el.classList.add('removing');
-    Object.assign(el.style, { height: '0', paddingTop: '0', paddingBottom: '0', marginBottom: '0', opacity: '0', transform: 'translateX(40px) scale(.94)', borderColor: 'transparent' });
-  });
-  setTimeout(() => { el.remove(); updateEmpty(); }, 330);
+  animateOut(el);
   notify();
   if (task) showUndo(task, index);
+}
+
+/* مخفی‌کردن تسک از نمای فعلی چون دیگر با فیلتر/دسته مطابقت ندارد
+   (مثلاً بعد از تیک‌زدن در فیلتر «فعال» یا تغییر دسته در فیلتر دسته‌ای)
+   بر خلاف collapse، این تابع هیچ داده‌ای را از state.tasks حذف نمی‌کند. */
+export function hideFromView(el) {
+  animateOut(el);
 }
 
 export function flashTask(id) {
@@ -182,15 +195,26 @@ function initFrogDismiss() {
   const frog = $('#frog');
   const closeBtn = $('#frogClose');
   if (!closeBtn) return;
-  // بررسی اینکه آیا امروز بسته شده
-  const dismissed = localStorage.getItem('daftarche-frog-dismissed');
-  if (dismissed === dayKey(new Date())) frog.style.display = 'none';
+
+  const isDismissedToday = () => localStorage.getItem(STORAGE_KEYS.frogDismissed) === dayKey(new Date());
+  const applyDismissState = () => {
+    if (isDismissedToday()) { frog.style.display = 'none'; }
+    else { frog.style.display = ''; frog.style.opacity = ''; frog.style.transform = ''; }
+  };
+
+  applyDismissState(); // چک اولیه موقع لود
+
   closeBtn.addEventListener('click', e => {
     e.stopPropagation();
-    localStorage.setItem('daftarche-frog-dismissed', dayKey(new Date()));
+    localStorage.setItem(STORAGE_KEYS.frogDismissed, dayKey(new Date()));
     frog.style.opacity = '0';
     frog.style.transform = 'translateY(-10px) scale(.95)';
     setTimeout(() => { frog.style.display = 'none'; frog.style.opacity = ''; frog.style.transform = ''; }, 300);
+  });
+
+  // اگر اپ باز بمونه و از نیمه‌شب رد بشه، با برگشتن به تب دوباره چک کن
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') applyDismissState();
   });
 }
 
@@ -218,7 +242,7 @@ export function initTasks() {
       btn.style.setProperty('--cc', nxt.color); btn.textContent = nxt.label;
       btn.title = `دسته: ${nxt.label} — کلیک برای تغییر`;
       animateChipFlip(btn); notify();
-      if (state.catFilter !== 'all' && state.catFilter !== nxt.key) setTimeout(() => collapse(li, task.id), 500);
+      if (state.catFilter !== 'all' && state.catFilter !== nxt.key) setTimeout(() => hideFromView(li), 500);
     }
     else if (e.target.closest('.due-chip')) {
       const btn = e.target.closest('.due-chip');

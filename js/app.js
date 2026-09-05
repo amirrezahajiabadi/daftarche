@@ -1,12 +1,14 @@
 import { state } from './state.js';
 import { $, faNum } from './utils.js';
-import { saveName, loadTheme, saveTheme, loadPomo } from './store.js';
+import { saveName, loadTheme, saveTheme } from './store.js';
 import { notify } from './bus.js';
 import { initTasks, initAddForm, renderList, updateEmpty } from './tasks.js';
 import { initProgress } from './progress.js';
 import { initWeek } from './week.js';
 import { initFocusPage, syncFocusPage } from './focus.js';
 import { initRoll } from './roll.js';
+import { initLibrary } from './library.js';
+import { initReader } from './reader.js';
 
 /* ═══ مدیریت صفحات ═══ */
 function initNavigation() {
@@ -15,15 +17,11 @@ function initNavigation() {
     const tab = e.target.closest('.nav-tab');
     if (!tab || tab.classList.contains('active')) return;
     const page = tab.dataset.page;
-    // deactivate all
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    // activate selected
     tab.classList.add('active');
     $(`#page-${page}`).classList.add('active');
-    // scroll to top
     window.scrollTo({ top: 0 });
-    // refresh stats/focus when switching to them
     if (page === 'stats') notify();
     if (page === 'focus') syncFocusPage();
     if (page === 'settings') syncSettings();
@@ -41,7 +39,6 @@ function initTheme() {
     syncSettings();
   };
   $('#themeBtn').onclick = toggle;
-  // settings page theme toggle
   const stt = $('#settingsToggleTheme');
   if (stt) stt.onclick = toggle;
 }
@@ -141,6 +138,8 @@ initRoll();
 initSearch();
 initKeyboard();
 initSettings();
+initLibrary();
+initReader();
 
 const dl = $('#dateLine');
 if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());

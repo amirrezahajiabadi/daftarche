@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   history: 'daftarche-history',
   moods:   'daftarche-moods',
   pomo:    'daftarche-pomo',
+  frogDismissed: 'daftarche-frog-dismissed',
 };
 
 export const P_CYCLE = { low: 'mid', mid: 'high', high: 'low' };

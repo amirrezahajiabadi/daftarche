@@ -20,3 +20,7 @@ export const dueKeyFromOffset = off => {
   d.setDate(d.getDate() + Number(off));
   return dayKey(d);
 };
+
+/* برای جستجوی درست‌تر: یکسان‌سازی ی/ي و ک/ك عربی-فارسی + کوچک‌کردن حروف لاتین */
+export const normalizeFa = s =>
+  String(s).toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک');
