@@ -27,6 +27,7 @@
 .roll-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:11px;border-radius:13px;cursor:pointer;transition:all .2s}
 .roll-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
 
+/* ═══ حلقهٔ تایمر ═══ */
 .focus-card{padding:26px 24px 20px}
 .focus-task{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px;line-height:1.8}
 .focus-ring{position:relative;width:180px;height:180px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
@@ -40,14 +41,41 @@
 .focus-presets.locked{opacity:.45;pointer-events:none}
 .focus-presets button{font-family:var(--font-fun);font-size:13px;font-weight:400;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s}
 .focus-presets button:hover{transform:translateY(-2px)}
+.focus-presets button:active{transform:scale(.93)}
 .focus-presets button.sel{background:var(--accent);border-color:var(--accent);color:#fff}
 .focus-presets input{width:64px;font-family:inherit;font-size:12px;font-weight:700;text-align:center;border:1.5px dashed var(--border);background:transparent;color:var(--text);border-radius:99px;padding:5px 6px;outline:none;transition:border-color .2s}
 .focus-presets input:focus{border-color:var(--accent)}
 
-.focus-pill{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);z-index:96;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
+/* ═══ قرص شناور تایمر — بالای نوار ناوبری ═══ */
+.focus-pill{position:fixed;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 12px);inset-inline-start:50%;transform:translateX(50%);z-index:99;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
 .focus-pill svg{color:var(--accent)}
 .focus-pill.running::after{content:'';position:absolute;inset:-1.5px;border-radius:99px;border:1.5px solid var(--accent);animation:pillWave 1.8s ease-out infinite}
 @keyframes pillIn{from{opacity:0;transform:translateX(50%) translateY(24px)}}
 @keyframes pillWave{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(1.25)}}
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
+
+/* ═══ ریسپانسیو ═══ */
+@media (max-width:480px){
+  .overlay{padding:14px}
+  .name-card,.roll-card,.focus-card{padding:24px 18px 18px;border-radius:20px;max-width:100%}
+  .name-card h2{font-size:19px}
+  .name-card>p{font-size:12px}
+  .name-card input{font-size:16px;padding:10px 14px}
+  .name-card .go{font-size:15px;padding:11px}
+  .focus-ring{width:150px;height:150px}
+  .focus-inner{width:130px;height:130px}
+  .focus-time{font-size:30px}
+  .focus-presets button{font-size:11px;padding:4px 10px}
+  .focus-presets input{width:56px;font-size:11px}
+  .roll-box{min-height:72px;font-size:14px;padding:14px}
+  .roll-actions .go,.roll-actions .ghost{font-size:12px;padding:10px}
+  .focus-pill{font-size:13px;padding:8px 14px}
+  .focus-pill svg{width:13px;height:13px}
+}
+@media (max-width:360px){
+  .focus-ring{width:136px;height:136px}
+  .focus-inner{width:118px;height:118px}
+  .focus-time{font-size:26px}
+  .roll-actions{flex-direction:column}
+}
