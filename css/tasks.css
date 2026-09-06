@@ -100,7 +100,7 @@ html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
 
 .app:has(.focus-pill:not([hidden])) .list-footer{padding-bottom:60px}
 
-/* ═══ ریسپانسیو تسک‌ها ═══ */
+/* ═══ Responsive: Tasks ═══ */
 @media (max-width:480px){
   .task{flex-wrap:wrap;row-gap:8px;column-gap:10px;padding:12px 14px;margin-bottom:8px;border-radius:16px}
   .grip{display:none}

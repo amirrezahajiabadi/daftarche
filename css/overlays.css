@@ -52,13 +52,13 @@
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 
-/* ═══ تولبار هایلایت ═══ */
+/* ═══ Highlight Toolbar ═══ */
 .hl-toolbar{position:fixed;z-index:96;display:flex;gap:8px;align-items:center;background:var(--text);padding:8px 12px;border-radius:99px;box-shadow:var(--shadow-lg);animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
 .hl-toolbar button{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);background:var(--hc,var(--bg));cursor:pointer;transition:transform .2s}
 .hl-toolbar button:hover{transform:scale(1.25)}
 .hl-toolbar .hl-note{background:transparent;border:none;font-size:15px;width:auto;height:auto}
 
-/* ═══ پنل یادداشت‌ها ═══ */
+/* ═══ Notes Panel ═══ */
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:95;background:var(--surface);border-radius:24px 24px 0 0;box-shadow:var(--shadow-lg);max-height:70vh;display:flex;flex-direction:column;animation:sheetUp .35s cubic-bezier(.22,1,.36,1);padding-bottom:env(safe-area-inset-bottom,0)}
 .sheet[hidden]{display:none}
 @keyframes sheetUp{from{transform:translateY(100%)}}

@@ -1,4 +1,4 @@
-/* ═══ لایهٔ ذخیره‌سازی (فعلاً localStorage — بعداً Supabase جایگزین می‌شود) ═══ */
+/* ═══ Storage Layer (localStorage for now — Supabase will replace it later) ═══ */
 
 import { STORAGE_KEYS } from './constants.js';
 

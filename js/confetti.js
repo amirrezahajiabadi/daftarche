@@ -1,4 +1,4 @@
-/* ═══ جشن کاغذرنگی + صدای زنگ ═══ */
+/* ═══ Confetti + Chime ═══ */
 
 import { $ } from './utils.js';
 
@@ -30,8 +30,8 @@ export function confetti() {
   })();
 }
 
-/* یک AudioContext مشترک برای همهٔ بیپ‌ها — به‌جای ساختن یکی جدید در هر فراخوانی
-   (که context های بلااستفاده رو تجمیع می‌کرد) */
+/* One shared AudioContext for all beeps — instead of creating a new one on every call
+   (which would pile up unused contexts) */
 let beepCtx = null;
 function getBeepCtx() {
   if (!beepCtx) beepCtx = new (window.AudioContext || window.webkitAudioContext)();

@@ -1,4 +1,4 @@
-/* ═══ وضعیت مشترک اپ (سینگلتون) ═══ */
+/* ═══ Shared App State (Singleton) ═══ */
 
 import { loadTasks, loadName, loadHistory, loadMoods, loadPomo } from './store.js';
 import { dayKey, dueKeyFromOffset } from './utils.js';

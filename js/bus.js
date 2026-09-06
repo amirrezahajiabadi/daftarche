@@ -1,6 +1,6 @@
-/* ═══ سیستم رویداد ساده برای هماهنگی ماژول‌ها ═══
-   هر ماژولی که به تغییر داده‌ها وابسته است، subscribe می‌کند
-   و هر ماژولی که داده‌ای را تغییر می‌دهد، notify را صدا می‌زند. */
+/* ═══ Simple Event System for Coordinating Modules ═══
+   Modules that depend on data changes subscribe,
+   and modules that change data call notify. */
 
 const listeners = new Set();
 

@@ -10,44 +10,55 @@ import { initRoll } from './roll.js';
 import { initLibrary } from './library.js';
 import { initReader } from './reader.js';
 import { initProfile, renderProfile } from './profile.js';
+import { initToday } from './today.js';
 
-/* هر بخش جداگانه راه‌اندازی می‌شه؛ خطای یه بخش، بقیهٔ اپ رو نمی‌کشه */
+/* Each section is initialized separately; an error in one section doesn't break the rest of the app */
 const safe = (name, fn) => {
   try { fn(); }
   catch (err) { console.error(`[دَفتَرچه] خطا در راه‌اندازی «${name}»:`, err); }
 };
 
-/* ═══ ناوبری + گلایدر شیشه‌ای ═══ */
+/* ═══ Navigation + Glass Glider ═══
+   Primary tabs: Today, Tasks, Focus, Library.
+   Profile & Stats stay as regular pages: Profile opens from the header avatar,
+   Stats opens from the Profile page. */
 function initNavigation() {
   const nav = $('#bottomNav');
   if (!nav) return;
 
-  /* کپسول کشویی تب فعال */
+  /* Sliding capsule for the active tab */
   const glider = document.createElement('span');
   glider.className = 'nav-glider';
   nav.prepend(glider);
 
   const moveGlider = () => {
     const act = nav.querySelector('.nav-tab.active');
-    if (!act) return;
+    if (!act) { glider.style.opacity = 0; return; }
+    glider.style.opacity = 1;
     glider.style.width = act.offsetWidth + 'px';
     glider.style.transform = `translateX(${act.offsetLeft}px)`;
   };
 
+  const showPage = page => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = $(`#page-${page}`);
+    if (pg) pg.classList.add('active');
+    nav.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === page));
+    window.scrollTo({ top: 0 });
+    moveGlider();
+    if (page === 'today' || page === 'stats') notify();
+    if (page === 'tasks') renderList(); // Keep the imperative list in sync with state
+    if (page === 'focus') syncFocusPage();
+    if (page === 'profile') renderProfile();
+  };
+
+  /* Any module can request a page change (avatar, frog start, stats entry) */
+  window.addEventListener('navigate', e => showPage(String(e.detail || '')));
+
   nav.addEventListener('click', e => {
     const tab = e.target.closest('.nav-tab');
     if (!tab || tab.classList.contains('active')) return;
-    const page = tab.dataset.page;
-    nav.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    const pg = $(`#page-${page}`);
-    if (pg) pg.classList.add('active');
-    window.scrollTo({ top: 0 });
-    moveGlider();
-    if (page === 'stats') notify();
-    if (page === 'focus') syncFocusPage();
-    if (page === 'profile') renderProfile();
+    showPage(tab.dataset.page);
   });
 
   addEventListener('resize', moveGlider);
@@ -56,20 +67,21 @@ function initNavigation() {
   moveGlider();
 }
 
-/* ═══ تم ═══ */
+/* ═══ Theme ═══ */
 function initTheme() {
   const saved = loadTheme() || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
   document.documentElement.dataset.theme = saved;
-  const btn = $('#themeBtn');
-  if (btn) btn.onclick = () => {
-    const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = n;
-    saveTheme(n);
-    renderProfile();
-  };
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.onclick = () => {
+      const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = n;
+      saveTheme(n);
+      renderProfile();
+    };
+  });
 }
 
-/* ═══ اسم ═══ */
+/* ═══ Name ═══ */
 const greetBase = () => {
   const h = new Date().getHours();
   return h < 5 ? 'شب بخیر' : h < 12 ? 'صبح بخیر' : h < 17 ? 'ظهر بخیر' : h < 21 ? 'عصر بخیر' : 'شب بخیر';
@@ -104,6 +116,7 @@ function initName() {
     state.userName = v; saveName(v);
     $('#nameOverlay').hidden = true;
     applyName(); updateEmpty();
+    notify(); // Refresh the Today greeting with the new name
   });
   const skip = $('#skipName');
   if (skip) skip.onclick = () => { $('#nameOverlay').hidden = true; };
@@ -113,7 +126,7 @@ function initName() {
   window.addEventListener('edit-name', () => openNameModal(true));
 }
 
-/* ═══ جستجو ═══ */
+/* ═══ Search ═══ */
 function initSearch() {
   let sT;
   const si = $('#searchInput');
@@ -124,7 +137,7 @@ function initSearch() {
   });
 }
 
-/* ═══ کیبورد ═══ */
+/* ═══ Keyboard ═══ */
 function initKeyboard() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -135,7 +148,7 @@ function initKeyboard() {
   });
 }
 
-/* ═══ راه‌اندازی ═══ */
+/* ═══ Startup ═══ */
 safe('تم', initTheme);
 safe('اسم', initName);
 safe('ناوبری', initNavigation);
@@ -150,6 +163,7 @@ safe('کیبورد', initKeyboard);
 safe('کتابخانه', initLibrary);
 safe('ریدر', initReader);
 safe('پروفایل', initProfile);
+safe('امروز', initToday);
 
 const dl = $('#dateLine');
 if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
@@ -157,10 +171,7 @@ if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day
 safe('نام', applyName);
 safe('رندر اولیه', () => { renderList(); notify(); });
 
-/* اولین بازدید: برو به پروفایل و اسم رو بپرس */
+/* First visit: stay on the Today page and ask for the name */
 if (!state.userName) {
-  safe('اولین بازدید', () => {
-    document.querySelector('[data-page="profile"]')?.click();
-    openNameModal();
-  });
+  safe('اولین بازدید', () => openNameModal());
 }

@@ -1,4 +1,4 @@
-/* ═══ تاسِ شانس: کار بعدی چیه؟ ═══ */
+/* ═══ Lucky Dice: What's the Next Task? ═══ */
 
 import { state } from './state.js';
 import { $ } from './utils.js';

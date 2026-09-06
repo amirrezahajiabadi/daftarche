@@ -1,4 +1,4 @@
-/* ═══ پروفایل: آواتار، آمار، نشان‌ها، تنظیمات ═══ */
+/* ═══ Profile: Avatar, Stats, Badges, Settings ═══ */
 import { $, faNum, dayKey } from './utils.js';
 import { state } from './state.js';
 import { saveTheme } from './store.js';
@@ -7,7 +7,7 @@ import { getBooks } from './library.js';
 const AV_KEY = 'daftarche-avatar';
 const SEEN_KEY = 'daftarche-firstseen';
 
-/* ═══ کارکترهای اختصاصی دَفتَرچه (داخل همین فایل — بدون وابستگی خارجی) ═══ */
+/* ═══ Daftarche's Custom Characters (Defined Here — No External Dependency) ═══ */
 const AVATARS = [
   {
     id: 'ava', name: 'آوا',
@@ -59,7 +59,7 @@ function calcStreak() {
 }
 
 export function renderProfile() {
-  const ha = $('#headerAvatar'); if (ha) ha.innerHTML = avatarMarkup();
+  document.querySelectorAll('.header-avatar').forEach(el => { el.innerHTML = avatarMarkup(); });
   const big = $('#avatarBig'); if (big) big.innerHTML = avatarMarkup();
   const name = $('#profileName'); if (name) name.textContent = state.userName || 'بدون اسم';
 
@@ -70,13 +70,13 @@ export function renderProfile() {
     sub.textContent = 'عضو دفترچه از ' + d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' });
   }
 
-  /* آمار */
+  /* Stats */
   const done = state.tasks.filter(t => t.done).length;
   const streak = calcStreak();
   const books = getBooks();
   let minutes = 0, notesCount = 0;
   books.forEach(b => {
-    // هم هایلایت‌های قدیمی و هم یادداشت‌های جدید per-page رو بشمار
+    // Count both old highlights and new per-page notes
     notesCount += (b.highlights || []).length + (b.notes || []).length;
     Object.values(b.stats || {}).forEach(s => minutes += s.minutes || 0);
   });
@@ -87,7 +87,7 @@ export function renderProfile() {
     <div class="stat-chip"><b>${faNum(minutes)}</b><span>دقیقه مطالعه</span></div>
     <div class="stat-chip"><b>${faNum(notesCount)}</b><span>یادداشت</span></div>`;
 
-  /* نشان‌ها */
+  /* Badges */
   const B = [
     { label: 'اولین تیک', desc: 'یه کار رو تموم کن', ok: done >= 1, icon: '<path d="M20 6L9 17l-5-5"/>' },
     { label: 'ده‌تایی', desc: '۱۰ کار انجام‌شده', ok: done >= 10, icon: '<path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>' },
@@ -101,7 +101,7 @@ export function renderProfile() {
     `<div class="badge ${b.ok ? 'unlocked' : 'locked'}"><svg viewBox="0 0 24 24">${b.icon}</svg><b>${b.label}</b><span>${b.ok ? 'باز شد!' : b.desc}</span></div>`
   ).join('');
 
-  /* تنظیمات */
+  /* Settings */
   const th = $('#profTheme'); if (th) th.textContent = document.documentElement.dataset.theme === 'dark' ? 'تاریک' : 'روشن';
   const pm = $('#profPomo'); if (pm) pm.textContent = faNum(state.pomoMin) + ' دقیقه';
 }
@@ -136,8 +136,11 @@ function onPhoto(f) {
 }
 
 export function initProfile() {
-  const ha = $('#headerAvatar');
-  if (ha) ha.onclick = () => document.querySelector('[data-page="profile"]')?.click();
+  document.querySelectorAll('.header-avatar').forEach(ha => {
+    ha.onclick = () => window.dispatchEvent(new CustomEvent('navigate', { detail: 'profile' }));
+  });
+
+  $('#openStatsBtn')?.addEventListener('click', () => window.dispatchEvent(new CustomEvent('navigate', { detail: 'stats' })));
 
   const big = $('#avatarBig');
   if (big) big.onclick = () => { buildGrid(); const ao = $('#avatarOverlay'); if (ao) ao.hidden = false; };
@@ -164,8 +167,8 @@ export function initProfile() {
   if (cl) cl.onclick = () => {
     if (!confirm('همهٔ داده‌ها پاک بشه؟ این کار قابل برگشت نیست.')) return;
     localStorage.clear();
-    // localStorage.clear() فقط تسک‌ها/تنظیمات/متادیتای کتاب‌ها رو پاک می‌کنه؛
-    // خود فایل‌های PDF جدا توی IndexedDB ذخیره شدن و باید صریحاً پاک بشن.
+    // localStorage.clear() only clears tasks/settings/book metadata;
+    // the PDF files themselves live separately in IndexedDB and must be deleted explicitly.
     const req = indexedDB.deleteDatabase('daftarche-books');
     const finish = () => location.reload();
     req.onsuccess = finish;

@@ -1,0 +1,110 @@
+/* ═══ Today: Greeting, Quick Add, Frog Hero, Tasks, Progress, Mood ═══ */
+
+/* ── Header summary ── */
+.today-summary{font-size:13px;color:var(--muted);font-weight:500;margin-top:6px;line-height:1.7}
+
+/* ── Quick Add ── */
+.today-add{display:flex;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--border);border-radius:99px;padding:6px 6px 6px 18px;box-shadow:var(--shadow-sm);transition:border-color .3s,box-shadow .3s,background .5s}
+.today-add:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-sm)}
+.today-add .ta-ico{color:var(--accent);opacity:.8;flex-shrink:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+.today-add:focus-within .ta-ico{transform:rotate(90deg) scale(1.1);opacity:1}
+.today-add input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text);font-family:var(--font-ui);font-size:15px;padding:9px 0;font-weight:400}
+.today-add input::placeholder{color:var(--muted);font-weight:400}
+.today-go{width:44px;height:44px;flex-shrink:0;border:none;border-radius:50%;background:var(--accent);color:#fff;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s}
+.today-go:hover{transform:translateY(-2px) scale(1.03)}
+.today-go:active{transform:translateY(3px) scale(.96);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+.today-add.shake{animation:shake .3s ease;border-color:var(--danger)!important}
+
+/* ── Section titles ── */
+.today-sec{animation:fadeUp .5s ease}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.today-sec h2{font-family:var(--font-personality);font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;letter-spacing:-.1px}
+.today-sec h2::before{content:'';width:16px;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2));flex-shrink:0}
+#moodLabel{font-size:12px;color:var(--muted);font-weight:500}
+
+/* ── Frog hero ── */
+.frog-sec{margin:2px 0}
+.frog-hero{position:relative;overflow:hidden;border-radius:30px;padding:26px 22px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  border:1.5px solid color-mix(in srgb,var(--green) 36%,transparent);
+  background:
+    radial-gradient(130% 120% at 88% -12%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 55%),
+    radial-gradient(130% 140% at 8% 115%,color-mix(in srgb,var(--green) 22%,transparent),transparent 55%),
+    var(--surface);
+  box-shadow:var(--shadow-sm);transition:background .5s}
+.frog-hero::before{content:'';position:absolute;top:16px;inset-inline-start:18px;width:12px;height:12px;border-radius:50%;background:var(--accent-2);opacity:.5;animation:twinkle 3.2s ease-in-out infinite;pointer-events:none}
+.frog-hero::after{content:'';position:absolute;bottom:18px;inset-inline-end:20px;width:9px;height:9px;border-radius:50%;background:var(--green);opacity:.35;animation:twinkle 4s ease-in-out infinite 1s;pointer-events:none}
+.frog-emoji{font-size:58px;line-height:1;transform-origin:bottom center;filter:drop-shadow(0 10px 14px rgba(0,0,0,.14));animation:frogFloat 3.4s ease-in-out infinite}
+@keyframes frogFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.frog-kicker{display:inline-flex;align-items:center;gap:7px;background:color-mix(in srgb,var(--green) 14%,transparent);color:#5f8f4d;font-family:var(--font-ui);font-size:12px;font-weight:700;padding:5px 15px;border-radius:99px}
+html[data-theme="dark"] .frog-kicker{color:#9ccc86}
+.frog-name{font-family:var(--font-personality);font-size:22px;font-weight:700;line-height:1.6;word-break:break-word;max-width:100%}
+.frog-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.frog-chip{--fc:#5f8f4d;font-size:11px;font-weight:600;color:var(--fc);background:color-mix(in srgb,var(--fc) 12%,transparent);border:1px solid color-mix(in srgb,var(--fc) 28%,transparent);padding:3px 12px;border-radius:99px;animation:chipSel .5s cubic-bezier(.34,1.56,.64,1)}
+.frog-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.frog-start{border:none;background:var(--green);color:#fff;font-family:var(--font-ui);font-size:14px;font-weight:700;padding:11px 26px;border-radius:99px;cursor:pointer;box-shadow:0 4px 0 0 rgba(90,130,75,.55);transition:transform .18s,box-shadow .18s}
+.frog-start:hover{transform:translateY(-2px)}
+.frog-start:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(90,130,75,.55)}
+.frog-next{border:1.5px solid color-mix(in srgb,var(--green) 55%,transparent);background:color-mix(in srgb,var(--surface) 72%,transparent);color:var(--text);font-family:var(--font-ui);font-size:13px;font-weight:600;padding:10px 22px;border-radius:99px;cursor:pointer;transition:all .2s}
+.frog-next:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.frog-empty .frog-none{color:var(--muted);font-size:13px;line-height:2;font-weight:400;max-width:300px}
+
+/* ── Today's task rows (light, not a full task manager) ── */
+.today-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.t-row{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--border);border-radius:16px;padding:10px 12px;transition:transform .2s,box-shadow .2s,opacity .3s;animation:taskIn .45s cubic-bezier(.22,1,.36,1) backwards}
+.t-row:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.t-check{width:25px;height:25px;flex-shrink:0;border-radius:9px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;color:transparent;transition:all .3s cubic-bezier(.22,1,.36,1)}
+.t-check:hover{border-color:var(--green);transform:scale(1.1)}
+.t-check svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .3s ease}
+.t-row.done .t-check{background:var(--green);border-color:transparent;box-shadow:0 5px 12px -5px var(--green)}
+.t-row.done .t-check svg{stroke-dashoffset:0}
+.t-dot{width:8px;height:8px;border-radius:50%;background:var(--pr,#7fb069);flex-shrink:0;transition:opacity .3s}
+.t-row.done .t-dot{opacity:.25}
+.t-title{flex:1;min-width:0;font-family:var(--font-ui);font-size:14px;font-weight:500;line-height:1.6;word-break:break-word;transition:color .3s}
+.t-row.done .t-title{color:var(--muted);font-weight:400;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 70%,transparent)}
+.t-due{flex-shrink:0;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:99px}
+.t-due.today{color:var(--accent);background:var(--accent-soft)}
+.t-due.late{color:#d84a4a;background:rgba(255,93,93,.12)}
+html[data-theme="dark"] .t-due.late{color:#ff8f8f}
+.t-due.soon{color:var(--muted);background:var(--bg)}
+.t-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:9px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:0;transform:scale(.8);transition:all .22s}
+.t-row:hover .t-del,.t-del:focus-visible{opacity:1;transform:none}
+.t-del:hover{color:var(--danger);background:rgba(228,88,79,.12);transform:scale(1.12)!important}
+@media (hover:none){.t-del{opacity:.55;transform:none}}
+.t-empty{list-style:none;text-align:center;padding:20px 12px;color:var(--muted);font-size:13px;line-height:1.9;font-weight:400;background:color-mix(in srgb,var(--surface) 55%,transparent);border:1.5px dashed var(--border);border-radius:18px}
+.today-all{display:flex;margin:14px auto 0;align-items:center;gap:6px;border:1.5px solid color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft);color:var(--accent);font-family:var(--font-ui);font-size:13px;font-weight:700;padding:8px 18px;border-radius:99px;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.today-all:hover{transform:translateY(-2px);box-shadow:0 6px 16px -8px var(--accent)}
+.today-all:active{transform:scale(.96)}
+
+/* ── Daily progress ── */
+.tp-track{height:12px;border-radius:99px;background:color-mix(in srgb,var(--text) 9%,transparent);overflow:hidden}
+.tp-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--accent-2));transition:width .7s cubic-bezier(.22,1,.36,1)}
+.tp-track i.full{background:linear-gradient(90deg,var(--green),#a8d08d)}
+.tp-text{margin-top:9px;font-size:12px;color:var(--muted);font-weight:500;min-height:1.6em}
+.tp-text b{color:var(--green);font-weight:700}
+
+/* ── Mood ── */
+.mood-sec{padding-bottom:4px}
+.mood-sec .moods{gap:9px;flex-wrap:wrap}
+.mood-sec .moods button{width:44px;height:44px;border-radius:15px}
+.mood-sec .moods button svg{width:24px;height:24px}
+
+/* ═══ Responsive: Today ═══ */
+@media (max-width:480px){
+  .frog-hero{padding:22px 16px 20px;border-radius:26px;gap:10px}
+  .frog-emoji{font-size:50px}
+  .frog-name{font-size:19px}
+  .frog-start{font-size:13px;padding:10px 22px}
+  .frog-next{font-size:12px;padding:9px 18px}
+  .today-add{padding:5px 5px 5px 14px;gap:8px}
+  .today-add input{font-size:14px;padding:8px 0}
+  .today-go{width:40px;height:40px}
+  .t-row{padding:9px 11px}
+  .t-title{font-size:13.5px}
+  .today-sec h2{font-size:15px}
+}
+@media (max-width:360px){
+  .frog-emoji{font-size:44px}
+  .frog-name{font-size:17px}
+  .mood-sec .moods button{width:38px;height:38px}
+  .mood-sec .moods button svg{width:20px;height:20px}
+}

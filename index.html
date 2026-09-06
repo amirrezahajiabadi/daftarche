@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/overlays.css">
 <link rel="stylesheet" href="css/library.css">
 <link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/today.css">
 </head>
 <body>
 
@@ -49,8 +50,62 @@
   </div>
 </div>
 
-<!-- ═══ صفحه ۱: کارها ══ -->
-<div class="page active" id="page-tasks">
+<!-- ═══ Page 1: Today ═══ -->
+<div class="page active" id="page-today">
+  <main class="app">
+    <header>
+      <div>
+        <h1 id="todayGreet">سلام 👋</h1>
+        <p class="subtitle" id="todayDate"></p>
+        <p class="today-summary" id="todaySummary"></p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="header-avatar" aria-label="پروفایل"></button>
+        <button class="theme-btn" aria-label="تغییر تم">
+          <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+          <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <form class="today-add" id="todayAddForm" autocomplete="off">
+      <svg class="ta-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 20v-7"/><path d="M12 13c0-3.4 2.4-5.6 6.4-5.6 0 3.4-2.4 5.6-6.4 5.6z"/></svg>
+      <input id="todayInput" type="text" maxlength="120" placeholder="+ امروز باید چی کار کنم؟" autocomplete="off"/>
+      <button class="today-go" type="submit" aria-label="افزودن کار">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </form>
+
+    <section class="today-sec frog-sec" id="todayFrog"></section>
+
+    <section class="today-sec">
+      <div class="sec-head">
+        <h2>کارهای امروز</h2>
+      </div>
+      <ul class="today-list" id="todayList"></ul>
+      <button class="today-all" id="todayAllBtn" type="button">مشاهده همه کارها ←</button>
+    </section>
+
+    <section class="today-sec">
+      <div class="sec-head">
+        <h2>پیشرفت امروز</h2>
+      </div>
+      <div class="tp-track"><i id="todayProgBar"></i></div>
+      <p class="tp-text" id="todayProgText"></p>
+    </section>
+
+    <section class="today-sec mood-sec">
+      <div class="sec-head">
+        <h2>امروز چه حالی داری؟</h2>
+        <span id="moodLabel"></span>
+      </div>
+      <div class="moods" id="moods"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ═══ Page 2: Tasks ══ -->
+<div class="page" id="page-tasks">
   <main class="app">
     <header>
       <div>
@@ -60,8 +115,8 @@
         <p class="subtitle">لیست کارهای خودم و رفقا — <span id="dateLine"></span></p>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="header-avatar" id="headerAvatar" aria-label="پروفایل"></button>
-        <button class="theme-btn" id="themeBtn" aria-label="تغییر تم">
+        <button class="header-avatar" aria-label="پروفایل"></button>
+        <button class="theme-btn" aria-label="تغییر تم">
           <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
           <svg class="sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
@@ -114,25 +169,6 @@
       <button data-filter="done">انجام شده</button>
     </div>
 
-    <div class="frog" id="frog" hidden>
-      <span class="frog-ico">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="7" cy="6.5" r="2.8"/><circle cx="17" cy="6.5" r="2.8"/>
-          <circle cx="7" cy="6.5" r=".7" fill="currentColor" stroke="none"/><circle cx="17" cy="6.5" r=".7" fill="currentColor" stroke="none"/>
-          <path d="M4 12c0 4.5 3.6 7.2 8 7.2s8-2.7 8-7.2"/>
-          <path d="M9.5 14.5c.8.8 1.6 1.2 2.5 1.2s1.7-.4 2.5-1.2"/>
-        </svg>
-      </span>
-      <div class="frog-txt">
-        <strong>قورباغهٔ امروز — اول این رو قورت بده</strong>
-        <span id="frogName"></span>
-      </div>
-      <button class="frog-go" id="frogGo">بریم</button>
-      <button class="frog-close" id="frogClose" aria-label="بستن قورباغه تا فردا">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
     <ul class="tasks" id="taskList"></ul>
 
     <div class="empty" id="empty" hidden>
@@ -163,7 +199,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۲: آمار ═══ -->
+<!-- ═══ Page 3: Stats ═══ -->
 <div class="page" id="page-stats">
   <main class="app">
     <header>
@@ -198,15 +234,11 @@
         </span>
       </div>
       <div class="chart" id="chart"></div>
-      <div class="mood-row">
-        <span class="mood-label" id="moodLabel">حال امروزت چطوره؟</span>
-        <div class="moods" id="moods"></div>
-      </div>
     </div>
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۳: کتابخانه ═══ -->
+<!-- ═══ Page 4: Library ═══ -->
 <div class="page" id="page-library">
   <main class="app">
     <header>
@@ -303,7 +335,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحه ۴: تمرکز ══ -->
+<!-- ═══ Page 5: Focus ══ -->
 <div class="page" id="page-focus">
   <div class="scenes" aria-hidden="true">
     <div class="scene scene-rain"><div class="rain-drops" id="rainDrops"></div></div>
@@ -393,7 +425,7 @@
   </main>
 </div>
 
-<!-- ═══ صفحهٔ ۵: پروفایل ═══ -->
+<!-- ═══ Page 6: Profile ═══ -->
 <div class="page" id="page-profile">
   <main class="app">
     <header>
@@ -415,6 +447,12 @@
     </div>
 
     <div class="stats-row" id="profileStats"></div>
+
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>آمار و هفتهٔ من</strong>
+        <button class="settings-btn" id="openStatsBtn">مشاهده</button>
+      </div>
+    </div>
 
     <div class="vibe-card">
       <div class="vibe-head"><strong>نشان‌ها</strong></div>
@@ -444,7 +482,7 @@
   </main>
 </div>
 
-<!-- ═══ انتخاب آواتار ═══ -->
+<!-- ═══ Avatar Picker ═══ -->
 <div class="overlay" id="avatarOverlay" hidden>
   <div class="name-card avatar-card">
     <h2>آواتارت رو انتخاب کن</h2>
@@ -456,27 +494,23 @@
   </div>
 </div>
 
-<!-- ═══ نوار ناوبری پایین ═══ -->
+<!-- ═══ Bottom Navigation ═══ -->
 <nav class="bottom-nav" id="bottomNav">
-  <button class="nav-tab active" data-page="tasks">
+  <button class="nav-tab active" data-page="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+    <span>امروز</span>
+  </button>
+  <button class="nav-tab" data-page="tasks">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     <span>کارها</span>
-  </button>
-  <button class="nav-tab" data-page="stats">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-    <span>آمار</span>
-  </button>
-  <button class="nav-tab" data-page="library">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-    <span>کتابخانه</span>
   </button>
   <button class="nav-tab" data-page="focus">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
     <span>تمرکز</span>
   </button>
-  <button class="nav-tab" data-page="profile">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>پروفایل</span>
+  <button class="nav-tab" data-page="library">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    <span>کتابخانه</span>
   </button>
 </nav>
 

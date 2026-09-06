@@ -1,4 +1,4 @@
-/* ═══ حلقهٔ پیشرفت، فیلترها، نوار دسته‌ها، قورباغهٔ روز ═══ */
+/* ═══ Progress Ring, Filters, Category Bar, Daily Frog ═══ */
 
 import { state } from './state.js';
 import { $, faNum, startOfToday } from './utils.js';
@@ -6,7 +6,7 @@ import { CATS } from './constants.js';
 import { subscribe } from './bus.js';
 import { renderList, collapse } from './tasks.js';
 
-/* ── حلقهٔ پیشرفت + شمارشگر ── */
+/* ── Progress ring + counter ── */
 let currentDisplayPct = 0, animFrameId = null;
 
 function updateProgress() {
@@ -36,7 +36,7 @@ function updateProgress() {
   $('#clearBtn').style.visibility = done ? 'visible' : 'hidden';
 }
 
-/* ── نوار دسته‌ها ── */
+/* ── Category bar ── */
 function buildCatBar() {
   const wrap = $('#cats');
   const mk = (key, label, color) => {
@@ -69,42 +69,43 @@ function updateCatCounts() {
   });
 }
 
-/* ── فیلترها ── */
+/* ── Filters ── */
 function movePill() {
   const act = document.querySelector('.filters button.active'), pill = $('#pill');
   pill.style.width = act.offsetWidth + 'px';
   pill.style.transform = `translateX(${act.offsetLeft}px)`;
 }
 
-/* ── قورباغهٔ روز ── */
-function findFrog() {
+/* ── Daily frog ── */
+export function frogScore(t) {
+  let s = 0;
+  if (t.p === 'high') s += 3; else if (t.p === 'mid') s += 1.5;
+  if (t.due) {
+    const diff = Math.round((new Date(t.due + 'T00:00:00') - startOfToday()) / 864e5);
+    if (diff < 0) s += 4; else if (diff === 0) s += 2.5; else if (diff <= 1) s += 1;
+  }
+  return s;
+}
+
+export function findFrog() {
   const pool = state.tasks.filter(t => !t.done);
   if (!pool.length) return null;
-  const t0 = startOfToday();
-  const score = t => {
-    let s = 0;
-    if (t.p === 'high') s += 3; else if (t.p === 'mid') s += 1.5;
-    if (t.due) {
-      const diff = Math.round((new Date(t.due + 'T00:00:00') - t0) / 864e5);
-      if (diff < 0) s += 4; else if (diff === 0) s += 2.5; else if (diff <= 1) s += 1;
-    }
-    return s;
-  };
-  return pool.slice().sort((a, b) => score(b) - score(a))[0];
+  return pool.slice().sort((a, b) => frogScore(b) - frogScore(a))[0];
 }
 
 function updateFrog() {
-  const frog = findFrog();
   const el = $('#frog');
+  if (!el) return; // Frog now lives on the Today page
+  const frog = findFrog();
   if (!frog) { el.hidden = true; return; }
   el.hidden = false;
   $('#frogName').textContent = frog.text;
 }
 
-/* ── راه‌اندازی ── */
+/* ── Init ── */
 export function initProgress() {
   buildCatBar();
-  $('#frog').addEventListener('click', () => {
+  $('#frog')?.addEventListener('click', () => {
     const frog = findFrog();
     if (frog) {
       const el = $('#taskList').querySelector(`[data-id="${frog.id}"]`);

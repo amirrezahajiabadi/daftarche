@@ -1,4 +1,4 @@
-/* ═══ توابع کمکی خالص ═══ */
+/* ═══ Pure Helper Functions ═══ */
 
 export const $ = s => document.querySelector(s);
 
@@ -21,6 +21,6 @@ export const dueKeyFromOffset = off => {
   return dayKey(d);
 };
 
-/* برای جستجوی درست‌تر: یکسان‌سازی ی/ي و ک/ك عربی-فارسی + کوچک‌کردن حروف لاتین */
+/* For a more accurate search: normalize Arabic variants of yeh/kaf to their Persian forms, and lowercase Latin letters */
 export const normalizeFa = s =>
   String(s).toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک');

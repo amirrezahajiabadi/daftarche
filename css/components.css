@@ -1,4 +1,4 @@
-/* ═══ کارت پیشرفت ═══ */
+/* ═══ Progress Card ═══ */
 .progress-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 20px;display:flex;align-items:center;gap:24px;box-shadow:var(--shadow-sm);transition:background .5s,transform .3s}
 .progress-card:hover{transform:translateY(-2px)}
 .progress-card::before{content:'';position:absolute;top:-9px;inset-inline-start:26px;width:62px;height:19px;background:var(--tape);transform:rotate(-4deg);border-radius:2px;pointer-events:none}
@@ -18,7 +18,7 @@
 .progress-info strong{display:block;font-family:var(--font-personality);font-size:18px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px}
 .progress-info span{color:var(--muted);font-size:13px;line-height:1.6;font-weight:400}
 
-/* ═══ هفتهٔ من ═══ */
+/* ═══ My Week ═══ */
 .week-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);transition:background .5s}
 .week-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .week-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
@@ -37,7 +37,7 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .col.today span{color:var(--accent);font-weight:600}
 .col .mdot{width:7px;height:7px;border-radius:50%}
 
-/* ═══ مود روزانه ═══ */
+/* ═══ Daily Mood ═══ */
 .mood-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:13px;border-top:1.5px dashed var(--border);flex-wrap:wrap}
 .mood-label{font-family:var(--font-ui);font-size:13px;font-weight:500;color:var(--muted);line-height:1.6}
 .moods{display:flex;gap:8px}
@@ -53,7 +53,7 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .moods button[data-sub]:hover::before{content:'';position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--text);pointer-events:none;animation:tooltipIn .2s ease;z-index:10}
 @keyframes tooltipIn{from{opacity:0;transform:translateX(-50%) translateY(4px)}}
 
-/* ═══ فرم افزودن ═══ */
+/* ═══ Add Form ═══ */
 .add-form{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 10px 8px;box-shadow:var(--shadow-sm);transition:box-shadow .3s,border-color .3s,background .5s}
 .add-form:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-sm)}
 .add-line{display:flex;gap:10px}
@@ -64,7 +64,7 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .add-btn:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 .add-form.shake,.name-card.shake{animation:shake .3s ease;border-color:var(--danger)!important}
 
-/* ── ردیف اولویت ── */
+/* ── Priority Row ── */
 .pri-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
 .pri-row>span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
 .pri-row button{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.22,1,.36,1)}
@@ -90,7 +90,7 @@ html[data-theme="dark"] .pri-row button.sel.low{color:#9ccc86}
 html[data-theme="dark"] .pri-row button.sel.mid{color:#ffcd8a}
 html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 
-/* ── دسته و مهلت ── */
+/* ── Category & Due Date ── */
 .cat-row,.due-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
 .cat-row>span,.due-row>span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
 .due-row button{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:4px 11px;cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1)}
@@ -107,7 +107,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .cat-scroll button.sel{background:var(--cc);border-color:var(--cc);color:#fff;box-shadow:0 2px 8px -2px rgba(0,0,0,.15);font-weight:600}
 .cat-scroll button.sel .dot{background:rgba(255,255,255,.85)}
 
-/* ═══ جستجو + تاس ═══ */
+/* ═══ Search + Dice ═══ */
 .search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:8px 16px 8px 8px;box-shadow:var(--shadow-sm);transition:box-shadow .3s,border-color .3s}
 .search:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .search input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-ui);font-size:14px;font-weight:400;color:var(--text)}
@@ -117,7 +117,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .dice:hover{background:var(--accent);color:#fff;transform:rotate(-16deg) scale(1.1)}
 .dice:active{transform:rotate(10deg) scale(.94)}
 
-/* ═══ نوار دسته‌ها ═══ */
+/* ═══ Category Bar ═══ */
 .cats{display:flex;gap:8px;overflow-x:auto;padding:3px 1px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .cats::-webkit-scrollbar{display:none}
 .cat-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;padding:6px 13px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .25s;box-shadow:var(--shadow-sm)}
@@ -128,29 +128,29 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .cat-chip.active{background:var(--cc);border-color:var(--cc);color:#fff;font-weight:600}
 .cat-chip.active .dot{background:#fff}
 
-/* ═══ فیلترها ═══ */
+/* ═══ Filters ═══ */
 .filters{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:5px;position:relative;box-shadow:var(--shadow-sm);transition:background .5s}
 .filters button{flex:1;min-width:0;border:none;background:transparent;font-family:var(--font-ui);font-size:13px;font-weight:500;color:var(--muted);padding:9px 0;cursor:pointer;border-radius:12px;position:relative;z-index:1;transition:color .3s}
 .filters button.active{color:var(--accent);font-weight:600}
 .filter-pill{position:absolute;left:0;top:5px;bottom:5px;border-radius:12px;background:var(--accent-soft);z-index:0;transition:transform .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1)}
 
-/* ═══ کارت‌های فضا و موسیقی (صفحه تمرکز) ═══ */
+/* ═══ Scene & Music Cards (Focus Page) ═══ */
 .vibe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);transition:background .5s}
 .vibe-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
 .vibe-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 
-/* کنترل صدای محیط */
+/* Ambient sound control */
 .amb-control{display:flex;align-items:center;gap:8px}
 .amb-control span{font-size:12px;color:var(--muted);transition:color .3s;font-weight:500}
 
-/* سوییچ فنری */
+/* Spring switch */
 .switch{position:relative;width:44px;height:24px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;transition:background .3s,border-color .3s;flex-shrink:0;padding:0}
 .switch::after{content:'';position:absolute;top:50%;right:3px;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .35s cubic-bezier(.34,1.56,.64,1)}
 .switch:hover::after{transform:translateY(-50%) scale(1.15)}
 .switch.on{background:var(--green);border-color:var(--green)}
 .switch.on::after{right:calc(100% - 19px);background:#fff}
 
-/* چیپ‌های صحنه و موسیقی — هم‌خانواده با بقیهٔ محصول */
+/* Scene and music chips — same family as the rest of the product */
 .scene-chips{display:flex;gap:7px;flex-wrap:wrap}
 .scene-chips button{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:6px 14px;cursor:pointer;transition:all .3s cubic-bezier(.22,1,.36,1)}
 .scene-chips button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
@@ -162,12 +162,12 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 @keyframes chipSel{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes iconPop{0%{transform:scale(.5) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
 
-/* افزودن آهنگ */
+/* Add song */
 .add-music{display:inline-flex;align-items:center;gap:4px;border:1.5px dashed var(--border);color:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:500;padding:5px 12px;border-radius:99px;cursor:pointer;transition:all .25s}
 .add-music:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
 .add-music:active{transform:scale(.94)}
 
-/* اسلایدرهای ولوم */
+/* Volume sliders */
 .vol-row{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1.5px dashed var(--border);flex-wrap:wrap}
 .vol{flex:1;min-width:140px;display:flex;align-items:center;gap:8px}
 .vol span{font-size:11px;color:var(--muted);flex-shrink:0;font-weight:500}
@@ -179,7 +179,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .vol input[type=range]::-moz-range-track{height:5px;border-radius:99px;background:var(--border)}
 .vol input[type=range]::-moz-range-progress{height:5px;border-radius:99px;background:var(--accent)}
 
-/* ترک‌های کاربر */
+/* User tracks */
 .user-tracks{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .user-tracks:empty{display:none}
 .user-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s;max-width:100%}
@@ -190,7 +190,7 @@ html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 .user-chip .rm{font-style:normal;color:var(--muted);font-size:14px;line-height:1;padding:0 2px;transition:color .2s,transform .2s}
 .user-chip .rm:hover{color:var(--danger);transform:scale(1.3)}
 
-/* ═══ ریسپانسیو ═══ */
+/* ═══ Responsive ═══ */
 @media (max-width:480px){
   .progress-card{padding:18px 14px;gap:16px}
   .ring-wrap{width:76px;height:76px}

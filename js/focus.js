@@ -5,7 +5,7 @@ import { APP_TITLE } from './constants.js';
 import { confetti, beep } from './confetti.js';
 import * as audio from './audio.js';
 
-/* ═══ فضا و موسیقی ═══ */
+/* ═══ Scene & Music ═══ */
 let scene = localStorage.getItem('daftarche-scene') || 'none';
 let ambOn = localStorage.getItem('daftarche-ambsound') !== '0';
 let musicSel = localStorage.getItem('daftarche-music') || 'none';
@@ -137,7 +137,7 @@ function initVibe() {
     e.target.value = '';
   });
 
-  // باز شدن صدا با اولین تعامل کاربر (سیاست مرورگر)
+  // Unlock audio on the first user interaction (browser policy)
   addEventListener('pointerdown', () => {
     audio.unlockAudio();
     if (musicSel !== 'none') applyMusic();
@@ -152,7 +152,7 @@ function initVibe() {
   });
 }
 
-/* ═══ تایمر ═══ */
+/* ═══ Timer ═══ */
 function populateTaskSelect() {
   const sel = $('#focusTaskSelect');
   if (!sel) return;
@@ -269,11 +269,7 @@ export function openFocus(taskId) {
   if (!task) return;
   stopTimer();
   state.focus = { taskId, total: state.pomoMin * 60, remain: state.pomoMin * 60, running: false, done: false, interval: null, endTime: 0 };
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelector('[data-page="focus"]').classList.add('active');
-  $('#page-focus').classList.add('active');
-  syncFocusPage();
+  window.dispatchEvent(new CustomEvent('navigate', { detail: 'focus' }));
 }
 
 export function initFocusPage() {

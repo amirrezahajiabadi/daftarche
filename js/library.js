@@ -1,4 +1,4 @@
-/* ═══ کتابخانه: قفسه، آخرین مطالعه، هدف، ذخیره‌سازی ═══ */
+/* ═══ Library: Shelf, Last Read, Goal, Storage ═══ */
 import { $, faNum } from './utils.js';
 
 const META_KEY = 'daftarche-books-meta';
@@ -12,7 +12,7 @@ export function updateBook(id, patch) {
   Object.assign(b, patch); saveMeta();
 }
 
-/* ── IndexedDB برای فایل PDF ── */
+/* ── IndexedDB for the PDF file ── */
 let dbP = null;
 function db() {
   if (!dbP) dbP = new Promise((res, rej) => {
@@ -44,14 +44,14 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const TRASH = `<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6"/></svg>`;
 const BOOK_ICON = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`;
 
-/* ── آمار کلی کتاب (یادداشت‌های جدید + هایلایت‌های قدیمی) ── */
+/* ── Book totals (new notes + old highlights) ── */
 function bookTotals(b) {
   let minutes = 0;
   Object.values(b.stats || {}).forEach(s => { minutes += s.minutes || 0; });
   return { minutes, notes: (b.highlights || []).length + (b.notes || []).length };
 }
 
-/* ── قفسه + آخرین مطالعه ── */
+/* ── Shelf + last read ── */
 export function renderShelf() {
   const grid = $('#shelfGrid');
   grid.innerHTML = '';
@@ -59,7 +59,7 @@ export function renderShelf() {
   const cnt = $('#shelfCount');
   if (cnt) cnt.textContent = books.length ? `${faNum(books.length)} کتاب` : 'خالی';
 
-  /* کارت آخرین مطالعه */
+  /* Last-read card */
   const slot = $('#lastReadSlot');
   slot.innerHTML = '';
   const last = [...books].filter(b => b.numPages && (b.lastPage || 1) > 1).sort((a, b) => (b.lastReadAt || 0) - (a.lastReadAt || 0))[0];
@@ -80,7 +80,7 @@ export function renderShelf() {
     slot.appendChild(card);
   }
 
-  /* کارت‌های قفسه */
+  /* Shelf cards */
   books.forEach((b, i) => {
     const pct = b.numPages ? Math.round(((b.lastPage || 1) / b.numPages) * 100) : 0;
     const t = bookTotals(b);
@@ -120,7 +120,7 @@ export function renderShelf() {
   });
 }
 
-/* ── هدف روزانه ── */
+/* ── Daily goal ── */
 let goalBookId = null;
 export function openGoal(id) {
   goalBookId = id;
@@ -140,7 +140,7 @@ function initGoal() {
   window.addEventListener('open-goal', e => openGoal(e.detail));
 }
 
-/* ── وارد کردن کتاب ── */
+/* ── Import book ── */
 export function initLibrary() {
   renderShelf();
   initGoal();

@@ -27,7 +27,7 @@ function updateStreakUI() {
   $('#streakVal').textContent = s > 0 ? `${faNum(s)} روز پیاپی` : 'اولین تیک رو بزن';
 }
 
-/* ── نمودار هفته: فقط بار اول انیمیشن، بعدش آپدیت نرم ── */
+/* ── Week chart: animate only the first render, then update smoothly ── */
 let chartInitialized = false;
 
 function renderChart() {
@@ -44,7 +44,7 @@ function renderChart() {
   }
   const max = Math.max(...days.map(x => x.n), 1);
 
-  // بار اول: ساخت ستون‌ها
+  // First render: build the columns
   if (!chartInitialized) {
     chart.innerHTML = '';
     days.forEach((c, i) => {
@@ -70,7 +70,7 @@ function renderChart() {
     return;
   }
 
-  // بارهای بعدی: آپدیت نرم بدون بازسازی
+  // Later renders: smooth update without rebuilding
   const cols = chart.querySelectorAll('.col');
   days.forEach((c, i) => {
     const col = cols[i];
@@ -117,7 +117,7 @@ function renderMoods() {
     const m = MOODS[cur - 1];
     $('#moodLabel').innerHTML = `حال امروزت: <strong style="color:${m.color}">${m.label}</strong>`;
   } else {
-    $('#moodLabel').textContent = 'حال امروزت چطوره؟';
+    $('#moodLabel').textContent = '';
   }
 }
 

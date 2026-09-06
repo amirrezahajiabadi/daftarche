@@ -1,7 +1,7 @@
 import { state, getTask } from './state.js';
 import { saveTasks } from './store.js';
 import { $, faNum, startOfToday, dueKeyFromOffset, dayKey, normalizeFa } from './utils.js';
-import { P_CYCLE, P_LABEL, CATS, ICONS, STORAGE_KEYS } from './constants.js';
+import { P_CYCLE, P_LABEL, CATS, ICONS } from './constants.js';
 import { notify } from './bus.js';
 import { confetti } from './confetti.js';
 import { recordDay } from './week.js';
@@ -26,8 +26,8 @@ function animateChipFlip(chip) {
   setTimeout(() => chip.classList.remove('flipped'), 450);
 }
 
-/* ── مهلت ── */
-function dueLabel(key) {
+/* ── Due Date ── */
+export function dueLabel(key) {
   if (!key) return null;
   const diff = Math.round((new Date(key + 'T00:00:00') - startOfToday()) / 864e5);
   if (diff < 0) return { cls: 'late', text: diff === -1 ? 'دیروز' : `${faNum(-diff)} روز دیر شده` };
@@ -50,7 +50,7 @@ function refreshDueChip(li, task) {
   btn.className = `due-chip ${dl.cls}`; btn.textContent = dl.text; btn.title = 'مهلت — کلیک برای تغییر';
 }
 
-/* ── ساخت آیتم ── */
+/* ── Build Item ── */
 function createTaskEl(task, delay = 0) {
   const li = document.createElement('li');
   li.className = 'task' + (task.done ? ' done' : '');
@@ -74,7 +74,7 @@ function createTaskEl(task, delay = 0) {
   return li;
 }
 
-/* ── رندر و حالت خالی ── */
+/* ── Render + Empty State ── */
 export function renderList() {
   listEl.innerHTML = '';
   visible().forEach((t, i) => listEl.appendChild(createTaskEl(t, i * 45)));
@@ -97,21 +97,43 @@ export function updateEmpty() {
     : voc + 'لیستت خالیه. اولین کارت رو اضافه کن.';
 }
 
-/* ── عملیات ── */
+/* ── Actions ── */
+
+/* Shared completion helper used by the Tasks page and the Today list */
+export function setTaskDone(id, done) {
+  const task = getTask(id);
+  if (!task || task.done === done) return;
+  task.done = done;
+  if (done) { task.doneAt = Date.now(); recordDay(); } else delete task.doneAt;
+  save(); notify();
+  if (done && state.tasks.every(t => t.done)) confetti();
+}
+
 function toggleTask(li, task) {
-  task.done = !task.done;
-  if (task.done) { task.doneAt = Date.now(); recordDay(); } else delete task.doneAt;
-  save(); li.classList.toggle('done', task.done); notify();
-  if (task.done && state.tasks.every(t => t.done)) confetti();
+  setTaskDone(task.id, !task.done);
+  li.classList.toggle('done', task.done);
   if (!matches(task)) setTimeout(() => hideFromView(li), 650);
 }
 
-/* ── توست بازگردانی ── */
+/* Shared creation used by the Tasks form and the Today quick add */
+export function addTask(text, p = 'mid', cat = 'misc', due) {
+  const task = {
+    id: Date.now() + '' + Math.random().toString(16).slice(2),
+    text, done: false, p, cat,
+    created: Date.now(),
+  };
+  if (due) task.due = due;
+  state.tasks.unshift(task);
+  save(); notify();
+  return task;
+}
+
+/* ── Undo Toast ── */
 let undoTimer = null, lastDeleted = null;
 function showUndo(task, index) {
   lastDeleted = { task, index };
   const toast = $('#undoToast');
-  // ریست انیمیشن نوار
+  // Reset the toast bar animation
   const bar = toast.querySelector('.toast-bar');
   bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
   toast.hidden = false;
@@ -129,11 +151,11 @@ function performUndo() {
   if (!lastDeleted) return;
   clearTimeout(undoTimer);
   const { task, index } = lastDeleted;
-  // برگرداندن تسک به جایگاه تقریبی‌اش
+  // Reinsert the task at its approximate position
   const insertAt = Math.min(index, state.tasks.length);
   state.tasks.splice(insertAt, 0, task);
   save();
-  // اگر در نمای فعلی دیده می‌شه، اضافه‌اش کن
+  // If it's visible in the current view, add it back
   if (matches(task) && (state.catFilter === 'all' || state.catFilter === (task.cat || 'misc')) && (!state.query || task.text.includes(state.query))) {
     const el = createTaskEl(task);
     const children = [...listEl.children];
@@ -145,7 +167,7 @@ function performUndo() {
   commitUndo();
 }
 
-/* انیمیشن مشترک خروج آیتم از لیست (فقط ظاهری، بدون تغییر در state) */
+/* Shared exit animation for removing an item from the list (visual only, no state change) */
 function animateOut(el, onDone) {
   el.style.height = el.offsetHeight + 'px'; el.style.overflow = 'hidden'; el.style.transition = 'all .32s ease';
   requestAnimationFrame(() => {
@@ -155,11 +177,11 @@ function animateOut(el, onDone) {
   setTimeout(() => { el.remove(); updateEmpty(); onDone && onDone(); }, 330);
 }
 
-/* حذف واقعی تسک (دکمهٔ سطل‌آشغال) — از state پاک می‌شود و توست «پشیمون شدم» نشان داده می‌شود */
+/* Actually delete a task (trash button) — removes it from state and shows the undo toast */
 export function collapse(el, id) {
   const task = state.tasks.find(t => t.id === id);
   const index = state.tasks.findIndex(t => t.id === id);
-  if (task) lastDeleted = null; // جلوگیری از تداخل
+  if (task) lastDeleted = null; // Prevent conflicts
   state.tasks = state.tasks.filter(t => t.id !== id);
   save();
   if (state.focus && state.focus.taskId === id) clearFocus();
@@ -168,9 +190,9 @@ export function collapse(el, id) {
   if (task) showUndo(task, index);
 }
 
-/* مخفی‌کردن تسک از نمای فعلی چون دیگر با فیلتر/دسته مطابقت ندارد
-   (مثلاً بعد از تیک‌زدن در فیلتر «فعال» یا تغییر دسته در فیلتر دسته‌ای)
-   بر خلاف collapse، این تابع هیچ داده‌ای را از state.tasks حذف نمی‌کند. */
+/* Hide a task from the current view when it no longer matches the filter/category
+   (e.g. after checking it off in the "Active" filter, or changing its category while a category filter is set)
+   Unlike collapse, this function does not remove any data from state.tasks. */
 export function hideFromView(el) {
   animateOut(el);
 }
@@ -182,7 +204,7 @@ export function flashTask(id) {
   el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1600);
 }
 
-/* ── درگ‌ودراپ ── */
+/* ── Drag and Drop ── */
 function syncOrder() {
   const order = [...listEl.querySelectorAll('.task')].map(el => el.dataset.id);
   const map = Object.fromEntries(state.tasks.map(t => [t.id, t]));
@@ -190,38 +212,8 @@ function syncOrder() {
   save();
 }
 
-/* ── قورباغه: قابلیت بستن تا فردا ── */
-function initFrogDismiss() {
-  const frog = $('#frog');
-  const closeBtn = $('#frogClose');
-  if (!closeBtn) return;
-
-  const isDismissedToday = () => localStorage.getItem(STORAGE_KEYS.frogDismissed) === dayKey(new Date());
-  const applyDismissState = () => {
-    if (isDismissedToday()) { frog.style.display = 'none'; }
-    else { frog.style.display = ''; frog.style.opacity = ''; frog.style.transform = ''; }
-  };
-
-  applyDismissState(); // چک اولیه موقع لود
-
-  closeBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    localStorage.setItem(STORAGE_KEYS.frogDismissed, dayKey(new Date()));
-    frog.style.opacity = '0';
-    frog.style.transform = 'translateY(-10px) scale(.95)';
-    setTimeout(() => { frog.style.display = 'none'; frog.style.opacity = ''; frog.style.transform = ''; }, 300);
-  });
-
-  // اگر اپ باز بمونه و از نیمه‌شب رد بشه، با برگشتن به تب دوباره چک کن
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') applyDismissState();
-  });
-}
-
-/* ── رویدادها ── */
+/* ── Events ── */
 export function initTasks() {
-  initFrogDismiss();
-
   listEl.addEventListener('click', e => {
     const li = e.target.closest('.task'); if (!li) return;
     const task = getTask(li.dataset.id); if (!task) return;
@@ -271,7 +263,7 @@ export function initTasks() {
     after ? listEl.insertBefore(dragging, after) : listEl.appendChild(dragging);
   });
 
-  /* دکمهٔ پاک کردن جستجو */
+  /* Clear-search button */
   const searchInput = $('#searchInput'), searchClear = $('#searchClear');
   if (searchInput && searchClear) {
     searchInput.addEventListener('input', () => { searchClear.hidden = !searchInput.value; });
@@ -281,12 +273,12 @@ export function initTasks() {
     });
   }
 
-  /* دکمهٔ پشیمون شدم */
+  /* Undo button */
   const undoBtn = $('#undoBtn');
   if (undoBtn) undoBtn.addEventListener('click', performUndo);
 }
 
-/* ── فرم افزودن ── */
+/* ── Add Form ── */
 function buildCatRow() {
   const row = $('#catRow .cat-scroll');
   CATS.forEach(c => {
@@ -319,22 +311,17 @@ export function initAddForm() {
     e.preventDefault();
     const input = $('#taskInput'), text = input.value.trim();
     if (!text) { e.currentTarget.classList.add('shake'); setTimeout(() => e.currentTarget.classList.remove('shake'), 350); return; }
-    const task = {
-      id: Date.now() + '' + Math.random().toString(16).slice(2),
-      text, done: false, p: state.selPri, cat: state.selCat,
-      due: state.selDue === 'none' ? undefined : dueKeyFromOffset(state.selDue),
-    };
-    state.tasks.unshift(task); save();
+    const task = addTask(text, state.selPri, state.selCat, state.selDue === 'none' ? undefined : dueKeyFromOffset(state.selDue));
     if (matches(task) && (state.catFilter === 'all' || state.catFilter === state.selCat) && !state.query) {
       const el = createTaskEl(task);
       listEl.prepend(el);
-      // هالهٔ نور تسک جدید
+      // Glow highlight on the newly added task
       el.classList.add('just-added');
       setTimeout(() => el.classList.remove('just-added'), 1500);
       updateEmpty();
     }
-    input.value = ''; input.focus(); notify();
-    // مخفی کردن دکمهٔ پاک کردن جستجو
+    input.value = ''; input.focus();
+    // Hide the clear-search button
     const sc = $('#searchClear'); if (sc) sc.hidden = true;
   });
 }

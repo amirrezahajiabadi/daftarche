@@ -1,4 +1,4 @@
-/* ═══ موتور صدا: موسیقی پروسیجرال + صدای محیط + آهنگ‌های کاربر (IndexedDB) ═══ */
+/* ═══ Audio Engine: Procedural Music + Ambient Sound + User Tracks (IndexedDB) ═══ */
 
 let ctx = null, musicGain = null, ambGain = null;
 
@@ -20,7 +20,7 @@ function ensureCtx() {
 
 export function unlockAudio() { try { ensureCtx(); } catch (e) {} }
 
-/* ── ولوم ── */
+/* ── Volume ── */
 export function setMusicVolume(v) {
   if (musicGain) musicGain.gain.value = v;
   if (userAudio) userAudio.volume = v * .95;
@@ -37,7 +37,7 @@ export function getVolumes() {
   };
 }
 
-/* ── بافرهای نویز ── */
+/* ── Noise buffers ── */
 let whiteBuf = null, brownBuf = null, dropBuf = null;
 function getWhite(c) {
   if (!whiteBuf) {
@@ -64,7 +64,7 @@ function getDrop(c) {
   return dropBuf;
 }
 
-/* ═══ موسیقی پروسیجرال ═══ */
+/* ═══ Procedural Music ═══ */
 export const MUSIC_TRACKS = {
   night:  { label: 'آرامش شب',   root: 196.00, scale: [0, 3, 5, 7, 10], bpm: 7,  wave: 'sine' },
   spring: { label: 'صبح بهاری',  root: 261.63, scale: [0, 2, 4, 7, 9],  bpm: 11, wave: 'triangle' },
@@ -114,7 +114,7 @@ function startProc(key) {
   };
 }
 
-/* ═══ صدای محیط ═══ */
+/* ═══ Ambient Sound ═══ */
 function startAmb(scene) {
   const c = ensureCtx();
   const out = c.createGain(); out.gain.value = 0; out.connect(ambGain);
@@ -193,7 +193,7 @@ function startAmb(scene) {
   };
 }
 
-/* ═══ مدیریت پخش ═══ */
+/* ═══ Playback Control ═══ */
 let procHandle = null, userAudio = null, userUrl = null, ambHandle = null;
 
 function stopProc() { if (procHandle) { procHandle.stop(); procHandle = null; } }
@@ -221,7 +221,7 @@ export function setAmbience(scene, soundOn) {
   if (scene !== 'none' && soundOn) ambHandle = startAmb(scene);
 }
 
-/* ═══ آهنگ‌های کاربر (IndexedDB) ═══ */
+/* ═══ User Tracks (IndexedDB) ═══ */
 let dbP = null;
 function db() {
   if (!dbP) dbP = new Promise((res, rej) => {

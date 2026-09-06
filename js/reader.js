@@ -1,10 +1,10 @@
-/* ═══ مطالعهٔ PDF ═══
-نمایش خود PDF با ویوئر داخلی مرورگر انجام می‌شه (iframe روی blob فایل)، نه با رندر دستی —
-چون رندر دستی (canvas + pdf.js) روی بعضی فایل‌ها متن فارسی رو بهم می‌ریخت.
-ویوئر مرورگر همون موتوریِ که خود مرورگر برای باز کردن PDF استفاده می‌کنه، پس همیشه درست نمایش می‌ده.
-pdf.js فقط برای شمردن تعداد صفحه‌ها نگه داشته شده (بدون رندر متن/فونت).
-نتیجه: هایلایت مستقیم روی متن PDF دیگه ممکن نیست (ویوئر مرورگر جعبهٔ بسته‌ست)،
-ولی یادداشت per-page جایگزینش شده و هایلایت‌های قدیمی هم در پنل یادداشت‌ها حفظ می‌شن. */
+/* ═══ PDF Reader ═══
+The PDF is rendered by the browser's built-in viewer (an iframe over the file blob), not by custom rendering —
+because custom rendering (canvas + pdf.js) mangled Persian text on some files.
+The browser viewer uses the same engine the browser itself uses to open PDFs, so it always displays correctly.
+pdf.js is kept only for counting the number of pages (no text/font rendering).
+Result: direct highlighting of the PDF text is no longer possible (the browser viewer is a closed box),
+but per-page notes take its place, and old highlights are preserved in the notes panel. */
 import { $, faNum, faDigits, dayKey } from './utils.js';
 import { getBook, updateBook, getBookBlob, renderShelf } from './library.js';
 import { recordDay } from './week.js';
@@ -38,13 +38,13 @@ export function initReader() {
     if (e.key === 'ArrowLeft') gotoPage(curPage - 1);
   });
 
-  // بستن reader وقتی از کتابخانه می‌ریم بیرون
+  // Close the reader when navigating away from the library
   $('#bottomNav').addEventListener('click', e => {
     const tab = e.target.closest('.nav-tab');
     if (tab && tab.dataset.page !== 'library' && !$('#readerView').hidden) closeReader();
   });
 
-  /* یادداشت صفحه */
+  /* Page note */
   $('#addNoteBtn').onclick = openNoteForCurrentPage;
   $('#noteSave').onclick = () => {
     const text = $('#noteInput').value.trim();
@@ -57,12 +57,12 @@ export function initReader() {
   };
   $('#noteClose').onclick = () => { $('#noteOverlay').hidden = true; };
 
-  /* پنل یادداشت‌ها */
+  /* Notes panel */
   $('#readerNotes').onclick = () => { buildNotes(); $('#notesSheet').hidden = false; };
   $('#notesClose').onclick = () => { $('#notesSheet').hidden = true; };
   $('#notesExport').onclick = exportNotes;
 
-  /* تایمر */
+  /* Timer */
   $('#readTimerBtn').onclick = toggleTimer;
 }
 
@@ -73,7 +73,7 @@ function applyMode() {
   $('#readerMode').title = ['حالت روشن', 'حالت سپیا', 'حالت شب'][mode];
 }
 
-/* ── باز/بستن ── */
+/* ── Open/Close ── */
 async function openReader(id) {
   curBook = getBook(id); if (!curBook) return;
   $('#shelfView').hidden = true;
@@ -88,7 +88,7 @@ async function openReader(id) {
   if (pdfObjectUrl) URL.revokeObjectURL(pdfObjectUrl);
   pdfObjectUrl = URL.createObjectURL(blob);
 
-  // فقط برای گرفتن تعداد صفحه‌ها؛ اگه شکست بخوره باز می‌شه کتاب رو باز کرد
+  // Only to get the page count; if it fails, the book can still be opened
   if (!curBook.numPages) {
     try {
       const data = await blob.arrayBuffer();
@@ -117,7 +117,7 @@ function closeReader() {
   renderShelf();
 }
 
-/* ── نمایش با ویوئر داخلی مرورگر (#page= و #zoom= استاندارد PDF Open Parameters) ── */
+/* ── Render with the browser's built-in viewer (standard PDF Open Parameters: #page= and #zoom=) ── */
 function renderFrame() {
   const frame = $('#pdfFrame');
   if (!pdfObjectUrl) return;
@@ -138,7 +138,7 @@ function updatePageUI() {
   }
 }
 
-/* ── ناوبری + پیشرفت ── */
+/* ── Navigation + Progress ── */
 function gotoPage(n) {
   const total = curBook.numPages || Infinity;
   n = Math.max(1, Math.min(total, n));
@@ -172,7 +172,7 @@ function updateGoalBar() {
   $('#goalEdit').onclick = () => window.dispatchEvent(new CustomEvent('open-goal', { detail: curBook.id }));
 }
 
-/* ── تایمر مطالعه ── */
+/* ── Reading Timer ── */
 function toggleTimer() {
   const btn = $('#readTimerBtn');
   if (!timer.running) {
@@ -196,7 +196,7 @@ function stopTimerSession() {
   updateGoalBar();
 }
 
-/* ── یادداشت per-page ── */
+/* ── Per-Page Notes ── */
 function openNoteForCurrentPage() {
   $('#noteForText').textContent = `یادداشت صفحهٔ ${faNum(curPage)}`;
   $('#noteInput').value = '';
@@ -204,7 +204,7 @@ function openNoteForCurrentPage() {
   setTimeout(() => $('#noteInput').focus(), 200);
 }
 
-/* ── پنل یادداشت‌ها (یادداشت‌های جدید + هایلایت‌های قدیمی) ── */
+/* ── Notes Panel (New Notes + Old Highlights) ── */
 function allNoteItems() {
   const legacy = (curBook.highlights || []).map(h => ({
     id: h.id, page: h.page, text: h.text, note: h.note, color: h.color, source: 'highlights',
