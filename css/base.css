@@ -1,3 +1,20 @@
+/* ═══ تعریف فونت‌ها (Font Loading) ═══ */
+@font-face {
+  font-family: 'Estedad';
+  src: url('../assets/fonts/Estedad[wght].woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Estedad Mad';
+  src: url('../assets/fonts/Estedad-Mad.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
 
 :root{
@@ -10,8 +27,10 @@
   --radius:20px;
   --nav-height:64px;
   --glass-hover:rgba(255,255,255,.35);
-  --font-body:'Lalezar','Vazirmatn',system-ui,sans-serif;
-  --font-fun:'Lalezar','Vazirmatn',system-ui,sans-serif;
+  
+  /* سیستم تایپوگرافی جدید */
+  --font-ui: 'Estedad', system-ui, sans-serif;
+  --font-personality: 'Estedad Mad', 'Estedad', system-ui, sans-serif;
 }
 html[data-theme="dark"]{
   --bg:#171310; --surface:#221d17; --text:#f4ecdd; --muted:#8f8574;
@@ -23,8 +42,9 @@ html[data-theme="dark"]{
 }
 
 html{scroll-behavior:smooth}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden;transition:background .5s,color .5s;-webkit-tap-highlight-color:transparent}
-button{touch-action:manipulation}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden;transition:background .5s,color .5s;-webkit-tap-highlight-color:transparent;line-height:1.6}
+button{touch-action:manipulation;font-family:inherit}
+input, textarea, select{font-family:inherit}
 
 body::after{content:'';position:fixed;inset:0;z-index:97;pointer-events:none;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -43,10 +63,10 @@ body::after{content:'';position:fixed;inset:0;z-index:97;pointer-events:none;opa
 .app{width:100%;max-width:480px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:16px}
 
 header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-h1{font-family:var(--font-fun);font-size:clamp(26px,8vw,34px);font-weight:400;line-height:1.2;letter-spacing:.5px}
+h1{font-family:var(--font-personality);font-size:clamp(28px,8vw,34px);font-weight:700;line-height:1.3;letter-spacing:-.2px}
 h1 .underline{display:block;width:110px;height:10px;color:var(--accent);margin-top:2px}
 h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw 1s ease .4s forwards}
-.subtitle{color:var(--muted);font-size:12.5px;margin-top:6px}
+.subtitle{color:var(--muted);font-size:13px;margin-top:6px;font-weight:400}
 
 .theme-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .3s,background .5s;flex-shrink:0}
 .theme-btn:hover{transform:translateY(-2px) rotate(8deg)}
@@ -55,7 +75,7 @@ h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw 1s 
 html[data-theme="dark"] .theme-btn .sun{transform:none;opacity:1}
 html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg);opacity:0}
 
-/* ═══ داک شیشه‌ای شناور — افکت شیشهٔ نرم در هر دو تم ═══ */
+/* ═══ داک شیشه‌ای شناور (ناوبری) ═══ */
 .bottom-nav{
   position:fixed;
   bottom:calc(10px + env(safe-area-inset-bottom,0));
@@ -63,7 +83,6 @@ html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg
   z-index:98;
   display:flex;align-items:stretch;gap:2px;
   padding:6px;border-radius:26px;
-  /* شیشهٔ روشن: گرادیان شفاف کرمی با بلور عمیق */
   background:linear-gradient(135deg, rgba(255,252,245,.62), rgba(255,252,245,.38));
   backdrop-filter:blur(24px) saturate(1.7);
   -webkit-backdrop-filter:blur(24px) saturate(1.7);
@@ -76,7 +95,6 @@ html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg
   max-width:calc(100vw - 20px);
   transition:background .5s,border-color .5s,box-shadow .5s;
 }
-/* شیشهٔ تاریک: دودیِ گرم با برق ملایم بالا */
 html[data-theme="dark"] .bottom-nav{
   background:linear-gradient(135deg, rgba(34,29,23,.66), rgba(34,29,23,.44));
   border-color:rgba(255,220,180,.14);
@@ -87,7 +105,6 @@ html[data-theme="dark"] .bottom-nav{
     inset 0 -1px 0 rgba(255,255,255,.04);
 }
 
-/* کپسول کشویی تب فعال — شیشهٔ رنگی نرم */
 .nav-glider{
   position:absolute;top:6px;bottom:6px;left:0;
   border-radius:20px;
@@ -109,43 +126,43 @@ html[data-theme="dark"] .nav-glider{
   min-width:50px;padding:7px 9px;
   border:none;background:transparent;border-radius:20px;
   color:var(--muted);
-  font-family:var(--font-fun);font-size:9.5px;font-weight:400;
+  font-family:var(--font-ui);font-size:11px;font-weight:500;
   cursor:pointer;transition:color .25s,background .25s;
   -webkit-tap-highlight-color:transparent;
 }
 .nav-tab:hover{background:var(--glass-hover)}
 .nav-tab svg{width:19px;height:19px;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
 .nav-tab:active{transform:scale(.9)}
-.nav-tab.active{color:var(--accent)}
+.nav-tab.active{color:var(--accent);font-weight:600}
 .nav-tab.active svg{transform:translateY(-1px) scale(1.1)}
 
 /* ═══ صفحه تمرکز ═══ */
 .app-focus{align-items:center;padding-top:12px}
 .focus-page-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:28px 24px;text-align:center;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;align-items:center;gap:18px}
-.focus-page-card .focus-task{font-size:14px;color:var(--muted);font-weight:400;line-height:1.8}
+.focus-page-card .focus-task{font-size:14px;color:var(--muted);font-weight:400;line-height:1.7}
 .focus-page-actions{display:flex;gap:8px;width:100%}
-.focus-page-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-weight:400;font-size:16px;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
+.focus-page-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:15px;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
 .focus-page-actions .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
-.focus-page-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:12px;border-radius:14px;cursor:pointer;transition:all .2s}
+.focus-page-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-weight:500;font-size:14px;padding:12px;border-radius:14px;cursor:pointer;transition:all .2s}
 .focus-page-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
 .focus-task-picker{display:flex;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1.5px dashed var(--border)}
-.focus-task-picker span{font-size:12px;color:var(--muted);flex-shrink:0}
-.focus-task-picker select{flex:1;min-width:0;font-family:var(--font-body);font-size:13px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:10px;padding:8px 12px;outline:none;cursor:pointer;direction:rtl}
+.focus-task-picker span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
+.focus-task-picker select{flex:1;min-width:0;font-family:var(--font-ui);font-size:13px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:10px;padding:8px 12px;outline:none;cursor:pointer;direction:rtl;font-weight:400}
 .focus-task-picker select:focus{border-color:var(--accent)}
 
 /* ═══ تنظیمات ═══ */
 .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 18px;box-shadow:var(--shadow-sm)}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:12px;flex-wrap:wrap}
-.settings-label{font-size:14px;font-weight:400}
+.settings-label{font-size:14px;font-weight:500}
 .settings-value{display:flex;align-items:center;gap:10px}
-.settings-value span{font-size:13px;color:var(--muted)}
-.settings-btn{border:1.5px solid var(--border);background:transparent;color:var(--accent);font-family:var(--font-fun);font-size:12px;font-weight:400;padding:5px 14px;border-radius:99px;cursor:pointer;transition:all .2s}
+.settings-value span{font-size:13px;color:var(--muted);font-weight:400}
+.settings-btn{border:1.5px solid var(--border);background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:5px 14px;border-radius:99px;cursor:pointer;transition:all .2s}
 .settings-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
 .settings-btn.danger{color:var(--danger);border-color:rgba(228,88,79,.3)}
 .settings-btn.danger:hover{background:rgba(228,88,79,.1);border-color:var(--danger)}
 .settings-divider{height:1px;background:var(--border);margin:0 -18px;padding:0 18px}
 .settings-row.danger .settings-label{color:var(--danger)}
-.settings-about{text-align:center;color:var(--muted);font-size:12px;padding:16px 0 8px;line-height:1.8}
+.settings-about{text-align:center;color:var(--muted);font-size:12px;padding:16px 0 8px;line-height:1.7;font-weight:400}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes twinkle{0%,100%{opacity:.12;transform:scale(.8) rotate(0deg)}50%{opacity:.5;transform:scale(1.15) rotate(20deg)}}
@@ -161,10 +178,10 @@ html[data-theme="dark"] .nav-glider{
 /* ═══ ریسپانسیو ═══ */
 @media (max-width:480px){
   .page{padding:24px 12px calc(var(--nav-height) + 16px)}
-  .subtitle{font-size:11.5px}
+  .subtitle{font-size:12px}
   .theme-btn{width:40px;height:40px;border-radius:12px}
   .bottom-nav{gap:1px;padding:5px;border-radius:22px}
-  .nav-tab{min-width:44px;padding:6px 7px;font-size:9px;border-radius:17px}
+  .nav-tab{min-width:44px;padding:6px 7px;font-size:10px;border-radius:17px}
   .nav-tab svg{width:18px;height:18px}
   .nav-glider{top:5px;bottom:5px;border-radius:17px}
   .focus-page-card{padding:22px 16px;gap:14px}
@@ -177,7 +194,7 @@ html[data-theme="dark"] .nav-glider{
 }
 @media (max-width:360px){
   .page{padding:20px 10px calc(var(--nav-height) + 14px)}
-  .nav-tab{min-width:40px;padding:5px 5px;font-size:8.5px}
+  .nav-tab{min-width:40px;padding:5px 5px;font-size:9px}
   .nav-tab svg{width:17px;height:17px}
   .focus-page-card{padding:18px 12px}
   .settings-card{padding:6px 14px}

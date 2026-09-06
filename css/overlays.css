@@ -5,49 +5,46 @@
 
 .name-card,.roll-card,.focus-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px 28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:var(--shadow-lg);animation:popCard .5s cubic-bezier(.34,1.56,.64,1)}
 .name-card .badge{width:54px;height:54px;border-radius:18px;background:var(--accent-soft);display:grid;place-items:center;margin:0 auto;color:var(--accent)}
-.name-card h2{font-family:var(--font-fun);font-size:22px;font-weight:400;margin:14px 0 6px}
-.name-card>p{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.8}
-.name-card input{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:14px;padding:12px 16px;font-family:inherit;font-size:15px;text-align:center;color:var(--text);outline:none;transition:border-color .3s,box-shadow .3s}
+.name-card h2{font-family:var(--font-personality);font-size:22px;font-weight:700;margin:14px 0 6px}
+.name-card>p{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.7;font-weight:400}
+.name-card input{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:14px;padding:12px 16px;font-family:var(--font-ui);font-size:15px;font-weight:400;text-align:center;color:var(--text);outline:none;transition:border-color .3s,box-shadow .3s}
 .name-card input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
-.name-card .go{margin-top:12px;width:100%;border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-size:17px;font-weight:400;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
+.name-card .go{margin-top:12px;width:100%;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:600;padding:12px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
 .name-card .go:hover{transform:translateY(-2px)}
 .name-card .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
-.skip{margin-top:14px;background:none;border:none;color:var(--muted);font-family:var(--font-fun);font-size:13px;font-weight:400;cursor:pointer}
+.skip{margin-top:14px;background:none;border:none;color:var(--muted);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer}
 .skip:hover{color:var(--accent)}
 
 .roll-card{padding:28px 24px 22px}
-.roll-title{color:var(--muted);font-family:var(--font-fun);font-size:15px;font-weight:400;margin-bottom:14px}
-.roll-box{min-height:88px;display:grid;place-items:center;background:var(--bg);border:2px dashed var(--border);border-radius:16px;padding:16px;font-size:15px;font-weight:700;line-height:1.9;transition:border-color .3s}
+.roll-title{color:var(--muted);font-family:var(--font-personality);font-size:16px;font-weight:700;margin-bottom:14px}
+.roll-box{min-height:88px;display:grid;place-items:center;background:var(--bg);border:2px dashed var(--border);border-radius:16px;padding:16px;font-size:15px;font-weight:500;line-height:1.8;transition:border-color .3s}
 .roll-box.tick{animation:tickPop .16s ease}
 @keyframes tickPop{from{transform:scale(.955)}}
 .roll-box.landed{border-color:var(--accent);border-style:solid;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
 .roll-actions{display:flex;gap:8px;margin-top:14px}
-.roll-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-fun);font-weight:400;font-size:15px;padding:11px;border-radius:13px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
+.roll-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:14px;padding:11px;border-radius:13px;cursor:pointer;box-shadow:0 4px 0 0 rgba(120,55,20,.35);transition:transform .18s,box-shadow .18s}
 .roll-actions .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
-.roll-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:11px;border-radius:13px;cursor:pointer;transition:all .2s}
+.roll-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-weight:500;font-size:13px;padding:11px;border-radius:13px;cursor:pointer;transition:all .2s}
 .roll-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
 
-/* ═══ حلقهٔ تایمر ═══ */
 .focus-card{padding:26px 24px 20px}
-.focus-task{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px;line-height:1.8}
+.focus-task{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:16px;line-height:1.7}
 .focus-ring{position:relative;width:180px;height:180px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
   background:conic-gradient(var(--accent) calc(var(--fp)*1%),var(--accent-soft) 0);
   transition:--fp .3s linear}
 @property --fp{syntax:'<number>';initial-value:0;inherits:false}
 .focus-inner{width:158px;height:158px;background:var(--surface);border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 2px 6px rgba(0,0,0,.04);transition:background .5s}
-.focus-time{font-family:var(--font-fun);font-size:38px;font-weight:400;line-height:1.1}
-.focus-state{font-family:var(--font-fun);font-size:12px;color:var(--muted);font-weight:400;margin-top:5px}
+.focus-time{font-family:var(--font-personality);font-size:38px;font-weight:700;line-height:1.1}
+.focus-state{font-family:var(--font-ui);font-size:12px;color:var(--muted);font-weight:500;margin-top:5px}
 .focus-presets{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:18px;flex-wrap:wrap;transition:opacity .3s}
 .focus-presets.locked{opacity:.45;pointer-events:none}
-.focus-presets button{font-family:var(--font-fun);font-size:13px;font-weight:400;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s}
+.focus-presets button{font-family:var(--font-ui);font-size:13px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer;transition:all .25s}
 .focus-presets button:hover{transform:translateY(-2px)}
-.focus-presets button:active{transform:scale(.93)}
-.focus-presets button.sel{background:var(--accent);border-color:var(--accent);color:#fff}
-.focus-presets input{width:64px;font-family:inherit;font-size:12px;font-weight:700;text-align:center;border:1.5px dashed var(--border);background:transparent;color:var(--text);border-radius:99px;padding:5px 6px;outline:none;transition:border-color .2s}
+.focus-presets button.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.focus-presets input{width:64px;font-family:var(--font-ui);font-size:12px;font-weight:500;text-align:center;border:1.5px dashed var(--border);background:transparent;color:var(--text);border-radius:99px;padding:5px 6px;outline:none;transition:border-color .2s}
 .focus-presets input:focus{border-color:var(--accent)}
 
-/* ═══ قرص شناور تایمر — بالای نوار ناوبری ═══ */
-.focus-pill{position:fixed;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 12px);inset-inline-start:50%;transform:translateX(50%);z-index:99;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-fun);font-weight:400;font-size:14px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
+.focus-pill{position:fixed;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 12px);inset-inline-start:50%;transform:translateX(50%);z-index:99;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-ui);font-weight:600;font-size:13px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
 .focus-pill svg{color:var(--accent)}
 .focus-pill.running::after{content:'';position:absolute;inset:-1.5px;border-radius:99px;border:1.5px solid var(--accent);animation:pillWave 1.8s ease-out infinite}
 @keyframes pillIn{from{opacity:0;transform:translateX(50%) translateY(24px)}}
@@ -55,27 +52,47 @@
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 
-/* ═══ ریسپانسیو ═══ */
-@media (max-width:480px){
-  .overlay{padding:14px}
-  .name-card,.roll-card,.focus-card{padding:24px 18px 18px;border-radius:20px;max-width:100%}
-  .name-card h2{font-size:19px}
+/* ═══ تولبار هایلایت ═══ */
+.hl-toolbar{position:fixed;z-index:96;display:flex;gap:8px;align-items:center;background:var(--text);padding:8px 12px;border-radius:99px;box-shadow:var(--shadow-lg);animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
+.hl-toolbar button{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);background:var(--hc,var(--bg));cursor:pointer;transition:transform .2s}
+.hl-toolbar button:hover{transform:scale(1.25)}
+.hl-toolbar .hl-note{background:transparent;border:none;font-size:15px;width:auto;height:auto}
+
+/* ═══ پنل یادداشت‌ها ═══ */
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:95;background:var(--surface);border-radius:24px 24px 0 0;box-shadow:var(--shadow-lg);max-height:70vh;display:flex;flex-direction:column;animation:sheetUp .35s cubic-bezier(.22,1,.36,1);padding-bottom:env(safe-area-inset-bottom,0)}
+.sheet[hidden]{display:none}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 18px;border-bottom:1.5px dashed var(--border)}
+.sheet-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
+.sheet-head div{display:flex;align-items:center;gap:6px}
+.notes-list{overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.notes-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px 0;font-weight:400}
+.note-item{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;transition:transform .2s,border-color .2s}
+.note-item:hover{transform:translateY(-2px);border-color:var(--accent)}
+.note-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.note-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.note-text{font-size:12px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:400}
+.note-note{font-size:11px;color:var(--accent);line-height:1.6;font-weight:500}
+.note-page{font-size:10px;color:var(--muted);flex-shrink:0;font-weight:500}
+.note-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0}
+.note-del:hover{color:var(--danger)}
+
+#noteInput{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:12px;padding:10px 12px;font-family:var(--font-ui);font-size:13px;font-weight:400;color:var(--text);outline:none;resize:vertical;margin-bottom:10px}
+#noteInput:focus{border-color:var(--accent)}
+
+@media (max-width:400px){
+  .name-card,.roll-card,.focus-card{padding:24px 18px 18px;border-radius:20px}
+  .name-card h2{font-size:20px}
   .name-card>p{font-size:12px}
-  .name-card input{font-size:16px;padding:10px 14px}
-  .name-card .go{font-size:15px;padding:11px}
+  .name-card input{font-size:14px;padding:10px 14px}
+  .name-card .go{font-size:14px;padding:11px}
   .focus-ring{width:150px;height:150px}
   .focus-inner{width:130px;height:130px}
-  .focus-time{font-size:30px}
-  .focus-presets button{font-size:11px;padding:4px 10px}
+  .focus-time{font-size:32px}
+  .focus-presets button{font-size:12px;padding:4px 10px}
   .focus-presets input{width:56px;font-size:11px}
   .roll-box{min-height:72px;font-size:14px;padding:14px}
-  .roll-actions .go,.roll-actions .ghost{font-size:12px;padding:10px}
-  .focus-pill{font-size:13px;padding:8px 14px}
+  .roll-actions .go,.roll-actions .ghost{font-size:13px;padding:10px}
+  .focus-pill{padding:8px 14px;font-size:12px;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 8px)}
   .focus-pill svg{width:13px;height:13px}
-}
-@media (max-width:360px){
-  .focus-ring{width:136px;height:136px}
-  .focus-inner{width:118px;height:118px}
-  .focus-time{font-size:26px}
-  .roll-actions{flex-direction:column}
 }
