@@ -74,9 +74,10 @@ export function renderProfile() {
   const done = state.tasks.filter(t => t.done).length;
   const streak = calcStreak();
   const books = getBooks();
-  let minutes = 0, highlights = 0;
+  let minutes = 0, notesCount = 0;
   books.forEach(b => {
-    highlights += (b.highlights || []).length;
+    // هم هایلایت‌های قدیمی و هم یادداشت‌های جدید per-page رو بشمار
+    notesCount += (b.highlights || []).length + (b.notes || []).length;
     Object.values(b.stats || {}).forEach(s => minutes += s.minutes || 0);
   });
   const st = $('#profileStats');
@@ -84,7 +85,7 @@ export function renderProfile() {
     <div class="stat-chip"><b>${faNum(streak)}</b><span>روز پیاپی</span></div>
     <div class="stat-chip"><b>${faNum(done)}</b><span>کار انجام‌شده</span></div>
     <div class="stat-chip"><b>${faNum(minutes)}</b><span>دقیقه مطالعه</span></div>
-    <div class="stat-chip"><b>${faNum(highlights)}</b><span>هایلایت</span></div>`;
+    <div class="stat-chip"><b>${faNum(notesCount)}</b><span>یادداشت</span></div>`;
 
   /* نشان‌ها */
   const B = [
@@ -92,7 +93,7 @@ export function renderProfile() {
     { label: 'ده‌تایی', desc: '۱۰ کار انجام‌شده', ok: done >= 10, icon: '<path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>' },
     { label: 'سه روز پیاپی', desc: '۳ روز پشت‌سرهم', ok: streak >= 3, icon: '<path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 009 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/>' },
     { label: 'کتاب‌خوان', desc: 'یه کتاب اضافه کن', ok: books.length >= 1, icon: '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>' },
-    { label: 'یادگار', desc: 'اولین هایلایت', ok: highlights >= 1, icon: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>' },
+    { label: 'یادگار', desc: 'اولین یادداشت', ok: notesCount >= 1, icon: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>' },
     { label: 'اهل تمرکز', desc: '۱۰ دقیقه مطالعه', ok: minutes >= 10, icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
   ];
   const bw = $('#badges');
@@ -161,9 +162,14 @@ export function initProfile() {
   };
   const cl = $('#profClear');
   if (cl) cl.onclick = () => {
-    if (confirm('همهٔ داده‌ها پاک بشه؟ این کار قابل برگشت نیست.')) {
-      localStorage.clear();
-      location.reload();
-    }
+    if (!confirm('همهٔ داده‌ها پاک بشه؟ این کار قابل برگشت نیست.')) return;
+    localStorage.clear();
+    // localStorage.clear() فقط تسک‌ها/تنظیمات/متادیتای کتاب‌ها رو پاک می‌کنه؛
+    // خود فایل‌های PDF جدا توی IndexedDB ذخیره شدن و باید صریحاً پاک بشن.
+    const req = indexedDB.deleteDatabase('daftarche-books');
+    const finish = () => location.reload();
+    req.onsuccess = finish;
+    req.onerror = finish;
+    req.onblocked = finish;
   };
 }
