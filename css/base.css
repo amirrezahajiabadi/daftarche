@@ -1,7 +1,7 @@
 /* ═══ تعریف فونت‌ها (Font Loading) ═══ */
 @font-face {
   font-family: 'Estedad';
-  src: url('../assets/fonts/Estedad[wght].woff2') format('woff2-variations');
+  src: url('../assets/fonts/Estedad[wght].woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
