@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Shared silhouette: small compact body, ready-to-move feet, springy coil tail, belly patch -->
+  <symbol id="rizolo-body" viewBox="0 0 200 200">
+    <ellipse cx="76" cy="182" rx="16" ry="9" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3"/>
+    <ellipse cx="124" cy="184" rx="15" ry="8.5" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3"/>
+    <path d="M100 122 C124 122 140 136 140 156 C140 174 128 184 110 184 L90 184 C72 184 60 174 60 156 C60 136 76 122 100 122 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Signature short springy tail -->
+    <path d="M140 170 L148 163 L156 168 L164 161" stroke="var(--rz-outline,#4F463F)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M140 170 L148 163 L156 168 L164 161" stroke="var(--rz-body,#D78355)" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="100" cy="156" rx="21" ry="19" fill="var(--rz-body-2,#E8A47A)" stroke="var(--rz-outline,#4F463F)" stroke-width="2"/>
+  </symbol>
+
+  <!-- Relatively large organic ears, neutral stance -->
+  <symbol id="rizolo-ears-neutral" viewBox="0 0 200 200">
+    <path d="M64 46 C56 36 46 24 44 14 C42 6 52 2 58 8 C66 14 72 26 74 36 C75 42 70 46 64 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="56" cy="25" rx="6" ry="10" transform="rotate(-22 56 25)" fill="var(--rz-body-2,#E8A47A)"/>
+    <path d="M136 46 C144 38 152 28 156 18 C159 11 150 6 145 12 C139 19 134 30 131 39 C129 45 133 47 136 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="144" cy="27" rx="5.5" ry="9" transform="rotate(20 144 27)" fill="var(--rz-body-2,#E8A47A)"/>
+  </symbol>
+
+  <!-- One ear pricked up, the other tilted down -->
+  <symbol id="rizolo-ears-curious" viewBox="0 0 200 200">
+    <g transform="rotate(8 64 44)">
+      <path d="M64 46 C56 36 46 24 44 14 C42 6 52 2 58 8 C66 14 72 26 74 36 C75 42 70 46 64 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="56" cy="25" rx="6" ry="10" transform="rotate(-22 56 25)" fill="var(--rz-body-2,#E8A47A)"/>
+    </g>
+    <g transform="rotate(10 136 46)">
+      <path d="M136 46 C144 38 152 28 156 18 C159 11 150 6 145 12 C139 19 134 30 131 39 C129 45 133 47 136 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="144" cy="27" rx="5.5" ry="9" transform="rotate(20 144 27)" fill="var(--rz-body-2,#E8A47A)"/>
+    </g>
+  </symbol>
+
+  <!-- Droopy ears -->
+  <symbol id="rizolo-ears-sleepy" viewBox="0 0 200 200">
+    <g transform="rotate(-16 62 44)">
+      <path d="M64 46 C56 36 46 24 44 14 C42 6 52 2 58 8 C66 14 72 26 74 36 C75 42 70 46 64 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="56" cy="25" rx="6" ry="10" transform="rotate(-22 56 25)" fill="var(--rz-body-2,#E8A47A)"/>
+    </g>
+    <g transform="rotate(16 138 44)">
+      <path d="M136 46 C144 38 152 28 156 18 C159 11 150 6 145 12 C139 19 134 30 131 39 C129 45 133 47 136 46 Z" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="144" cy="27" rx="5.5" ry="9" transform="rotate(20 144 27)" fill="var(--rz-body-2,#E8A47A)"/>
+    </g>
+  </symbol>
+
+  <!-- Poses: short arms -->
+  <symbol id="rizolo-arms-idle" viewBox="0 0 200 200">
+    <rect x="48" y="140" width="15" height="24" rx="7.5" transform="rotate(14 55 152)" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3"/>
+    <rect x="137" y="140" width="15" height="24" rx="7.5" transform="rotate(-14 144 152)" fill="var(--rz-body,#D78355)" stroke="var(--rz-outline,#4F463F)" stroke-width="3"/>
+  </symbol>
+
+  <!-- Tiny win: both arms raised -->
+  <symbol id="rizolo-arms-up" viewBox="0 0 200 200">
+    <path d="M68 142 C56 126 46 108 43 90" stroke="var(--rz-outline,#4F463F)" stroke-width="21" stroke-linecap="round" fill="none"/>
+    <path d="M68 142 C56 126 46 108 43 90" stroke="var(--rz-body,#D78355)" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M132 142 C144 126 154 108 157 90" stroke="var(--rz-outline,#4F463F)" stroke-width="21" stroke-linecap="round" fill="none"/>
+    <path d="M132 142 C144 126 154 108 157 90" stroke="var(--rz-body,#D78355)" stroke-width="15" stroke-linecap="round" fill="none"/>
+  </symbol>
+
+  <!-- Working: holding a small paper in front of the belly -->
+  <symbol id="rizolo-arms-work" viewBox="0 0 200 200">
+    <path d="M74 140 C73 150 78 158 87 161" stroke="var(--rz-outline,#4F463F)" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M74 140 C73 150 78 158 87 161" stroke="var(--rz-body,#D78355)" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M126 140 C127 150 122 158 113 161" stroke="var(--rz-outline,#4F463F)" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M126 140 C127 150 122 158 113 161" stroke="var(--rz-body,#D78355)" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <g transform="rotate(-4 100 152)">
+      <path d="M88 143 L88 159 A4 4 0 0 0 92 163 L108 163 A4 4 0 0 0 112 159 L112 143 Z" fill="var(--rz-paper,#FDF3DD)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M93 150 L107 150 M93 156 L103 156" stroke="var(--rz-paper-line,#D9C9A6)" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+  </symbol>
+
+  <!-- Running: arms pumping -->
+  <symbol id="rizolo-arms-run" viewBox="0 0 200 200">
+    <path d="M58 150 C50 158 42 163 33 164" stroke="var(--rz-outline,#4F463F)" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M58 150 C50 158 42 163 33 164" stroke="var(--rz-body,#D78355)" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M142 150 C150 157 158 160 167 156" stroke="var(--rz-outline,#4F463F)" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M142 150 C150 157 158 160 167 156" stroke="var(--rz-body,#D78355)" stroke-width="12" stroke-linecap="round" fill="none"/>
+  </symbol>
+
+  <!-- Default: calm but ready to move -->
+  <symbol id="rizolo-default" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-ears-neutral"/>
+    <use href="#rizolo-arms-idle"/>
+    <path d="M70 80 C76 68 94 68 98 78 C101 88 94 100 82 102 C72 104 67 92 70 80 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M114 84 C119 74 134 75 137 83 C140 92 134 101 124 102 C116 104 111 95 114 84 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="84" cy="88" rx="5" ry="6" fill="var(--rz-eye,#302B27)"/>
+    <ellipse cx="126" cy="89" rx="4.4" ry="5.4" fill="var(--rz-eye,#302B27)"/>
+    <circle cx="86" cy="85.5" r="1.7" fill="#fff"/>
+    <circle cx="127.5" cy="86.5" r="1.5" fill="#fff"/>
+    <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".45"/>
+    <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".45"/>
+    <path d="M91 112 Q 100 118 109 112" stroke="var(--rz-outline,#4F463F)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Curious: leaning in, one ear up, eyes wide looking up -->
+  <symbol id="rizolo-curious" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <g transform="rotate(3 100 92)">
+      <use href="#rizolo-ears-curious"/>
+      <path d="M68 78 C75 65 96 65 100 76 C104 87 96 101 82 103 C71 105 65 92 68 78 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M113 82 C119 71 136 72 139 81 C142 91 135 102 124 103 C115 105 110 94 113 82 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <ellipse cx="84" cy="84" rx="4.6" ry="5.4" fill="var(--rz-eye,#302B27)"/>
+      <ellipse cx="126" cy="86" rx="4.2" ry="5" fill="var(--rz-eye,#302B27)"/>
+      <circle cx="85.5" cy="82" r="1.6" fill="#fff"/>
+      <circle cx="127" cy="84" r="1.4" fill="#fff"/>
+      <ellipse cx="60" cy="101" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".4"/>
+      <ellipse cx="141" cy="102" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".4"/>
+      <ellipse cx="100" cy="115" rx="2.8" ry="3.4" fill="var(--rz-mouth,#6B4A35)"/>
+    </g>
+  </symbol>
+
+  <!-- Energetic: pumping arms, arched brows, open smile, motion dashes -->
+  <symbol id="rizolo-energetic" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-arms-run"/>
+    <g transform="rotate(2 100 92)">
+      <use href="#rizolo-ears-neutral"/>
+      <path d="M64 62 Q 80 54 96 62 M112 63 Q 126 55 140 62" stroke="var(--rz-outline,#4F463F)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M70 80 C76 68 94 68 98 78 C101 88 94 100 82 102 C72 104 67 92 70 80 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M114 84 C119 74 134 75 137 83 C140 92 134 101 124 102 C116 104 111 95 114 84 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <ellipse cx="84" cy="88" rx="4.4" ry="5.4" fill="var(--rz-eye,#302B27)"/>
+      <ellipse cx="126" cy="89" rx="4" ry="5" fill="var(--rz-eye,#302B27)"/>
+      <circle cx="85.5" cy="86" r="1.5" fill="#fff"/>
+      <circle cx="127" cy="87" r="1.3" fill="#fff"/>
+      <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".5"/>
+      <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".5"/>
+      <path d="M90 110 Q 100 121 110 110 Q 100 127 90 110 Z" fill="var(--rz-mouth,#6B4A35)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <path d="M48 178 l-9 -3 M40 170 l-8 -1" stroke="var(--rz-outline,#4F463F)" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  </symbol>
+
+  <!-- Determined: focused pupils, inward brows, firm mouth -->
+  <symbol id="rizolo-determined" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-ears-neutral"/>
+    <use href="#rizolo-arms-idle"/>
+    <path d="M63 61 L87 71 M137 61 L113 71" stroke="var(--rz-outline,#4F463F)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M70 80 C76 68 94 68 98 78 C101 88 94 100 82 102 C72 104 67 92 70 80 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M114 84 C119 74 134 75 137 83 C140 92 134 101 124 102 C116 104 111 95 114 84 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="85" cy="89" r="4" fill="var(--rz-eye,#302B27)"/>
+    <circle cx="126" cy="90" r="3.6" fill="var(--rz-eye,#302B27)"/>
+    <circle cx="86.5" cy="87" r="1.4" fill="#fff"/>
+    <circle cx="127" cy="88" r="1.2" fill="#fff"/>
+    <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".35"/>
+    <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".35"/>
+    <path d="M91 114 h18" stroke="var(--rz-outline,#4F463F)" stroke-width="3.5" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Surprised: round eyes, tiny pupils, raised brows, small o mouth -->
+  <symbol id="rizolo-surprised" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-ears-neutral"/>
+    <use href="#rizolo-arms-idle"/>
+    <path d="M68 64 Q 84 57 98 68 M114 66 Q 128 59 140 68" stroke="var(--rz-outline,#4F463F)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <circle cx="84" cy="86" r="12" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5"/>
+    <circle cx="126" cy="88" r="11" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5"/>
+    <circle cx="84" cy="86" r="2.8" fill="var(--rz-eye,#302B27)"/>
+    <circle cx="126" cy="88" r="2.6" fill="var(--rz-eye,#302B27)"/>
+    <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".4"/>
+    <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".4"/>
+    <ellipse cx="100" cy="116" rx="6" ry="8" fill="var(--rz-mouth,#6B4A35)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.2"/>
+  </symbol>
+
+  <!-- Happy: controlled smile, soft arc eyes -->
+  <symbol id="rizolo-happy" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-ears-neutral"/>
+    <use href="#rizolo-arms-idle"/>
+    <path d="M70 82 Q 84 70 98 80" stroke="var(--rz-outline,#4F463F)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M114 84 Q 126 74 138 82" stroke="var(--rz-outline,#4F463F)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M88 112 Q 100 121 112 112" stroke="var(--rz-outline,#4F463F)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".55"/>
+    <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".55"/>
+  </symbol>
+
+  <!-- Sleepy: heavy lids, droopy ears, tiny yawn, small z -->
+  <symbol id="rizolo-sleepy" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <g transform="rotate(-3 100 90)">
+      <use href="#rizolo-ears-sleepy"/>
+      <path d="M70 80 C76 68 94 68 98 78 C101 88 94 100 82 102 C72 104 67 92 70 80 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M114 84 C119 74 134 75 137 83 C140 92 134 101 124 102 C116 104 111 95 114 84 Z" fill="var(--rz-eye-white,#FBF8F2)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M66 82 Q 83 74 100 82 M112 85 Q 127 78 142 85" stroke="var(--rz-outline,#4F463F)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="85" cy="95" rx="3.8" ry="3.2" fill="var(--rz-eye,#302B27)"/>
+      <ellipse cx="126" cy="96" rx="3.4" ry="2.9" fill="var(--rz-eye,#302B27)"/>
+      <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".3"/>
+      <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".3"/>
+      <ellipse cx="100" cy="116" rx="2.6" ry="3.2" fill="var(--rz-mouth,#6B4A35)"/>
+    </g>
+    <path d="M124 44 l6 6 h-6 l6 6" stroke="var(--rz-outline,#4F463F)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+  </symbol>
+
+  <!-- Celebrating: arms up, big smile, small star -->
+  <symbol id="rizolo-celebrating" viewBox="0 0 200 200">
+    <use href="#rizolo-body"/>
+    <use href="#rizolo-ears-neutral"/>
+    <use href="#rizolo-arms-up"/>
+    <path d="M70 82 Q 84 70 98 80" stroke="var(--rz-outline,#4F463F)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M114 84 Q 126 74 138 82" stroke="var(--rz-outline,#4F463F)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M86 110 Q 100 124 114 110 Q 100 131 86 110 Z" fill="var(--rz-mouth,#6B4A35)" stroke="var(--rz-outline,#4F463F)" stroke-width="2.2" stroke-linejoin="round"/>
+    <ellipse cx="60" cy="102" rx="6" ry="4" fill="var(--rz-cheek,#E89B6C)" opacity=".55"/>
+    <ellipse cx="141" cy="103" rx="5.5" ry="3.8" fill="var(--rz-cheek,#E89B6C)" opacity=".55"/>
+    <path d="M156 30 l2.6 7.4 7.4 2.6 -7.4 2.6 -2.6 7.4 -2.6-7.4 -7.4-2.6 7.4-2.6 Z" fill="var(--rz-star,#F0B95C)"/>
+    <circle cx="42" cy="66" r="2" fill="var(--rz-outline,#4F463F)" opacity=".5"/>
+  </symbol>
+</svg>

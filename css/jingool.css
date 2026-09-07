@@ -1,0 +1,16 @@
+/* ═══ Jingool: fifth Daftarche character — palette & rendering ═══
+   Same convention as the other four characters: the palette lives on the
+   character class so colors can be tuned without touching the sprite asset. */
+
+.jingool{
+  --jg-body:#D9A441; --jg-body-2:#EBCB78; --jg-outline:#5A4B35;
+  --jg-face:#332D29; --jg-core:#FFE8A3; --jg-white:#FBF6EA;
+  width:100%;height:auto;display:block
+}
+
+/* ── Profile: character identity thumb ── */
+.char-thumb .jingool{width:52px;height:52px}
+
+@media (max-width:480px){
+  .char-thumb .jingool{width:46px;height:46px}
+}

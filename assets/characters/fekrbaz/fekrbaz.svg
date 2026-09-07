@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Shared silhouette: upright figure — a big focused head over a slimmer torso,
+       short legs. Drawn as torso+feet first, then the head so it reads as one body. -->
+  <symbol id="fekrbaz-feet" viewBox="0 0 200 200">
+    <ellipse cx="84" cy="181" rx="10.5" ry="6" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+    <ellipse cx="116" cy="181" rx="10.5" ry="6" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="fekrbaz-torso" viewBox="0 0 200 200">
+    <path d="M100 172 C90 172 80 169 74 163 C67 157 65 148 67 140 C69 131 75 126 84 123 C93 121 107 121 116 123 C125 126 131 131 133 140 C135 148 133 157 126 163 C120 169 110 172 100 172 Z" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3" stroke-linejoin="round"/>
+  </symbol>
+
+  <!-- The head: a large rounded thought-creature head, no ears -->
+  <symbol id="fekrbaz-head" viewBox="0 0 200 200">
+    <path d="M100 26 C122 26 142 38 150 56 C157 72 156 96 145 110 C138 119 128 126 119 129 C110 133 94 133 85 129 C76 126 66 119 59 110 C47 96 43 72 50 56 C58 38 78 26 100 26 Z" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3" stroke-linejoin="round"/>
+  </symbol>
+
+  <!-- Small wings held close to the body (idle) -->
+  <symbol id="fekrbaz-wings-down" viewBox="0 0 200 200">
+    <rect x="60" y="137" width="13" height="25" rx="6.5" transform="rotate(14 66.5 149.5)" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+    <rect x="127" y="137" width="13" height="25" rx="6.5" transform="rotate(-14 133.5 149.5)" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+  </symbol>
+
+  <!-- One wing raised toward the face while thinking -->
+  <symbol id="fekrbaz-wing-chin" viewBox="0 0 200 200">
+    <rect x="60" y="137" width="13" height="25" rx="6.5" transform="rotate(14 66.5 149.5)" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+    <path d="M134 148 C 134 131 128 121 119 115" stroke="var(--fb-outline,#414A52)" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <path d="M134 148 C 134 131 128 121 119 115" stroke="var(--fb-body,#718292)" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <circle cx="114" cy="113" r="7" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+  </symbol>
+
+  <!-- Signature soft brow bands above the eyes (calm default pose) -->
+  <symbol id="fekrbaz-brow-calm" viewBox="0 0 200 200">
+    <path d="M68 80 Q 84 67 100 74" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+    <path d="M68 80 Q 84 67 100 74" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M132 80 Q 116 67 100 74" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+    <path d="M132 80 Q 116 67 100 74" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Default: calm focused cream eyes, straight gaze, tiny soft smile -->
+  <symbol id="fekrbaz-default" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(0 100 122)">
+      <use href="#fekrbaz-head"/>
+      <use href="#fekrbaz-brow-calm"/>
+      <ellipse cx="84" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="96.5" r="4" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="96.5" r="4" fill="var(--fb-face,#292F34)"/>
+      <circle cx="82.8" cy="95" r="1.4" fill="#fff"/>
+      <circle cx="114.8" cy="95" r="1.4" fill="#fff"/>
+      <path d="M93 119 Q 100 123 107 119" stroke="var(--fb-outline,#414A52)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Thinking: gaze up, head tilted, one brow raised, wing to the face -->
+  <symbol id="fekrbaz-thinking" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(-8 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M68 75 Q 83 61 99 70" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M68 75 Q 83 61 99 70" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M132 82 Q 117 70 101 77" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M132 82 Q 117 70 101 77" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="84" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="82.5" cy="94" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="114.5" cy="94" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="81.7" cy="92.7" r="1.2" fill="#fff"/>
+      <circle cx="113.7" cy="92.7" r="1.2" fill="#fff"/>
+      <ellipse cx="100" cy="122" rx="2.6" ry="3" fill="var(--fb-face,#292F34)"/>
+    </g>
+    <use href="#fekrbaz-wing-chin"/>
+  </symbol>
+
+  <!-- Focused: steady, precise pupils, brow bands low, firm small mouth -->
+  <symbol id="fekrbaz-focused" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(0 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M70 82 Q 85 74 100 79" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M70 82 Q 85 74 100 79" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M130 82 Q 115 74 100 79" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M130 82 Q 115 74 100 79" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="84" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="96" r="2.9" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="96" r="2.9" fill="var(--fb-face,#292F34)"/>
+      <circle cx="83.3" cy="95.2" r="1" fill="#fff"/>
+      <circle cx="115.3" cy="95.2" r="1" fill="#fff"/>
+      <path d="M95 121 L105 121" stroke="var(--fb-outline,#414A52)" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Curious: head tilt, one eye a little wider, brows asymmetrical -->
+  <symbol id="fekrbaz-curious" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(6 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M66 75 Q 82 62 99 70" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M66 75 Q 82 62 99 70" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M132 82 Q 117 71 101 78" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M132 82 Q 117 71 101 78" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="82" cy="96" rx="13" ry="9.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12" ry="8" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="82" cy="96.5" r="4.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="96" r="3.4" fill="var(--fb-face,#292F34)"/>
+      <circle cx="80.6" cy="95" r="1.4" fill="#fff"/>
+      <circle cx="115.2" cy="94.8" r="1.1" fill="#fff"/>
+      <ellipse cx="100" cy="121" rx="2.4" ry="2.8" fill="var(--fb-face,#292F34)"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Surprised: wide-open cream eyes, tiny pupils, brows raised high, o mouth -->
+  <symbol id="fekrbaz-surprised" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(0 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M68 71 Q 84 57 100 66" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M68 71 Q 84 57 100 66" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M132 71 Q 116 57 100 66" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M132 71 Q 116 57 100 66" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="84" cy="97" r="13" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="116" cy="97" r="13" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="97" r="2.5" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="97" r="2.5" fill="var(--fb-face,#292F34)"/>
+      <circle cx="83.4" cy="96.2" r="1" fill="#fff"/>
+      <circle cx="115.4" cy="96.2" r="1" fill="#fff"/>
+      <ellipse cx="100" cy="124" rx="3.4" ry="4.2" fill="var(--fb-face,#292F34)"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Confused: pupils looking different ways, one brow up one down, wavy mouth -->
+  <symbol id="fekrbaz-confused" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(-6 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M66 76 Q 82 62 99 71" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M66 76 Q 82 62 99 71" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M132 84 Q 117 77 101 80" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M132 84 Q 117 77 101 80" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="84" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="96" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="117.5" cy="97.5" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="83.2" cy="94.8" r="1.2" fill="#fff"/>
+      <circle cx="116.7" cy="96.2" r="1.2" fill="#fff"/>
+      <path d="M93 122 q 2.4 2.2 4.8 0 q 2.4 -2.2 4.8 0 q 2.4 2.2 4.8 0" stroke="var(--fb-outline,#414A52)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Happy: quiet soft smile, relaxed brows -->
+  <symbol id="fekrbaz-happy" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(0 100 122)">
+      <use href="#fekrbaz-head"/>
+      <use href="#fekrbaz-brow-calm"/>
+      <path d="M74 95 Q 86 87 98 95" stroke="var(--fb-outline,#414A52)" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <path d="M102 95 Q 114 87 126 95" stroke="var(--fb-outline,#414A52)" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <path d="M92 120 Q 100 128 108 120" stroke="var(--fb-outline,#414A52)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Proud: calm narrowed satisfied eyes, gentle smile, one small cream sparkle -->
+  <symbol id="fekrbaz-proud" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(-3 100 122)">
+      <use href="#fekrbaz-head"/>
+      <path d="M67 81 Q 83 68 99 73" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M67 81 Q 83 68 99 73" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M133 81 Q 117 68 101 73" stroke="var(--fb-outline,#414A52)" stroke-width="9.5" fill="none" stroke-linecap="round"/>
+      <path d="M133 81 Q 117 68 101 73" stroke="var(--fb-body-2,#9EADB8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="84" cy="97" rx="12" ry="7" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="97" rx="12" ry="7" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="97.5" r="3.2" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="97.5" r="3.2" fill="var(--fb-face,#292F34)"/>
+      <circle cx="83.3" cy="96.5" r="1.1" fill="#fff"/>
+      <circle cx="115.3" cy="96.5" r="1.1" fill="#fff"/>
+      <path d="M95 119.5 Q 100 123 106 118.5" stroke="var(--fb-outline,#414A52)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M161 40 l2.6 7.4 7.4 2.6 -7.4 2.6 -2.6 7.4 -2.6-7.4 -7.4-2.6 7.4-2.6 Z" fill="var(--fb-eye,#D9C8A5)"/>
+    </g>
+    <use href="#fekrbaz-wings-down"/>
+  </symbol>
+
+  <!-- Bonus pose symbol (not in the default expression list): quietly reading a small book -->
+  <symbol id="fekrbaz-reading" viewBox="0 0 200 200">
+    <use href="#fekrbaz-feet"/>
+    <use href="#fekrbaz-torso"/>
+    <g transform="rotate(2 100 122)">
+      <use href="#fekrbaz-head"/>
+      <use href="#fekrbaz-brow-calm"/>
+      <ellipse cx="84" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <ellipse cx="116" cy="96" rx="12.5" ry="8.5" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.6"/>
+      <circle cx="84" cy="96" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="116" cy="96" r="3.6" fill="var(--fb-face,#292F34)"/>
+      <circle cx="83.2" cy="94.9" r="1.2" fill="#fff"/>
+      <circle cx="115.2" cy="94.9" r="1.2" fill="#fff"/>
+      <path d="M93 119.5 Q 100 123.5 107 119.5" stroke="var(--fb-outline,#414A52)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    </g>
+    <path d="M84 150 L100 141 L116 150 L100 159 Z" fill="var(--fb-eye,#D9C8A5)" stroke="var(--fb-outline,#414A52)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M100 141 L100 159" stroke="var(--fb-outline,#414A52)" stroke-width="1.8" opacity=".55"/>
+    <path d="M86 150 L98 143 M114 150 L102 143" stroke="var(--fb-body-2,#9EADB8)" stroke-width="1.6" opacity=".8"/>
+    <rect x="60" y="137" width="13" height="25" rx="6.5" transform="rotate(30 66.5 149.5)" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+    <rect x="127" y="137" width="13" height="25" rx="6.5" transform="rotate(-30 133.5 149.5)" fill="var(--fb-body,#718292)" stroke="var(--fb-outline,#414A52)" stroke-width="3"/>
+  </symbol>
+</svg>

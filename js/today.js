@@ -8,6 +8,7 @@ import { subscribe } from './bus.js';
 import { addTask, dueLabel, collapse, setTaskDone } from './tasks.js';
 import { findFrog, frogScore } from './progress.js';
 import { openFocus } from './focus.js';
+import { qorqoriMarkup } from './qorqori.js';
 
 const DAY = 864e5;
 const PRI_COLORS = { high: '#ff5d5d', mid: '#ffb45c', low: '#7fb069' };
@@ -55,6 +56,17 @@ function renderHeader() {
 let heroFrog = null;      // task object currently shown
 let heroOverride = null;  // task forced by "یکی دیگه"
 
+/* Simple state → expression mapping for Qorqori.
+   High priority = determined, progress today = happy,
+   all done = celebrating, nothing to do = thinking. */
+function frogExpr() {
+  if (heroFrog) {
+    if (heroFrog.p === 'high') return 'determined';
+    return todayDone().length > 0 ? 'happy' : 'default';
+  }
+  return todayDone().length > 0 ? 'celebrating' : 'thinking';
+}
+
 function renderFrog() {
   const wrap = $('#todayFrog');
   if (!wrap) return;
@@ -71,7 +83,7 @@ function renderFrog() {
   if (!frog) {
     wrap.innerHTML = `
       <div class="frog-hero frog-empty">
-        <span class="frog-emoji" aria-hidden="true">🐸</span>
+        <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
         <span class="frog-kicker">قورباغهٔ امروز</span>
         <p class="frog-none">کاری برای قورت دادن نمونده!<br>یه کار تازه اضافه کن یا به خودت استراحت بده 🎉</p>
       </div>`;
@@ -85,7 +97,7 @@ function renderFrog() {
   }
   wrap.innerHTML = `
     <div class="frog-hero">
-      <span class="frog-emoji" aria-hidden="true">🐸</span>
+      <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
       <span class="frog-kicker">قورباغهٔ امروز</span>
       <h3 class="frog-name"></h3>
       <div class="frog-meta">${chips.join('')}</div>

@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Shared silhouette: one soft cloud-like body with the head dissolved into it;
+       tiny stubby feet barely peeking out below; the small pillow rests on top. -->
+  <symbol id="khabalo-body" viewBox="0 0 200 200">
+    <path d="M100 62 C118 62 134 68 144 80 C154 92 160 108 157 124 C155 140 148 154 136 162 C128 168 118 172 100 174 C82 172 72 168 64 162 C52 154 45 140 43 124 C40 108 46 92 56 80 C66 68 82 62 100 62 Z" fill="var(--kb-body,#A89BBF)" stroke="var(--kb-outline,#514A55)" stroke-width="3" stroke-linejoin="round"/>
+  </symbol>
+
+  <!-- Two tiny feet, mostly dissolved into the body -->
+  <symbol id="khabalo-feet" viewBox="0 0 200 200">
+    <ellipse cx="84" cy="180" rx="11" ry="5.5" fill="var(--kb-body,#A89BBF)" stroke="var(--kb-outline,#514A55)" stroke-width="2.5"/>
+    <ellipse cx="116" cy="180" rx="11" ry="5.5" fill="var(--kb-body,#A89BBF)" stroke="var(--kb-outline,#514A55)" stroke-width="2.5"/>
+  </symbol>
+
+  <!-- Signature small pillow resting on the head, with a soft crease -->
+  <symbol id="khabalo-pillow" viewBox="0 0 200 200">
+    <rect x="74" y="30" width="52" height="36" rx="17" fill="var(--kb-pillow,#D8CFDF)" stroke="var(--kb-outline,#514A55)" stroke-width="3"/>
+    <path d="M86 44 Q 100 39 114 44" stroke="var(--kb-body-2,#C9BED5)" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+  </symbol>
+
+  <!-- Very short stubby arms hanging at the sides -->
+  <symbol id="khabalo-arms-hang" viewBox="0 0 200 200">
+    <path d="M57 138 C 53 146 50 152 48 158" stroke="var(--kb-outline,#514A55)" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M57 138 C 53 146 50 152 48 158" stroke="var(--kb-body,#A89BBF)" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M143 138 C 147 146 150 152 152 158" stroke="var(--kb-outline,#514A55)" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M143 138 C 147 146 150 152 152 158" stroke="var(--kb-body,#A89BBF)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </symbol>
+
+  <!-- One tiny arm raised for a small, sleepy celebration -->
+  <symbol id="khabalo-arm-up" viewBox="0 0 200 200">
+    <path d="M137 146 C 145 136 152 126 156 114" stroke="var(--kb-outline,#514A55)" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M137 146 C 145 136 152 126 156 114" stroke="var(--kb-body,#A89BBF)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </symbol>
+
+  <!-- Default: soft half-open eyes, calm and unhurried -->
+  <symbol id="khabalo-default" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-4 100 48)"/>
+    <use href="#khabalo-body"/>
+    <use href="#khabalo-arms-hang"/>
+    <ellipse cx="82" cy="100" rx="7" ry="4.7" fill="var(--kb-white,#F4F1F8)"/>
+    <ellipse cx="117" cy="101.5" rx="6.3" ry="4.3" fill="var(--kb-white,#F4F1F8)"/>
+    <ellipse cx="82.6" cy="101" rx="2.4" ry="2" fill="var(--kb-eye,#302C33)"/>
+    <ellipse cx="117.4" cy="102.6" rx="2.2" ry="1.8" fill="var(--kb-eye,#302C33)"/>
+    <circle cx="83.4" cy="100.2" r=".8" fill="#fff"/>
+    <path d="M95 122 Q 100 124.5 105 122" stroke="var(--kb-outline,#514A55)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Sleepy: heavy drooping closed eyes, small yawn, tilted pillow, a tiny z -->
+  <symbol id="khabalo-sleepy" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-16 100 48)"/>
+    <use href="#khabalo-body"/>
+    <path d="M73 100 Q 82 107.5 91 100" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M108 101 Q 117 108.5 126 101" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M95 126.5 Q 100 124 105 126.5" stroke="var(--kb-outline,#514A55)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M137 48 l8 8 h-8 l8 8" stroke="var(--kb-outline,#514A55)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/>
+  </symbol>
+
+  <!-- Cozy: fully closed contented eyes, tiny smile, soft blush -->
+  <symbol id="khabalo-cozy" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-9 100 48)"/>
+    <use href="#khabalo-body"/>
+    <path d="M74 100 Q 82 94.5 90 100" stroke="var(--kb-outline,#514A55)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M109 100.8 Q 117 95.8 125 100.8" stroke="var(--kb-outline,#514A55)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M94 121 Q 100 126.5 106 121" stroke="var(--kb-outline,#514A55)" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <ellipse cx="70" cy="114" rx="7" ry="4" fill="var(--kb-blush,#C6A8BB)" opacity=".5"/>
+    <ellipse cx="130" cy="115" rx="6.4" ry="3.6" fill="var(--kb-blush,#C6A8BB)" opacity=".5"/>
+  </symbol>
+
+  <!-- Tired: lower droopy eyes, small frown, pillow slumping, body leaning slightly -->
+  <symbol id="khabalo-tired" viewBox="0 0 200 200">
+    <g transform="rotate(2.5 100 160)">
+      <use href="#khabalo-feet"/>
+      <use href="#khabalo-pillow" transform="rotate(-20 100 48)"/>
+      <use href="#khabalo-body"/>
+      <use href="#khabalo-arms-hang"/>
+      <path d="M74 104 Q 82 110 90 104" stroke="var(--kb-outline,#514A55)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M109 105 Q 117 111 125 105" stroke="var(--kb-outline,#514A55)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M95 128 Q 100 124.5 105 128" stroke="var(--kb-outline,#514A55)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    </g>
+  </symbol>
+
+  <!-- Thinking: one eye a little more open looking away, thought dots -->
+  <symbol id="khabalo-thinking" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(5 100 48)"/>
+    <use href="#khabalo-body"/>
+    <use href="#khabalo-arms-hang"/>
+    <ellipse cx="83" cy="100" rx="6" ry="5.4" fill="var(--kb-white,#F4F1F8)" stroke="var(--kb-outline,#514A55)" stroke-width="2"/>
+    <circle cx="82.4" cy="99" r="2.2" fill="var(--kb-eye,#302C33)"/>
+    <circle cx="81.7" cy="98.4" r=".8" fill="#fff"/>
+    <path d="M109 101.5 Q 117 107 125 101.5" stroke="var(--kb-outline,#514A55)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M96 124 Q 100 126.5 104 124" stroke="var(--kb-outline,#514A55)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="3" fill="var(--kb-outline,#514A55)" opacity=".7"/>
+    <circle cx="40" cy="34" r="2.2" fill="var(--kb-outline,#514A55)" opacity=".5"/>
+    <circle cx="46" cy="20" r="1.6" fill="var(--kb-outline,#514A55)" opacity=".35"/>
+  </symbol>
+
+  <!-- Surprised: eyes open wide for once, small o mouth -->
+  <symbol id="khabalo-surprised" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-1 100 48)"/>
+    <use href="#khabalo-body"/>
+    <use href="#khabalo-arms-hang"/>
+    <path d="M73 92 Q 82 86.5 91 92" stroke="var(--kb-outline,#514A55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M108 93 Q 117 87.5 126 93" stroke="var(--kb-outline,#514A55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="82" cy="102" r="6.4" fill="var(--kb-white,#F4F1F8)" stroke="var(--kb-outline,#514A55)" stroke-width="2"/>
+    <circle cx="117" cy="103" r="5.9" fill="var(--kb-white,#F4F1F8)" stroke="var(--kb-outline,#514A55)" stroke-width="2"/>
+    <circle cx="82" cy="102" r="1.9" fill="var(--kb-eye,#302C33)"/>
+    <circle cx="117" cy="103" r="1.7" fill="var(--kb-eye,#302C33)"/>
+    <ellipse cx="100" cy="127" rx="3.4" ry="4.4" fill="var(--kb-eye,#302C33)"/>
+    <ellipse cx="70" cy="115" rx="7" ry="4" fill="var(--kb-blush,#C6A8BB)" opacity=".35"/>
+    <ellipse cx="130" cy="116" rx="6.4" ry="3.6" fill="var(--kb-blush,#C6A8BB)" opacity=".35"/>
+  </symbol>
+
+  <!-- Happy: soft closed happy eyes, gentle smile, soft blush -->
+  <symbol id="khabalo-happy" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-6 100 48)"/>
+    <use href="#khabalo-body"/>
+    <use href="#khabalo-arms-hang"/>
+    <path d="M73 99 Q 82 93 91 100" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M108 100 Q 117 94 126 101" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M92 121 Q 100 128 108 121" stroke="var(--kb-outline,#514A55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="70" cy="114" rx="7.2" ry="4.2" fill="var(--kb-blush,#C6A8BB)" opacity=".55"/>
+    <ellipse cx="130" cy="115" rx="6.6" ry="3.8" fill="var(--kb-blush,#C6A8BB)" opacity=".55"/>
+  </symbol>
+
+  <!-- Celebrating: one tiny arm up, soft smile, a small sparkle -->
+  <symbol id="khabalo-celebrating" viewBox="0 0 200 200">
+    <use href="#khabalo-feet"/>
+    <use href="#khabalo-pillow" transform="rotate(-2 100 48)"/>
+    <use href="#khabalo-body"/>
+    <use href="#khabalo-arm-up"/>
+    <path d="M73 99 Q 82 93 91 100" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M108 100 Q 117 94 126 101" stroke="var(--kb-outline,#514A55)" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M93 121.5 Q 100 128.5 107 121.5" stroke="var(--kb-outline,#514A55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="70" cy="114" rx="7.2" ry="4.2" fill="var(--kb-blush,#C6A8BB)" opacity=".5"/>
+    <ellipse cx="130" cy="115" rx="6.6" ry="3.8" fill="var(--kb-blush,#C6A8BB)" opacity=".5"/>
+    <path d="M166 84 l3 7.5 7.5 3 -7.5 3 -3 7.5 -3-7.5 -7.5-3 7.5-3 Z" fill="var(--kb-star,#E2CB90)"/>
+  </symbol>
+</svg>

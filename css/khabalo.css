@@ -1,0 +1,17 @@
+/* ═══ Khabalo: third Daftarche character — palette & rendering ═══
+   Same convention as Qorqori and Rizolo: the palette lives on the character
+   class so colors can be tuned without touching the sprite asset. */
+
+.khabalo{
+  --kb-body:#A89BBF; --kb-body-2:#C9BED5; --kb-outline:#514A55;
+  --kb-eye:#302C33; --kb-white:#F4F1F8; --kb-blush:#C6A8BB;
+  --kb-pillow:#D8CFDF; --kb-star:#E2CB90;
+  width:100%;height:auto;display:block
+}
+
+/* ── Profile: character identity thumb ── */
+.char-thumb .khabalo{width:52px;height:52px}
+
+@media (max-width:480px){
+  .char-thumb .khabalo{width:46px;height:46px}
+}

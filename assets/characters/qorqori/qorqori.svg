@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Shared silhouette: slightly oversized feet, compact torso, large head, notebook pocket -->
+  <symbol id="qorqori-body" viewBox="0 0 200 200">
+    <ellipse cx="43" cy="176" rx="24" ry="13" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3"/>
+    <ellipse cx="157" cy="176" rx="24" ry="13" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3"/>
+    <path d="M100 15 C139 15 161 43 161 79 C161 103 150 118 140 125 C146 128 149 135 149 145 C149 172 133 190 110 190 L90 190 C67 190 51 172 51 145 C51 135 54 128 60 125 C50 118 39 103 39 79 C39 43 61 15 100 15 Z" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M79 146 L121 146 A6 6 0 0 1 127 152 L127 169 A6 6 0 0 1 121 175 L79 175 A6 6 0 0 1 73 169 L73 152 A6 6 0 0 1 79 146 Z" fill="var(--q-body-deep,#7fa066)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M77 154 L123 154" stroke="var(--q-outline,#42593a)" stroke-width="2" stroke-dasharray="3 3.5" stroke-linecap="round" opacity=".55"/>
+    <path d="M100 155 L100 171" stroke="var(--q-outline,#42593a)" stroke-width="1.6" opacity=".35"/>
+  </symbol>
+
+  <!-- Tiny paper note peeking out of the pocket -->
+  <symbol id="qorqori-note" viewBox="0 0 200 200">
+    <g transform="rotate(-7 100 143)">
+      <path d="M86 133 L86 150 A5 5 0 0 0 91 155 L109 155 A5 5 0 0 0 114 150 L114 133 Z" fill="var(--q-note,#fdf3dd)" stroke="var(--q-outline,#42593a)" stroke-width="2.5"/>
+      <path d="M91 140 L109 140 M91 146 L104 146" stroke="var(--q-note-line,#d9c9a6)" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </symbol>
+
+  <!-- Short rounded arms, relaxed at the sides -->
+  <symbol id="qorqori-arms-down" viewBox="0 0 200 200">
+    <rect x="40" y="138" width="17" height="27" rx="8.5" transform="rotate(16 48.5 151.5)" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3"/>
+    <rect x="143" y="138" width="17" height="27" rx="8.5" transform="rotate(-16 151.5 151.5)" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3"/>
+  </symbol>
+
+  <!-- One arm raised, fist near the chin -->
+  <symbol id="qorqori-arm-think" viewBox="0 0 200 200">
+    <path d="M150 142 C 147 130 138 122 127 119" stroke="var(--q-outline,#42593a)" stroke-width="21" stroke-linecap="round" fill="none"/>
+    <path d="M150 142 C 147 130 138 122 127 119" stroke="var(--q-body,#93b37c)" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <circle cx="117" cy="119" r="9" fill="var(--q-body,#93b37c)" stroke="var(--q-outline,#42593a)" stroke-width="3"/>
+  </symbol>
+
+  <!-- Both arms raised -->
+  <symbol id="qorqori-arms-up" viewBox="0 0 200 200">
+    <path d="M63 140 C 52 124 38 106 31 86" stroke="var(--q-outline,#42593a)" stroke-width="21" stroke-linecap="round" fill="none"/>
+    <path d="M63 140 C 52 124 38 106 31 86" stroke="var(--q-body,#93b37c)" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M137 140 C 148 124 162 106 169 86" stroke="var(--q-outline,#42593a)" stroke-width="21" stroke-linecap="round" fill="none"/>
+    <path d="M137 140 C 148 124 162 106 169 86" stroke="var(--q-body,#93b37c)" stroke-width="15" stroke-linecap="round" fill="none"/>
+  </symbol>
+
+  <!-- Calm: asymmetric organic eyes, small smile -->
+  <symbol id="qorqori-default" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <path d="M72 56 C82 48 97 50 101 60 C104 69 97 82 84 84 C74 87 66 77 72 56 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M117 60 C125 53 139 55 142 64 C145 73 139 83 128 84 C119 86 112 78 117 60 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="87" cy="69" rx="4.6" ry="6" fill="var(--q-eye,#333d2c)"/>
+    <ellipse cx="128" cy="71" rx="4" ry="5.4" fill="var(--q-eye,#333d2c)"/>
+    <circle cx="89" cy="66.5" r="1.7" fill="#fff"/>
+    <circle cx="129.5" cy="68.5" r="1.5" fill="#fff"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".45"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".45"/>
+    <path d="M89 101 Q 100 109 111 101" stroke="var(--q-outline,#42593a)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Happy: closed arc eyes, open smile -->
+  <symbol id="qorqori-happy" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <path d="M70 60 Q 83 48 96 58" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M116 62 Q 127 53 138 60" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M86 102 Q 100 118 114 102 Q 100 128 86 102 Z" fill="var(--q-mouth,#8a5a40)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".55"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".55"/>
+  </symbol>
+
+  <!-- Determined: angled brows, focused pupils, firm mouth -->
+  <symbol id="qorqori-determined" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <path d="M64 52 L 94 61 M136 52 L 106 61" stroke="var(--q-outline,#42593a)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M74 58 C82 52 95 54 98 62 C101 69 96 79 85 81 C76 83 70 74 74 58 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M118 60 C125 55 137 57 140 64 C142 71 137 80 128 81 C120 83 114 76 118 60 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="86" cy="70" r="4" fill="var(--q-eye,#333d2c)"/>
+    <circle cx="129" cy="71" r="3.6" fill="var(--q-eye,#333d2c)"/>
+    <circle cx="87.5" cy="68" r="1.5" fill="#fff"/>
+    <circle cx="130" cy="69" r="1.3" fill="#fff"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".35"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".35"/>
+    <path d="M90 103 Q 100 106 110 103" stroke="var(--q-outline,#42593a)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Thinking: one eye up, one squinted, hand on chin, thought dots -->
+  <symbol id="qorqori-thinking" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arm-think"/>
+    <path d="M72 56 C82 48 97 50 101 60 C104 69 97 82 84 84 C74 87 66 77 72 56 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="86" cy="65" rx="4" ry="4.8" fill="var(--q-eye,#333d2c)"/>
+    <circle cx="88" cy="62.5" r="1.5" fill="#fff"/>
+    <path d="M118 62 Q 128 57 140 63 Q 128 70 118 62 Z" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="129" cy="65" r="2.6" fill="var(--q-eye,#333d2c)"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".35"/>
+    <ellipse cx="100" cy="106" rx="3.2" ry="4.2" fill="var(--q-mouth,#8a5a40)"/>
+    <circle cx="126" cy="28" r="3" fill="var(--q-outline,#42593a)" opacity=".7"/>
+    <circle cx="139" cy="20" r="2" fill="var(--q-outline,#42593a)" opacity=".5"/>
+  </symbol>
+
+  <!-- Sleepy: closed eyes, tiny yawn, a small z -->
+  <symbol id="qorqori-sleepy" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <g transform="rotate(-4 100 80)">
+      <path d="M72 66 Q 84 75 96 66" stroke="var(--q-outline,#42593a)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M118 68 Q 129 76 140 68" stroke="var(--q-outline,#42593a)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".3"/>
+      <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".3"/>
+      <ellipse cx="100" cy="106" rx="3" ry="3.6" fill="var(--q-mouth,#8a5a40)"/>
+    </g>
+    <path d="M122 42 l7 7 h-7 l7 7" stroke="var(--q-outline,#42593a)" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+  </symbol>
+
+  <!-- Surprised: big round eyes, tiny pupils, open mouth -->
+  <symbol id="qorqori-surprised" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <path d="M72 46 Q 85 40 98 48 M114 48 Q 127 42 140 50" stroke="var(--q-outline,#42593a)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <circle cx="85" cy="70" r="12.5" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5"/>
+    <circle cx="127" cy="72" r="11.5" fill="var(--q-eye-white,#fbfaf4)" stroke="var(--q-outline,#42593a)" stroke-width="2.5"/>
+    <circle cx="85" cy="70" r="2.8" fill="var(--q-eye,#333d2c)"/>
+    <circle cx="127" cy="72" r="2.6" fill="var(--q-eye,#333d2c)"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".4"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".4"/>
+    <ellipse cx="100" cy="109" rx="7.5" ry="9.5" fill="var(--q-mouth,#8a5a40)" stroke="var(--q-outline,#42593a)" stroke-width="2.5"/>
+  </symbol>
+
+  <!-- Proud: happy eyes, raised brow, confident smirk, a small star -->
+  <symbol id="qorqori-proud" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-down"/>
+    <path d="M70 60 Q 83 48 96 58" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M116 62 Q 127 53 138 60" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M64 50 Q 76 45 88 51" stroke="var(--q-outline,#42593a)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M88 102 Q 100 95 112 102" stroke="var(--q-outline,#42593a)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".45"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".45"/>
+    <path d="M153 26 l3.1 8.8 8.8 3.1 -8.8 3.1 -3.1 8.8 -3.1-8.8 -8.8-3.1 8.8-3.1 Z" fill="var(--q-star,#f0b95c)"/>
+  </symbol>
+
+  <!-- Celebrating: arms up, big smile, sparkles -->
+  <symbol id="qorqori-celebrating" viewBox="0 0 200 200">
+    <use href="#qorqori-body"/>
+    <use href="#qorqori-note"/>
+    <use href="#qorqori-arms-up"/>
+    <path d="M70 60 Q 83 48 96 58" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M116 62 Q 127 53 138 60" stroke="var(--q-outline,#42593a)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M84 104 Q 100 122 116 104 Q 100 133 84 104 Z" fill="var(--q-mouth,#8a5a40)" stroke="var(--q-outline,#42593a)" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="63" cy="92" rx="7" ry="4.6" fill="var(--q-cheek,#e8a77f)" opacity=".55"/>
+    <ellipse cx="141" cy="93" rx="6.4" ry="4.2" fill="var(--q-cheek,#e8a77f)" opacity=".55"/>
+    <path d="M28 38.5 l2.7 7.6 7.6 2.7 -7.6 2.7 -2.7 7.6 -2.7-7.6 -7.6-2.7 7.6-2.7 Z" fill="var(--q-star,#f0b95c)"/>
+    <path d="M172 42.5 l2.7 7.6 7.6 2.7 -7.6 2.7 -2.7 7.6 -2.7-7.6 -7.6-2.7 7.6-2.7 Z" fill="var(--q-star,#f0b95c)"/>
+    <circle cx="46" cy="96" r="2.2" fill="var(--q-outline,#42593a)" opacity=".55"/>
+    <circle cx="154" cy="104" r="2.2" fill="var(--q-outline,#42593a)" opacity=".55"/>
+  </symbol>
+</svg>

@@ -1,0 +1,16 @@
+/* ═══ Fekrbaz: fourth Daftarche character — palette & rendering ═══
+   Same convention as Qorqori, Rizolo and Khabalo: the palette lives on the
+   character class so colors can be tuned without touching the sprite asset. */
+
+.fekrbaz{
+  --fb-body:#718292; --fb-body-2:#9EADB8; --fb-outline:#414A52;
+  --fb-face:#292F34; --fb-eye:#D9C8A5;
+  width:100%;height:auto;display:block
+}
+
+/* ── Profile: character identity thumb ── */
+.char-thumb .fekrbaz{width:52px;height:52px}
+
+@media (max-width:480px){
+  .char-thumb .fekrbaz{width:46px;height:46px}
+}

@@ -1,0 +1,10 @@
+/* ═══ Rizolo: second Daftarche character — palette & rendering ═══
+   Same convention as Qorqori: the palette lives on the character class
+   so colors can be tuned without touching the sprite asset. */
+
+.rizolo{
+  --rz-body:#D78355; --rz-body-2:#E8A47A; --rz-outline:#4F463F;
+  --rz-eye:#302B27; --rz-eye-white:#FBF8F2; --rz-cheek:#E89B6C;
+  --rz-paper:#FDF3DD; --rz-paper-line:#D9C9A6; --rz-mouth:#6B4A35; --rz-star:#F0B95C;
+  width:100%;height:auto;display:block
+}
