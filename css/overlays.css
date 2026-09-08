@@ -52,6 +52,26 @@
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 
+/* ═══ Jalali Due-Date Picker ═══ */
+.due-card{max-width:340px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.cal-title{font-family:var(--font-personality);font-size:15px;font-weight:700}
+.cal-nav{width:32px;height:32px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:16px;cursor:pointer;transition:all .2s;display:grid;place-items:center}
+.cal-nav:hover{color:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.cal-quick{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
+.cal-q{font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:4px 12px;cursor:pointer;transition:all .2s}
+.cal-q:hover{transform:translateY(-2px);border-color:var(--accent);color:var(--accent)}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.cal-week span{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:2px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{height:34px;border:none;border-radius:10px;background:transparent;color:var(--text);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:grid;place-items:center}
+.cal-day:hover{background:var(--accent-soft);color:var(--accent);transform:scale(1.08)}
+.cal-day.today{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent);font-weight:700}
+.cal-day.sel{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 3px 10px -3px var(--accent)}
+.cal-blank{height:34px}
+.cal-clear{display:block;margin:12px auto 0;border:none;background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:500;cursor:pointer;transition:color .2s}
+.cal-clear:hover{color:var(--danger)}
+
 /* ═══ Highlight Toolbar ═══ */
 .hl-toolbar{position:fixed;z-index:96;display:flex;gap:8px;align-items:center;background:var(--text);padding:8px 12px;border-radius:99px;box-shadow:var(--shadow-lg);animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
 .hl-toolbar button{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);background:var(--hc,var(--bg));cursor:pointer;transition:transform .2s}

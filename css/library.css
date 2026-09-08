@@ -8,6 +8,12 @@
 .shelf-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 .shelf-head span{font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:99px;font-weight:500}
 
+/* ═══ Beta / Development Notice ═══ */
+.beta-notice{display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--accent) 7%,var(--surface));border:1.5px dashed color-mix(in srgb,var(--accent) 38%,transparent);border-radius:18px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.beta-notice-badge{align-self:flex-start;font-size:10px;padding:3px 8px}
+.beta-notice-title{margin:0;font-family:var(--font-personality);font-size:14px;font-weight:700;color:var(--text)}
+.beta-notice-text{margin:0;font-size:12px;line-height:1.9;color:var(--muted);font-weight:400}
+
 /* ═══ Continue Reading Card ═══ */
 .lastread{position:relative;display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px;box-shadow:var(--shadow-sm);margin-bottom:16px;cursor:pointer;transition:transform .3s,box-shadow .3s;overflow:hidden;animation:taskIn .5s cubic-bezier(.22,1,.36,1)}
 .lastread::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--accent)}

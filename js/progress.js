@@ -80,8 +80,8 @@ function movePill() {
 export function frogScore(t) {
   let s = 0;
   if (t.p === 'high') s += 3; else if (t.p === 'mid') s += 1.5;
-  if (t.due) {
-    const diff = Math.round((new Date(t.due + 'T00:00:00') - startOfToday()) / 864e5);
+  if (t.dueDate) {
+    const diff = Math.round((new Date(t.dueDate + 'T00:00:00') - startOfToday()) / 864e5);
     if (diff < 0) s += 4; else if (diff === 0) s += 2.5; else if (diff <= 1) s += 1;
   }
   return s;

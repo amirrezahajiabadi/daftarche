@@ -11,6 +11,7 @@ import { initLibrary } from './library.js';
 import { initReader } from './reader.js';
 import { initProfile, renderProfile } from './profile.js';
 import { initToday } from './today.js';
+import { initDuePicker } from './duepicker.js';
 
 /* Each section is initialized separately; an error in one section doesn't break the rest of the app */
 const safe = (name, fn) => {
@@ -164,6 +165,7 @@ safe('کتابخانه', initLibrary);
 safe('ریدر', initReader);
 safe('پروفایل', initProfile);
 safe('امروز', initToday);
+safe('مهلت', initDuePicker);
 
 const dl = $('#dateLine');
 if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());

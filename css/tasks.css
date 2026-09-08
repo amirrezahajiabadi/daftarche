@@ -62,6 +62,12 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
 .due-chip.flipped{animation:chipFlip .4s ease}
 
+.dur-chip{flex-shrink:0;font-family:var(--font-ui);font-size:11px;font-weight:600;line-height:1.4;padding:3px 10px;border-radius:99px;border:1px solid transparent;cursor:pointer;transition:transform .2s;color:#7b6fd8;background:rgba(123,111,216,.1);border-color:rgba(123,111,216,.3)}
+html[data-theme="dark"] .dur-chip{color:#a79bf5}
+.dur-chip:hover{transform:scale(1.07)}
+.dur-chip.flipped{animation:chipFlip .4s ease}
+.dur-input{width:82px;font-family:var(--font-ui);font-size:13px;font-weight:600;text-align:center;border:none;outline:none;background:var(--accent-soft);border-radius:8px;padding:4px 10px;color:var(--text)}
+
 @keyframes chipFlip{
   0%{transform:scale(1) rotateY(0)}
   40%{transform:scale(.85) rotateY(90deg)}
@@ -112,6 +118,7 @@ html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
   .pri-dot{order:5;margin-inline-start:34px}
   .cat-tag{order:6;font-size:10px;padding:2px 8px}
   .due-chip{order:7;font-size:10px;padding:2px 8px}
+  .dur-chip{order:8;font-size:10px;padding:2px 8px}
   .pri-dot::after{inset:-12px}
   .frog{padding:10px 12px;gap:10px}
   .frog-ico{width:36px;height:36px;border-radius:11px}
@@ -130,6 +137,6 @@ html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
   .title{font-size:13px}
   .del,.focus-btn{width:26px;height:26px}
   .pri-dot{margin-inline-start:30px}
-  .cat-tag,.due-chip{font-size:9px;padding:2px 7px}
+  .cat-tag,.due-chip,.dur-chip{font-size:9px;padding:2px 7px}
   .empty .art svg{width:72px}
 }

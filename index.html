@@ -147,11 +147,24 @@
       </div>
       <div class="due-row" id="dueRow">
         <span>مهلت:</span>
-        <button type="button" data-due="none" class="sel">ندارد</button>
+        <button type="button" data-due="none" class="sel">بدون مهلت</button>
         <button type="button" data-due="0">امروز</button>
         <button type="button" data-due="1">فردا</button>
-        <button type="button" data-due="7">هفتهٔ بعد</button>
+        <button type="button" data-due="2">پس‌فردا</button>
+        <button type="button" id="dueCustom" data-due="custom">تاریخ…</button>
       </div>
+      <div class="dur-row" id="durRow">
+        <span>زمان:</span>
+        <button type="button" data-dur="none" class="sel">ندارد</button>
+        <button type="button" data-dur="5">۵ دقیقه</button>
+        <button type="button" data-dur="15">۱۵ دقیقه</button>
+        <button type="button" data-dur="30">۳۰ دقیقه</button>
+        <button type="button" data-dur="60">۶۰ دقیقه</button>
+        <button type="button" data-dur="90">۹۰ دقیقه</button>
+        <button type="button" data-dur="custom">زمان دلخواه</button>
+        <input id="durCustom" type="number" min="1" max="480" placeholder="دقیقه" aria-label="مدت زمان دلخواه به دقیقه" hidden>
+      </div>
+      <span class="dur-hint" id="durHint" hidden></span>
     </form>
 
     <div class="search">
@@ -256,6 +269,12 @@
       <button class="import-btn" id="importBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>افزودن کتاب</button>
       <input type="file" id="bookFile" accept="application/pdf" hidden>
     </header>
+
+    <div class="beta-notice" role="note">
+      <span class="beta-tag beta-notice-badge">بتا</span>
+      <h3 class="beta-notice-title">کتابخانه هنوز در حال توسعه است</h3>
+      <p class="beta-notice-text">این بخش هنوز کامل نشده و ممکن است بعضی قسمت‌ها باگ داشته باشند یا درست کار نکنند. تکمیل کتابخانه فعلاً در اولویت‌های اصلی دَفتَرچه نیست، اما در ادامه دوباره روی آن کار خواهیم کرد.</p>
+    </div>
 
     <div id="shelfView">
       <div class="shelf-head"><strong>قفسهٔ من</strong><span id="shelfCount"></span></div>
@@ -498,6 +517,16 @@
   </main>
 </div>
 
+<!-- ═══ Jalali Due-Date Picker ═══ -->
+<div class="overlay" id="dueOverlay" hidden>
+  <div class="name-card due-card" role="dialog" aria-modal="true" aria-label="انتخاب مهلت">
+    <h2>مهلت انجام</h2>
+    <p>تاریخ شمسی را انتخاب کن</p>
+    <div id="dueCal"></div>
+    <button class="skip" id="dueClose">بستن</button>
+  </div>
+</div>
+
 <!-- ═══ Avatar Picker ═══ -->
 <div class="overlay" id="avatarOverlay" hidden>
   <div class="name-card avatar-card">
@@ -524,7 +553,7 @@
   </button>
   <button class="nav-tab" data-page="library">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-    <span>کتابخانه</span>
+    <span class="nav-label">کتابخانه<span class="beta-tag">بتا</span></span>
   </button>
 </nav>
 

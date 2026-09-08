@@ -66,6 +66,8 @@ html[data-theme="dark"] .frog-kicker{color:#9ccc86}
 .t-due.late{color:#d84a4a;background:rgba(255,93,93,.12)}
 html[data-theme="dark"] .t-due.late{color:#ff8f8f}
 .t-due.soon{color:var(--muted);background:var(--bg)}
+.t-dur{flex-shrink:0;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:99px;color:#7b6fd8;background:rgba(123,111,216,.12)}
+html[data-theme="dark"] .t-dur{color:#a79bf5}
 .t-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:9px;cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:0;transform:scale(.8);transition:all .22s}
 .t-row:hover .t-del,.t-del:focus-visible{opacity:1;transform:none}
 .t-del:hover{color:var(--danger);background:rgba(228,88,79,.12);transform:scale(1.12)!important}

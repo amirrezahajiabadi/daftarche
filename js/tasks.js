@@ -1,11 +1,13 @@
 import { state, getTask } from './state.js';
 import { saveTasks } from './store.js';
-import { $, faNum, startOfToday, dueKeyFromOffset, dayKey, normalizeFa } from './utils.js';
+import { $, faNum, startOfToday, dueKeyFromOffset, normalizeFa, parseDurationMin, formatDuration } from './utils.js';
 import { P_CYCLE, P_LABEL, CATS, ICONS } from './constants.js';
 import { notify } from './bus.js';
 import { confetti } from './confetti.js';
 import { recordDay } from './week.js';
 import { openFocus, clearFocus } from './focus.js';
+import { openDuePicker } from './duepicker.js';
+import { formatJalaliDate } from './jalali.js';
 
 const listEl = $('#taskList');
 const save = () => saveTasks(state.tasks);
@@ -26,28 +28,43 @@ function animateChipFlip(chip) {
   setTimeout(() => chip.classList.remove('flipped'), 450);
 }
 
-/* ── Due Date ── */
+/* ── Estimated Duration ── */
+const DUR_CYCLE = [null, 5, 15, 30, 60, 90];
+let durClickTimer = null;
+function nextDur(cur) {
+  const i = DUR_CYCLE.indexOf(cur);
+  return DUR_CYCLE[(i + 1) % DUR_CYCLE.length];
+}
+function refreshDurChip(li, task) {
+  const btn = li.querySelector('.dur-chip');
+  if (!task.durationMin) { if (btn) btn.remove(); return; }
+  const label = formatDuration(task.durationMin);
+  if (btn) { btn.textContent = label; btn.title = `زمان تقریبی: ${label} — کلیک برای تغییر`; }
+}
+
+/* ── Due Date (Jalali) ── */
 export function dueLabel(key) {
   if (!key) return null;
-  const diff = Math.round((new Date(key + 'T00:00:00') - startOfToday()) / 864e5);
-  if (diff < 0) return { cls: 'late', text: diff === -1 ? 'دیروز' : `${faNum(-diff)} روز دیر شده` };
-  if (diff === 0) return { cls: 'today', text: 'امروز' };
-  if (diff === 1) return { cls: 'soon', text: 'فردا' };
-  if (diff <= 7) return { cls: 'soon', text: `${faNum(diff)} روز دیگه` };
-  return { cls: 'far', text: new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long' }).format(new Date(key + 'T00:00:00')) };
-}
-function nextDue(cur) {
-  if (!cur) return dueKeyFromOffset(0);
-  if (cur === dueKeyFromOffset(0)) return dueKeyFromOffset(1);
-  if (cur === dueKeyFromOffset(1)) return dueKeyFromOffset(7);
-  return null;
+  const d = new Date(key + 'T00:00:00');
+  const diff = Math.round((d - startOfToday()) / 864e5);
+  const date = formatJalaliDate(d);
+  if (diff < 0) return { cls: 'late', text: 'گذشته از مهلت', date };
+  if (diff === 0) return { cls: 'today', text: 'امروز', date };
+  if (diff === 1) return { cls: 'soon', text: 'فردا', date };
+  if (diff === 2) return { cls: 'soon', text: 'پس‌فردا', date };
+  if (diff <= 7) return { cls: 'soon', text: `${faNum(diff)} روز دیگه`, date };
+  return { cls: 'far', text: date, date, ltr: true };
 }
 function refreshDueChip(li, task) {
   const btn = li.querySelector('.due-chip');
   if (!btn) return;
-  if (!task.due) { btn.className = 'due-chip none'; btn.textContent = '+ مهلت'; btn.title = 'افزودن مهلت'; return; }
-  const dl = dueLabel(task.due);
-  btn.className = `due-chip ${dl.cls}`; btn.textContent = dl.text; btn.title = 'مهلت — کلیک برای تغییر';
+  if (!task.dueDate) { btn.className = 'due-chip none'; btn.innerHTML = '+ مهلت'; btn.title = 'افزودن مهلت'; return; }
+  const dl = dueLabel(task.dueDate);
+  // A completed task never reads as overdue — show its date neutrally instead
+  const doneLate = task.done && dl.cls === 'late';
+  btn.className = `due-chip ${doneLate ? 'far' : dl.cls}`;
+  btn.innerHTML = doneLate || dl.ltr ? `<span dir="ltr">${doneLate ? dl.date : dl.text}</span>` : dl.text;
+  btn.title = `مهلت — ${dl.date} — کلیک برای تغییر`;
 }
 
 /* ── Build Item ── */
@@ -57,16 +74,23 @@ function createTaskEl(task, delay = 0) {
   li.dataset.id = task.id; li.dataset.p = task.p || 'mid';
   li.draggable = true; li.style.animationDelay = delay + 'ms';
   const cat = CATS.find(c => c.key === (task.cat || 'misc')) || CATS[5];
-  const dl = dueLabel(task.due);
+  const dl = dueLabel(task.dueDate);
+  const doneLate = dl && task.done && dl.cls === 'late';
+  const dueText = dl && (doneLate || dl.ltr) ? `<span dir="ltr">${doneLate ? dl.date : dl.text}</span>` : dl ? dl.text : '';
   const dueHtml = dl
-    ? `<button class="due-chip ${dl.cls}" title="مهلت — کلیک برای تغییر">${dl.text}</button>`
+    ? `<button class="due-chip ${doneLate ? 'far' : dl.cls}" title="مهلت — ${dl.date} — کلیک برای تغییر">${dueText}</button>`
     : `<button class="due-chip none" title="افزودن مهلت">+ مهلت</button>`;
+  const durLabel = formatDuration(task.durationMin);
+  const durHtml = durLabel
+    ? `<button class="dur-chip" title="زمان تقریبی: ${durLabel} — کلیک برای تغییر">${durLabel}</button>`
+    : '';
   li.innerHTML = `
     <span class="grip" aria-hidden="true">${ICONS.grip}</span>
     <button class="pri-dot" title="اولویت: ${P_LABEL[li.dataset.p]} — کلیک برای تغییر" aria-label="تغییر اولویت"></button>
     <button class="check" aria-label="تکمیل">${ICONS.check}</button>
     <span class="title"></span>
     <button class="cat-tag" style="--cc:${cat.color}" title="دسته: ${cat.label} — کلیک برای تغییر">${cat.label}</button>
+    ${durHtml}
     ${dueHtml}
     <button class="focus-btn" title="تایمر تمرکز" aria-label="تایمر تمرکز">${ICONS.clock}</button>
     <button class="del" aria-label="حذف">${ICONS.trash}</button>`;
@@ -104,7 +128,7 @@ export function setTaskDone(id, done) {
   const task = getTask(id);
   if (!task || task.done === done) return;
   task.done = done;
-  if (done) { task.doneAt = Date.now(); recordDay(); } else delete task.doneAt;
+  if (done) { task.doneAt = Date.now(); recordDay(); } else task.doneAt = null;
   save(); notify();
   if (done && state.tasks.every(t => t.done)) confetti();
 }
@@ -116,13 +140,14 @@ function toggleTask(li, task) {
 }
 
 /* Shared creation used by the Tasks form and the Today quick add */
-export function addTask(text, p = 'mid', cat = 'misc', due) {
+export function addTask(text, p = 'mid', cat = 'misc', dueDate, durationMin = null) {
   const task = {
     id: Date.now() + '' + Math.random().toString(16).slice(2),
     text, done: false, p, cat,
     created: Date.now(),
+    durationMin: parseDurationMin(durationMin),
   };
-  if (due) task.due = due;
+  task.dueDate = dueDate || null;
   state.tasks.unshift(task);
   save(); notify();
   return task;
@@ -237,22 +262,61 @@ export function initTasks() {
       if (state.catFilter !== 'all' && state.catFilter !== nxt.key) setTimeout(() => hideFromView(li), 500);
     }
     else if (e.target.closest('.due-chip')) {
-      const btn = e.target.closest('.due-chip');
-      task.due = nextDue(task.due); save();
-      refreshDueChip(li, task); animateChipFlip(btn); notify();
+      // Open the Jalali date picker to add / change / remove the deadline
+      openDuePicker({
+        current: task.dueDate || null,
+        onPick: key => {
+          task.dueDate = key; save();
+          refreshDueChip(li, task);
+          const chip = li.querySelector('.due-chip');
+          if (chip) animateChipFlip(chip);
+          notify();
+        },
+      });
+    }
+    else if (e.target.closest('.dur-chip')) {
+      const btn = e.target.closest('.dur-chip');
+      // Defer the cycle briefly so a double-click can open the editor instead
+      clearTimeout(durClickTimer);
+      durClickTimer = setTimeout(() => {
+        task.durationMin = nextDur(task.durationMin); save();
+        refreshDurChip(li, task); animateChipFlip(btn); notify();
+      }, 240);
     }
   });
 
+  /* Single-click cycles chips; double-click opens a title / duration editor */
   listEl.addEventListener('dblclick', e => {
-    const li = e.target.closest('.task'); const titleEl = e.target.closest('.title');
-    if (!li || !titleEl) return;
-    const task = getTask(li.dataset.id);
-    const inp = document.createElement('input'); inp.className = 'title-input'; inp.value = task.text;
-    titleEl.replaceWith(inp); inp.focus(); inp.select();
-    let doneE = false;
-    const commit = () => { if (doneE) return; doneE = true; const v = inp.value.trim(); if (v) { task.text = v; save(); } renderList(); };
-    inp.addEventListener('blur', commit);
-    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') commit(); if (ev.key === 'Escape') { doneE = true; renderList(); } });
+    const li = e.target.closest('.task'); if (!li) return;
+    const task = getTask(li.dataset.id); if (!task) return;
+    const titleEl = e.target.closest('.title');
+    if (titleEl) {
+      const inp = document.createElement('input'); inp.className = 'title-input'; inp.value = task.text;
+      titleEl.replaceWith(inp); inp.focus(); inp.select();
+      let doneE = false;
+      const commit = () => { if (doneE) return; doneE = true; const v = inp.value.trim(); if (v) { task.text = v; save(); } renderList(); };
+      inp.addEventListener('blur', commit);
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') commit(); if (ev.key === 'Escape') { doneE = true; renderList(); } });
+      return;
+    }
+    const durEl = e.target.closest('.dur-chip');
+    if (durEl) {
+      clearTimeout(durClickTimer);
+      const inp = document.createElement('input');
+      inp.className = 'dur-input'; inp.type = 'number'; inp.min = '1'; inp.max = '480'; inp.placeholder = 'دقیقه';
+      inp.value = task.durationMin || '';
+      inp.setAttribute('aria-label', 'مدت زمان تقریبی به دقیقه');
+      durEl.replaceWith(inp); inp.focus(); inp.select();
+      let doneE = false;
+      const commit = () => {
+        if (doneE) return; doneE = true;
+        const v = parseDurationMin(inp.value);
+        if (v !== null) { task.durationMin = v; save(); }
+        renderList();
+      };
+      inp.addEventListener('blur', commit);
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') commit(); if (ev.key === 'Escape') { doneE = true; renderList(); } });
+    }
   });
 
   listEl.addEventListener('dragstart', e => { const li = e.target.closest('.task'); if (li) { li.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; } });
@@ -302,16 +366,73 @@ export function initAddForm() {
     $('#catRow .sel')?.classList.remove('sel');
     b.classList.add('sel'); state.selCat = b.dataset.cat;
   });
-  $('#dueRow').addEventListener('click', e => {
+  /* Due date row: quick options امروز/فردا/پس‌فردا + Jalali picker for a custom date */
+  const dueRow = $('#dueRow');
+  const dueCustomBtn = $('#dueCustom');
+  const renderDueRow = () => {
+    if (!dueRow || !dueCustomBtn) return;
+    dueRow.querySelectorAll('button[data-due]').forEach(b => b.classList.remove('sel'));
+    if (/^\d{4}-\d{2}-\d{2}$/.test(state.selDue)) {
+      dueCustomBtn.classList.add('sel');
+      dueCustomBtn.textContent = formatJalaliDate(new Date(state.selDue + 'T00:00:00'));
+    } else {
+      const q = dueRow.querySelector(`button[data-due="${state.selDue}"]`);
+      if (q) q.classList.add('sel');
+      dueCustomBtn.textContent = 'تاریخ…';
+    }
+  };
+  dueRow.addEventListener('click', e => {
     const b = e.target.closest('button[data-due]'); if (!b) return;
-    $('#dueRow .sel')?.classList.remove('sel');
-    b.classList.add('sel'); state.selDue = b.dataset.due;
+    if (b.dataset.due === 'custom') {
+      openDuePicker({
+        current: /^\d{4}-\d{2}-\d{2}$/.test(state.selDue) ? state.selDue : null,
+        onPick: key => { state.selDue = key; renderDueRow(); },
+      });
+      return;
+    }
+    state.selDue = b.dataset.due;
+    renderDueRow();
   });
+  renderDueRow();
+
+  /* Duration row: presets, plus a custom minute input with validation */
+  const durInput = $('#durCustom');
+  const durHint = $('#durHint');
+  const showDurHint = show => {
+    if (durHint) {
+      durHint.textContent = 'زمان باید عددی صحیح بین ۱ تا ۴۸۰ دقیقه باشه';
+      durHint.hidden = !show;
+    }
+  };
+  $('#durRow').addEventListener('click', e => {
+    const b = e.target.closest('button[data-dur]'); if (!b) return;
+    $('#durRow .sel')?.classList.remove('sel');
+    b.classList.add('sel');
+    const v = b.dataset.dur;
+    if (v === 'custom') {
+      if (durInput) { durInput.hidden = false; durInput.focus(); }
+      state.selDur = parseDurationMin(durInput ? durInput.value : null);
+    } else {
+      if (durInput) { durInput.hidden = true; durInput.value = ''; }
+      state.selDur = v === 'none' ? null : Number(v);
+    }
+    showDurHint(false);
+  });
+  if (durInput) {
+    durInput.addEventListener('input', () => {
+      state.selDur = parseDurationMin(durInput.value);
+      showDurHint(durInput.value !== '' && state.selDur === null);
+    });
+    durInput.addEventListener('blur', () => { if (durInput.value === '') showDurHint(false); });
+  }
+
   $('#addForm').addEventListener('submit', e => {
     e.preventDefault();
     const input = $('#taskInput'), text = input.value.trim();
     if (!text) { e.currentTarget.classList.add('shake'); setTimeout(() => e.currentTarget.classList.remove('shake'), 350); return; }
-    const task = addTask(text, state.selPri, state.selCat, state.selDue === 'none' ? undefined : dueKeyFromOffset(state.selDue));
+    const dueVal = state.selDue === 'none' ? undefined
+      : /^\d{4}-\d{2}-\d{2}$/.test(state.selDue) ? state.selDue : dueKeyFromOffset(Number(state.selDue));
+    const task = addTask(text, state.selPri, state.selCat, dueVal, state.selDur);
     if (matches(task) && (state.catFilter === 'all' || state.catFilter === state.selCat) && !state.query) {
       const el = createTaskEl(task);
       listEl.prepend(el);

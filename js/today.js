@@ -2,7 +2,7 @@
    Reuses existing task state, task actions, frog selection and mood/week modules. */
 
 import { state, getTask } from './state.js';
-import { $, faNum, dayKey, startOfToday } from './utils.js';
+import { $, faNum, dayKey, startOfToday, formatDuration } from './utils.js';
 import { P_LABEL, ICONS } from './constants.js';
 import { subscribe } from './bus.js';
 import { addTask, dueLabel, collapse, setTaskDone } from './tasks.js';
@@ -21,7 +21,7 @@ const dueDiff = due => Math.round((new Date(due + 'T00:00:00') - startOfToday())
 const isTodayPending = t => {
   if (t.done) return false;
   if (t.p === 'high') return true;
-  if (t.due) return dueDiff(t.due) <= 0;
+  if (t.dueDate) return dueDiff(t.dueDate) <= 0;
   return !!t.created && dayKey(new Date(t.created)) === dayKey(new Date());
 };
 const isDoneToday = t => !!t.done && !!t.doneAt && dayKey(new Date(t.doneAt)) === dayKey(new Date());
@@ -45,7 +45,7 @@ function renderHeader() {
   }
   const parts = [];
   if (n) {
-    const casual = pending.some(t => t.p !== 'high' && !(t.due && dueDiff(t.due) < 0));
+    const casual = pending.some(t => t.p !== 'high' && !(t.dueDate && dueDiff(t.dueDate) < 0));
     parts.push(`${faNum(n)} ${casual ? 'کار برای امروز' : 'کار مهم'}`);
   }
   if (m) parts.push(`${faNum(m)} انجام شده`);
@@ -89,12 +89,15 @@ function renderFrog() {
       </div>`;
     return;
   }
-  const dl = frog.due ? dueLabel(frog.due) : null;
+  const dl = frog.dueDate ? dueLabel(frog.dueDate) : null;
   const chips = [`<span class="frog-chip" style="--fc:${PRI_COLORS[frog.p || 'mid']}">اولویت ${P_LABEL[frog.p || 'mid']}</span>`];
   if (dl) {
     const fc = dl.cls === 'late' ? '#d84a4a' : dl.cls === 'today' ? 'var(--accent)' : '#5f8f4d';
-    chips.push(`<span class="frog-chip" style="--fc:${fc}">${dl.text}</span>`);
+    const txt = dl.ltr ? `<span dir="ltr">${dl.text}</span>` : dl.text;
+    chips.push(`<span class="frog-chip" style="--fc:${fc}">${txt}</span>`);
   }
+  const dlbl = formatDuration(frog.durationMin);
+  if (dlbl) chips.push(`<span class="frog-chip" style="--fc:#7b6fd8">${dlbl}</span>`);
   wrap.innerHTML = `
     <div class="frog-hero">
       <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
@@ -125,15 +128,18 @@ function todayRow(t) {
   li.className = 't-row' + (t.done ? ' done' : '');
   li.dataset.id = t.id;
   let dueChip = '';
-  if (!t.done && t.due) {
-    const dl = dueLabel(t.due);
+  if (!t.done && t.dueDate) {
+    const dl = dueLabel(t.dueDate);
     if (dl.cls === 'late' || dl.cls === 'today' || dl.cls === 'soon') dueChip = `<span class="t-due ${dl.cls}">${dl.text}</span>`;
   }
+  const durLabel = formatDuration(t.durationMin);
+  const durChip = durLabel ? `<span class="t-dur">${durLabel}</span>` : '';
   li.innerHTML = `
     <button class="t-check" type="button" aria-label="تغییر وضعیت تکمیل">${ICONS.check}</button>
     <span class="t-dot" style="--pr:${PRI_COLORS[t.p || 'mid']}"></span>
     <span class="t-title"></span>
     ${dueChip}
+    ${durChip}
     <button class="t-del" type="button" aria-label="حذف">${ICONS.trash}</button>`;
   li.querySelector('.t-title').textContent = t.text;
   return li;

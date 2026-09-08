@@ -91,12 +91,15 @@ html[data-theme="dark"] .pri-row button.sel.mid{color:#ffcd8a}
 html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
 
 /* ── Category & Due Date ── */
-.cat-row,.due-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
-.cat-row>span,.due-row>span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
-.due-row button{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:4px 11px;cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1)}
-.due-row button:hover{transform:translateY(-2px);box-shadow:0 3px 8px -2px rgba(0,0,0,.1);border-color:var(--muted)}
-.due-row button:active{transform:scale(.93)}
-.due-row button.sel{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px -2px rgba(244,112,58,.4);font-weight:600}
+.cat-row,.due-row,.dur-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
+.cat-row>span,.due-row>span,.dur-row>span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
+.due-row button,.dur-row button{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:99px;padding:4px 11px;cursor:pointer;transition:all .25s cubic-bezier(.22,1,.36,1)}
+.due-row button:hover,.dur-row button:hover{transform:translateY(-2px);box-shadow:0 3px 8px -2px rgba(0,0,0,.1);border-color:var(--muted)}
+.due-row button:active,.dur-row button:active{transform:scale(.93)}
+.due-row button.sel,.dur-row button.sel{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px -2px rgba(244,112,58,.4);font-weight:600}
+#durCustom{width:84px;font-family:var(--font-ui);font-size:12px;font-weight:500;text-align:center;border:1.5px dashed var(--border);background:transparent;color:var(--text);border-radius:99px;padding:4px 8px;outline:none;transition:border-color .2s}
+#durCustom:focus{border-color:var(--accent)}
+.dur-hint{font-size:11px;color:var(--danger);font-weight:500;padding:0 10px;line-height:1.6}
 
 .cat-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;-webkit-overflow-scrolling:touch}
 .cat-scroll::-webkit-scrollbar{display:none}
