@@ -1,6 +1,6 @@
 /* ═══ Shared App State (Singleton) ═══ */
 
-import { loadTasks, loadName, loadHistory, loadMoods, loadPomo } from './store.js';
+import { loadTasks, loadName, loadHistory, loadMoods, loadPomo, loadSession } from './store.js';
 import { dayKey, dueKeyFromOffset, parseDurationMin } from './utils.js';
 
 const defaultTasks = () => [
@@ -44,7 +44,7 @@ export const state = {
   history: loadHistory(),
   moods: loadMoods(),
   pomoMin: loadPomo(),
-  focus: null, // {taskId,total,remain,running,done,interval,endTime}
+  session: null, // active focus session (restored in initFocusPage from storage)
 };
 
-export const getTask = id => state.tasks.find(t => t.id === id);
+export const getTask = id => state.tasks.find(t => t && t.id === id);

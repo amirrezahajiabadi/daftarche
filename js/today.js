@@ -6,9 +6,10 @@ import { $, faNum, dayKey, startOfToday, formatDuration } from './utils.js';
 import { P_LABEL, ICONS } from './constants.js';
 import { subscribe } from './bus.js';
 import { addTask, dueLabel, collapse, setTaskDone } from './tasks.js';
-import { findFrog, frogScore } from './progress.js';
+import { frogScore } from './progress.js';
 import { openFocus } from './focus.js';
 import { qorqoriMarkup } from './qorqori.js';
+import { getRecommendation, reasonForTask, energyFromMood, ALL_DONE_REASON } from './decision.js';
 
 const DAY = 864e5;
 const PRI_COLORS = { high: '#ff5d5d', mid: '#ffb45c', low: '#7fb069' };
@@ -16,15 +17,21 @@ const LIST_CAP = 6;
 
 const dueDiff = due => Math.round((new Date(due + 'T00:00:00') - startOfToday()) / DAY);
 
+/* ── Recommendation («الان چی کار کنیم؟») ──
+   The Decision Engine picks the primary task; users can skip it, which
+   applies a temporary session-only penalty so it isn't repeated right away. */
+let skippedRecs = new Map(); // taskId → skip count, session memory only
+let shownRecId = null;       // currently displayed recommendation (alternatives switch)
+
 /* True when a task belongs to "today": completed today, due today/late,
    important open work, or freshly added today. */
 const isTodayPending = t => {
-  if (t.done) return false;
+  if (!t || t.done) return false;
   if (t.p === 'high') return true;
   if (t.dueDate) return dueDiff(t.dueDate) <= 0;
   return !!t.created && dayKey(new Date(t.created)) === dayKey(new Date());
 };
-const isDoneToday = t => !!t.done && !!t.doneAt && dayKey(new Date(t.doneAt)) === dayKey(new Date());
+const isDoneToday = t => !!t && !!t.done && !!t.doneAt && dayKey(new Date(t.doneAt)) === dayKey(new Date());
 const todayPending = () => state.tasks.filter(isTodayPending);
 const todayDone = () => state.tasks.filter(isDoneToday);
 
@@ -52,9 +59,8 @@ function renderHeader() {
   summary.textContent = parts.join(' · ');
 }
 
-/* ── Frog hero ── */
-let heroFrog = null;      // task object currently shown
-let heroOverride = null;  // task forced by "یکی دیگه"
+/* ── Recommendation card (Qorqori companion) ── */
+let heroFrog = null; // task object currently shown
 
 /* Simple state → expression mapping for Qorqori.
    High priority = determined, progress today = happy,
@@ -67,58 +73,88 @@ function frogExpr() {
   return todayDone().length > 0 ? 'celebrating' : 'thinking';
 }
 
-function renderFrog() {
-  const wrap = $('#todayFrog');
-  if (!wrap) return;
-  let frog = null;
-  if (heroOverride) {
-    const t = getTask(heroOverride);
-    if (t && !t.done) frog = t;
-  }
-  if (!frog) {
-    heroOverride = null;
-    frog = findFrog();
-  }
-  heroFrog = frog;
-  if (!frog) {
-    wrap.innerHTML = `
-      <div class="frog-hero frog-empty">
-        <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
-        <span class="frog-kicker">قورباغهٔ امروز</span>
-        <p class="frog-none">کاری برای قورت دادن نمونده!<br>یه کار تازه اضافه کن یا به خودت استراحت بده 🎉</p>
-      </div>`;
-    return;
-  }
-  const dl = frog.dueDate ? dueLabel(frog.dueDate) : null;
-  const chips = [`<span class="frog-chip" style="--fc:${PRI_COLORS[frog.p || 'mid']}">اولویت ${P_LABEL[frog.p || 'mid']}</span>`];
+function recChips(task) {
+  const dl = task.dueDate ? dueLabel(task.dueDate) : null;
+  const chips = [`<span class="frog-chip" style="--fc:${PRI_COLORS[task.p || 'mid']}">اولویت ${P_LABEL[task.p || 'mid']}</span>`];
   if (dl) {
     const fc = dl.cls === 'late' ? '#d84a4a' : dl.cls === 'today' ? 'var(--accent)' : '#5f8f4d';
     const txt = dl.ltr ? `<span dir="ltr">${dl.text}</span>` : dl.text;
     chips.push(`<span class="frog-chip" style="--fc:${fc}">${txt}</span>`);
   }
-  const dlbl = formatDuration(frog.durationMin);
+  const dlbl = formatDuration(task.durationMin);
   if (dlbl) chips.push(`<span class="frog-chip" style="--fc:#7b6fd8">${dlbl}</span>`);
+  return chips.join('');
+}
+
+function currentRec() {
+  const energy = energyFromMood(state.moods[dayKey(new Date())]);
+  const rec = getRecommendation({
+    tasks: state.tasks,
+    today: new Date(),
+    energy,
+    skipCounts: skippedRecs,
+  });
+  // Alternative click: show that task instead, without touching any data
+  if (shownRecId) {
+    const alt = [rec.primary, ...rec.alternatives].find(t => t && t.id === shownRecId);
+    if (alt) {
+      const live = getTask(alt.id);
+      return { ...rec, primary: alt, reason: live ? reasonForTask(live, { energy }) : rec.reason };
+    }
+  }
+  return rec;
+}
+
+function renderFrog() {
+  const wrap = $('#todayFrog');
+  if (!wrap) return;
+  const rec = currentRec();
+  const frog = rec.primary ? getTask(rec.primary.id) : null;
+  heroFrog = frog;
+  if (!frog) {
+    shownRecId = null;
+    const msg = rec.state === 'all-done'
+      ? `${rec.reason || ALL_DONE_REASON}<br>یه استراحت حسابی به خودت بده 🎉`
+      : 'کاری برای قورت دادن نمونده!<br>یه کار تازه اضافه کن یا به خودت استراحت بده 🎉';
+    wrap.innerHTML = `
+      <div class="frog-hero frog-empty">
+        <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
+        <span class="frog-kicker">الان چی کار کنیم؟</span>
+        <p class="frog-none">${msg}</p>
+      </div>`;
+    return;
+  }
+  const alts = rec.alternatives.filter(a => a.id !== frog.id);
   wrap.innerHTML = `
     <div class="frog-hero">
       <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
-      <span class="frog-kicker">قورباغهٔ امروز</span>
+      <span class="frog-kicker">الان چی کار کنیم؟</span>
       <h3 class="frog-name"></h3>
-      <div class="frog-meta">${chips.join('')}</div>
+      ${rec.reason ? `<p class="rec-reason"></p>` : ''}
+      <div class="frog-meta">${recChips(frog)}</div>
       <div class="frog-actions">
         <button class="frog-start" type="button">شروع کار</button>
         <button class="frog-next" type="button">یکی دیگه</button>
       </div>
+      ${alts.length ? `
+      <div class="rec-alts">
+        <span class="rec-alts-label">گزینه‌های دیگه</span>
+        <ul>${alts.map(a => `<li><button type="button" class="rec-alt" data-id="${a.id}"></button></li>`).join('')}</ul>
+      </div>` : ''}
     </div>`;
   wrap.querySelector('.frog-name').textContent = frog.text;
+  const reasonEl = wrap.querySelector('.rec-reason');
+  if (reasonEl) reasonEl.textContent = rec.reason;
+  wrap.querySelectorAll('.rec-alt').forEach(b => {
+    b.textContent = getTask(b.dataset.id)?.text || '';
+  });
 }
 
-function pickNextFrog() {
-  const pool = state.tasks.filter(t => !t.done);
-  if (!pool.length) return;
-  const cands = heroFrog ? pool.filter(t => t.id !== heroFrog.id) : pool;
-  if (!cands.length) { renderFrog(); return; }
-  const pick = cands[Math.random() * cands.length | 0];
-  heroOverride = pick.id;
+/* Skip: temporary session penalty so the same task isn't re-suggested at once */
+function skipCurrentFrog() {
+  if (!heroFrog) return;
+  skippedRecs.set(heroFrog.id, (skippedRecs.get(heroFrog.id) || 0) + 1);
+  shownRecId = null;
   renderFrog();
 }
 
@@ -226,7 +262,11 @@ export function initToday() {
   if (frog) {
     frog.addEventListener('click', e => {
       if (e.target.closest('.frog-start') && heroFrog) openFocus(heroFrog.id);
-      else if (e.target.closest('.frog-next')) pickNextFrog();
+      else if (e.target.closest('.frog-next')) skipCurrentFrog();
+      else {
+        const alt = e.target.closest('.rec-alt');
+        if (alt) { shownRecId = alt.dataset.id; renderFrog(); }
+      }
     });
   }
 

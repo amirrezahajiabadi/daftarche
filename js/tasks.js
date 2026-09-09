@@ -209,7 +209,7 @@ export function collapse(el, id) {
   if (task) lastDeleted = null; // Prevent conflicts
   state.tasks = state.tasks.filter(t => t.id !== id);
   save();
-  if (state.focus && state.focus.taskId === id) clearFocus();
+  if (state.session && state.session.taskId === id) clearFocus();
   animateOut(el);
   notify();
   if (task) showUndo(task, index);

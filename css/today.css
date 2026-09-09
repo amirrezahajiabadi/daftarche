@@ -77,6 +77,15 @@ html[data-theme="dark"] .t-dur{color:#a79bf5}
 .today-all:hover{transform:translateY(-2px);box-shadow:0 6px 16px -8px var(--accent)}
 .today-all:active{transform:scale(.96)}
 
+/* ── Recommendation: reason + alternatives ── */
+.rec-reason{margin:0;color:var(--muted);font-size:12.5px;font-weight:500;line-height:1.8}
+.rec-alts{margin-top:4px;display:flex;flex-direction:column;gap:6px;width:100%}
+.rec-alts-label{font-size:11px;font-weight:700;color:var(--muted)}
+.rec-alts ul{list-style:none;display:flex;flex-direction:column;gap:5px;margin:0;padding:0}
+.rec-alt{width:100%;text-align:start;border:1px solid var(--border);background:color-mix(in srgb,var(--surface) 60%,transparent);color:var(--text);font-family:var(--font-ui);font-size:12.5px;font-weight:500;padding:7px 12px;border-radius:12px;cursor:pointer;transition:border-color .2s,color .2s,transform .2s}
+.rec-alt:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.rec-alt::before{content:'•';margin-inline-end:6px;color:var(--muted)}
+
 /* ── Daily progress ── */
 .tp-track{height:12px;border-radius:99px;background:color-mix(in srgb,var(--text) 9%,transparent);overflow:hidden}
 .tp-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--accent-2));transition:width .7s cubic-bezier(.22,1,.36,1)}

@@ -22,5 +22,10 @@ export const saveMoods   = m    => localStorage.setItem(STORAGE_KEYS.moods, JSON
 export const loadPomo    = ()    => Number(localStorage.getItem(STORAGE_KEYS.pomo)) || 25;
 export const savePomo    = v    => localStorage.setItem(STORAGE_KEYS.pomo, v);
 
+/* Active/paused focus session — survives reload; source of truth for the timer */
+export const loadSession = ()    => read(STORAGE_KEYS.session, null);
+export const saveSession = s    => localStorage.setItem(STORAGE_KEYS.session, s ? JSON.stringify(s) : '');
+export const clearSession = ()   => localStorage.removeItem(STORAGE_KEYS.session);
+
 export const loadTheme   = ()    => localStorage.getItem(STORAGE_KEYS.theme);
 export const saveTheme   = t    => localStorage.setItem(STORAGE_KEYS.theme, t);

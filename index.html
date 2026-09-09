@@ -385,32 +385,10 @@
       </div>
     </header>
 
-    <div class="focus-page-card">
-      <p class="focus-task" id="focusTaskName">یه کار از لیست انتخاب کن</p>
-      <div class="focus-ring" id="focusRing" style="--fp:0">
-        <div class="focus-inner">
-          <div>
-            <div class="focus-time" id="focusTime">۲۵:۰۰</div>
-            <div class="focus-state" id="focusState">آمادهٔ شروع؟</div>
-          </div>
-        </div>
-      </div>
-      <div class="focus-presets" id="focusPresets">
-        <button type="button" data-min="15">۱۵ دقیقه</button>
-        <button type="button" data-min="25" class="sel">۲۵ دقیقه</button>
-        <button type="button" data-min="45">۴۵ دقیقه</button>
-        <button type="button" data-min="60">۶۰ دقیقه</button>
-        <input id="customMin" type="number" min="1" max="180" placeholder="سفارشی"/>
-      </div>
-      <div class="focus-page-actions">
-        <button class="go" id="focusStart">شروع</button>
-        <button class="ghost" id="focusReset">از اول</button>
-      </div>
-      <div class="focus-task-picker">
-        <span>کار مورد نظر:</span>
-        <select id="focusTaskSelect"></select>
-      </div>
-    </div>
+    <!-- Focus page card content is rendered by focus.js:
+         pick view (no session), running view (active/paused session),
+         ended view (timer zero) or reflection. -->
+    <div class="focus-page-card"></div>
 
     <div class="vibe-card">
       <div class="vibe-head">

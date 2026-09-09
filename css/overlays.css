@@ -47,6 +47,18 @@
 .focus-pill{position:fixed;bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 12px);inset-inline-start:50%;transform:translateX(50%);z-index:99;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);font-family:var(--font-ui);font-weight:600;font-size:13px;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-lg);cursor:pointer;animation:pillIn .4s cubic-bezier(.34,1.56,.64,1)}
 .focus-pill svg{color:var(--accent)}
 .focus-pill.running::after{content:'';position:absolute;inset:-1.5px;border-radius:99px;border:1.5px solid var(--accent);animation:pillWave 1.8s ease-out infinite}
+.focus-pill span{max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Focus Session views (pick / running / ended / reflection) ── */
+.focus-page-card{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.focus-char{width:84px;height:84px;display:grid;place-items:center}
+.focus-char .fekrbaz,.focus-char .qorqori,.focus-char .jingool{width:84px;height:84px}
+.focus-task strong{color:var(--text);font-weight:700}
+.focus-sub{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:-6px}
+.focus-end-msg{font-family:var(--font-personality);font-size:19px;font-weight:700}
+.focus-rating{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.focus-rating button{font-family:var(--font-ui);font-size:13px;font-weight:600;border:1.5px solid var(--border);background:transparent;color:var(--text);border-radius:99px;padding:9px 18px;cursor:pointer;transition:all .2s}
+.focus-rating button:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
 @keyframes pillIn{from{opacity:0;transform:translateX(50%) translateY(24px)}}
 @keyframes pillWave{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(1.25)}}
 
