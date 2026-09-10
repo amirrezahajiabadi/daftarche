@@ -27,5 +27,9 @@ export const loadSession = ()    => read(STORAGE_KEYS.session, null);
 export const saveSession = s    => localStorage.setItem(STORAGE_KEYS.session, s ? JSON.stringify(s) : '');
 export const clearSession = ()   => localStorage.removeItem(STORAGE_KEYS.session);
 
+/* Completed focus sessions archive (newest first, capped) */
+export const loadFocusHistory = ()  => read(STORAGE_KEYS.focusHistory, []);
+export const saveFocusHistory = h  => localStorage.setItem(STORAGE_KEYS.focusHistory, JSON.stringify(h));
+
 export const loadTheme   = ()    => localStorage.getItem(STORAGE_KEYS.theme);
 export const saveTheme   = t    => localStorage.setItem(STORAGE_KEYS.theme, t);

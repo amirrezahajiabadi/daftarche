@@ -1,5 +1,6 @@
 import { state, getTask } from './state.js';
 import { savePomo, loadSession, saveSession, clearSession } from './store.js';
+import { addSessionToHistory } from './focushistory.js';
 import { $, faNum, faDigits } from './utils.js';
 import { APP_TITLE } from './constants.js';
 import { confetti, beep } from './confetti.js';
@@ -91,6 +92,7 @@ export function startSession(taskId, plannedMin) {
   state.session = {
     id: newId(),
     taskId,
+    taskTitle: task.text, // snapshot for history
     startedAt: Date.now(),
     endedAt: null,
     plannedDurationMin: min,
@@ -298,6 +300,8 @@ function initVibe() {
    ended   — natural timer end: the task is not auto-completed
    reflect — two quick questions, then the session is saved            */
 
+/* Task title snapshot — captured when the session starts so history
+   stays correct even if the task is later renamed or deleted */
 function taskTitle(id) {
   return getTask(id)?.text || 'کار حذف‌شده';
 }
@@ -501,6 +505,9 @@ function renderRating() {
       // Mark reflection finished BEFORE notify so no re-render brings the
       // ended view back over the summary
       session._reflectDone = true;
+      // Reflection complete → archive the historical record (validated +
+      // deduped by id inside the history module)
+      addSessionToHistory(session);
       persist();
       showSessionSummary();
       updateFocusPill();

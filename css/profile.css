@@ -44,3 +44,32 @@
   .badge b{font-size:10px}
   .avatar-opt svg{width:48px;height:48px}
 }
+
+/* ═══ Insights (opens from Profile) ═══ */
+.settings-hint{color:var(--muted);font-size:12px;margin-top:2px}
+
+.insights-empty{text-align:center;padding:34px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.insights-empty[hidden]{display:none}
+.insights-empty-char{display:block;width:120px;height:120px}
+.insights-empty-char svg{width:100%;height:100%}
+.insights-empty strong{font-family:var(--font-personality);font-size:19px}
+.insights-empty p{color:var(--muted);font-size:13px;line-height:1.9;max-width:280px;margin:0}
+
+.insights-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.insight-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.insight-card p{margin:0;font-size:13.5px;line-height:2}
+.insight-char{flex:0 0 44px;width:44px;height:44px}
+.insight-char svg{width:100%;height:100%}
+
+.insight-suggestion{border-color:var(--accent);background:var(--accent-soft)}
+.insight-suggestion p{margin:8px 0 0;font-size:13.5px;line-height:2}
+
+.insights-back-btn{display:block;width:100%;margin-top:14px;padding:13px;border-radius:14px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .25s}
+.insights-back-btn:hover{transform:translateY(-2px)}
+/* ═══ Focus History (opens from Profile) ═══ */
+.fh-list{display:flex;flex-direction:column;gap:10px}
+.fh-record{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:13px 15px;display:flex;flex-direction:column;gap:7px}
+.fh-record-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.fh-title{font-size:14.5px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.fh-when{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.fh-record-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}

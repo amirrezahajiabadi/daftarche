@@ -10,6 +10,8 @@ import { initRoll } from './roll.js';
 import { initLibrary } from './library.js';
 import { initReader } from './reader.js';
 import { initProfile, renderProfile } from './profile.js';
+import { initInsights, renderInsights } from './insights.js';
+import { initFocusHistory, renderFocusHistory } from './focushistory.js';
 import { initToday } from './today.js';
 import { initDuePicker } from './duepicker.js';
 
@@ -51,6 +53,8 @@ function initNavigation() {
     if (page === 'tasks') renderList(); // Keep the imperative list in sync with state
     if (page === 'focus') syncFocusPage();
     if (page === 'profile') renderProfile();
+    if (page === 'insights') renderInsights();
+    if (page === 'focushistory') renderFocusHistory();
   };
 
   /* Any module can request a page change (avatar, frog start, stats entry) */
@@ -164,6 +168,8 @@ safe('کیبورد', initKeyboard);
 safe('کتابخانه', initLibrary);
 safe('ریدر', initReader);
 safe('پروفایل', initProfile);
+safe('بینش‌ها', initInsights);
+safe('سابقه تمرکز', initFocusHistory);
 safe('امروز', initToday);
 safe('مهلت', initDuePicker);
 

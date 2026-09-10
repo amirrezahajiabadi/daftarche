@@ -25,6 +25,34 @@ const ENERGY_FIT = {
 
 const SKIP_PENALTY = 8; // per rejection, session-only
 
+/* ── Decision Context tie-break (V1) ──
+   History-driven context may only reorder candidates whose base scores are
+   within CONTEXT_TIE_GAP points; beyond that it has no say. V1 never adds
+   a modifier to the base score — the cap below is reserved so any future
+   modifier stays bounded. */
+const CONTEXT_TIE_GAP = 5;
+const CONTEXT_MODIFIER_CAP = 10;
+
+/* Task duration → decision-context range name, or null when unknown or
+   outside the 5–90 minute buckets. A task without a duration is never
+   assumed short or long. */
+function contextRangeName(min) {
+  const m = Number(min);
+  if (!Number.isFinite(m)) return null;
+  if (m >= 5 && m <= 15) return 'short';
+  if (m >= 16 && m <= 30) return 'medium';
+  if (m >= 31 && m <= 60) return 'long';
+  if (m >= 61 && m <= 90) return 'veryLong';
+  return null;
+}
+
+/* Only a meaningful, available duration-fit pattern may guide ranking */
+function contextUsable(ctx) {
+  return !!(ctx && ctx.available === true
+    && ctx.durationFit && ctx.durationFit.available === true
+    && ctx.durationFit.preferredRange);
+}
+
 /* ── Date helpers ── */
 
 /* Whole-day difference between a canonical YYYY-MM-DD deadline and today.
@@ -128,6 +156,19 @@ function compareCandidates(a, b) {
   return a.created - b.created;
 }
 
+/* Score first, then — only inside the CONTEXT_TIE_GAP window — the context
+   preference: a candidate inside the preferred range wins, a candidate
+   inside the weaker range gets no advantage at all. */
+function compareWithContext(a, b, ctx) {
+  const diff = b.score - a.score;
+  if (diff !== 0 && Math.abs(diff) > CONTEXT_TIE_GAP) return diff;
+  const pr = ctx.durationFit.preferredRange;
+  const pa = contextRangeName(a.durationMin) === pr;
+  const pb = contextRangeName(b.durationMin) === pr;
+  if (pa !== pb) return pa ? -1 : 1;
+  return diff !== 0 ? diff : compareCandidates(a, b);
+}
+
 /* ── Reason engine (kept separate from scoring; never exposes numbers) ── */
 
 function pickReason(c) {
@@ -140,6 +181,15 @@ function pickReason(c) {
     return 'یکم سنگینه، ولی بهتره همین یکی رو بزنیم.';
   return 'فکر کنم همین یکی رو بزنیم.';
 }
+
+/* Natural micro-copy used only when the recommendation was actually chosen
+   with the help of the context (kept human — never statistical) */
+const CONTEXT_REASONS = {
+  short: 'این یکی کوتاهه؛ برای شروع انتخاب بدی نیست.',
+  medium: 'جلسه‌های این قدی این مدت بهتر پیش رفتن.',
+  long: 'جلسه‌های بلندت این مدت بهتر پیش رفتن.',
+  veryLong: 'تمرکزهای طولانی‌ات این مدت بهتر پیش رفتن.',
+};
 
 /* Only known task fields leave the engine — internal scores stay inside */
 function publicTask(t) {
@@ -157,9 +207,10 @@ export function reasonForTask(task, { today = new Date(), energy = 'normal' } = 
 }
 
 /* ── Main entry ──
-   Input:  { tasks, today (Date), energy ('low'|'normal'|'high'), skipCounts }
+   Input:  { tasks, today (Date), energy ('low'|'normal'|'high'), skipCounts,
+             context (optional Decision Context object) }
    Output: { state: 'ok'|'all-done'|'empty', primary, alternatives, reason } */
-export function getRecommendation({ tasks, today = new Date(), energy = 'normal', skipCounts = new Map() } = {}) {
+export function getRecommendation({ tasks, today = new Date(), energy = 'normal', skipCounts = new Map(), context = null } = {}) {
   const todayKey = dayKey(today instanceof Date ? today : new Date());
   const list = Array.isArray(tasks) ? tasks : [];
   if (!list.length) return { state: 'empty', primary: null, alternatives: [], reason: null };
@@ -169,8 +220,7 @@ export function getRecommendation({ tasks, today = new Date(), energy = 'normal'
 
   const candidates = active
     .filter(t => typeof t.text === 'string' && t.text.trim())
-    .map(t => rankTask(t, todayKey, energy, skipCounts))
-    .sort(compareCandidates);
+    .map(t => rankTask(t, todayKey, energy, skipCounts));
 
   if (!candidates.length) return { state: 'empty', primary: null, alternatives: [], reason: null };
 
@@ -178,17 +228,31 @@ export function getRecommendation({ tasks, today = new Date(), energy = 'normal'
     return { state: 'ok', primary: publicTask(candidates[0].task), alternatives: [], reason: SINGLE_TASK_REASON };
   }
 
-  const top = candidates[0];
+  /* Base score first, always. Context may only reorder inside the gap. */
+  const ctx = contextUsable(context) ? context : null;
+  const pure = candidates.slice().sort(compareCandidates);
+  const sorted = ctx
+    ? candidates.slice().sort((a, b) => compareWithContext(a, b, ctx))
+    : pure;
+
+  const top = sorted[0];
   const cutoff = top.score - 20;
-  const alternatives = candidates
+  const alternatives = sorted
     .slice(1)
     .filter(c => c.score >= cutoff)
     .slice(0, 2);
+
+  /* The context reason is used only when the context actually changed the
+     pick — never to dress up a choice the base score already made. */
+  const contextHelped = ctx ? pure[0] !== top : false;
+  const reason = contextHelped
+    ? CONTEXT_REASONS[ctx.durationFit.preferredRange] || pickReason(top)
+    : pickReason(top);
 
   return {
     state: 'ok',
     primary: publicTask(top.task),
     alternatives: alternatives.map(c => publicTask(c.task)),
-    reason: pickReason(top),
+    reason,
   };
 }

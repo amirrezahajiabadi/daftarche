@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   moods:   'daftarche-moods',
   pomo:    'daftarche-pomo',
   session: 'daftarche-focus-session',
+  focusHistory: 'daftarche-focus-history',
   frogDismissed: 'daftarche-frog-dismissed',
 };
 

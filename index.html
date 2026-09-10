@@ -468,6 +468,20 @@
     </div>
 
     <div class="vibe-card">
+      <div class="vibe-head"><strong>آمار و بینش‌های من</strong>
+        <button class="settings-btn" id="openInsightsBtn">مشاهده</button>
+      </div>
+      <p class="settings-hint">این چند روز چطور گذشت؟</p>
+    </div>
+
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>سابقه تمرکز</strong>
+        <button class="settings-btn" id="openFocusHistoryBtn">مشاهده</button>
+      </div>
+      <p class="settings-hint">چند جلسه‌ای که با دَفتَرچه گذروندی.</p>
+    </div>
+
+    <div class="vibe-card">
       <div class="vibe-head"><strong>نشان‌ها</strong></div>
       <div class="badges" id="badges"></div>
     </div>
@@ -492,6 +506,73 @@
       </div>
     </div>
     <p class="settings-about">دَفتَرچه — ساخته‌شده با 🧡 برای خودمون و رفقا</p>
+  </main>
+</div>
+
+<!-- ═══ Page 7: Insights (opens from Profile) ═══ -->
+<div class="page" id="page-insights">
+  <main class="app">
+    <header>
+      <div>
+        <h1>آمار و بینش‌های من
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">این چند روز چطور گذشت؟</p>
+      </div>
+    </header>
+
+    <!-- Empty state: not enough data yet -->
+    <div class="insights-empty" id="insightsEmpty" hidden>
+      <span class="insights-empty-char" aria-hidden="true"></span>
+      <strong>هنوز داده کافی نداریم.</strong>
+      <p>چند روز با دَفتَرچه کار کن تا کم‌کم الگوهای خودت را پیدا کنیم.</p>
+    </div>
+
+    <div id="insightsBody" hidden>
+      <div class="vibe-card">
+        <div class="vibe-head"><strong>خلاصهٔ این هفته</strong></div>
+        <div class="stats-row" id="insightsSummary"></div>
+      </div>
+
+      <div class="vibe-card">
+        <div class="vibe-head" id="insightsListHead"><strong>چیزهایی که دیدیم</strong></div>
+        <div class="insights-list" id="insightsList"></div>
+      </div>
+
+      <div class="vibe-card insight-suggestion" id="insightsSuggestion" hidden>
+        <div class="vibe-head"><strong>برای دفعه بعد</strong></div>
+        <p id="insightsSuggestionText"></p>
+      </div>
+
+      <button class="insights-back-btn" id="insightsBackBtn">رفتن به امروز</button>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ Page 8: Focus History (opens from Profile) ═══ -->
+<div class="page" id="page-focushistory">
+  <main class="app">
+    <header>
+      <div>
+        <h1>سابقه تمرکز من
+          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </h1>
+        <p class="subtitle">چند جلسه‌ای که با دَفتَرچه گذروندی.</p>
+      </div>
+    </header>
+
+    <!-- Empty state: no completed sessions yet -->
+    <div class="insights-empty" id="fhEmpty" hidden>
+      <span class="insights-empty-char" aria-hidden="true"></span>
+      <strong>هنوز جلسه‌ای ثبت نشده.</strong>
+      <p>وقتی یک Focus را کامل کنی، سابقه‌اش اینجا می‌مونه.</p>
+    </div>
+
+    <div id="fhBody" hidden>
+      <div class="fh-list" id="fhList"></div>
+    </div>
+
+    <button class="insights-back-btn" id="fhBackBtn">بازگشت به پروفایل</button>
   </main>
 </div>
 

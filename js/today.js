@@ -9,6 +9,8 @@ import { addTask, dueLabel, collapse, setTaskDone } from './tasks.js';
 import { frogScore } from './progress.js';
 import { openFocus } from './focus.js';
 import { qorqoriMarkup } from './qorqori.js';
+import { getHistory } from './focushistory.js';
+import { buildDecisionContext } from './decisioncontext.js';
 import { getRecommendation, reasonForTask, energyFromMood, ALL_DONE_REASON } from './decision.js';
 
 const DAY = 864e5;
@@ -88,11 +90,15 @@ function recChips(task) {
 
 function currentRec() {
   const energy = energyFromMood(state.moods[dayKey(new Date())]);
+  /* History → Evidence → Context → Decision: the context is rebuilt from
+     the current Focus History on every request, so it can never go stale */
+  const context = buildDecisionContext(getHistory(), new Date());
   const rec = getRecommendation({
     tasks: state.tasks,
     today: new Date(),
     energy,
     skipCounts: skippedRecs,
+    context,
   });
   // Alternative click: show that task instead, without touching any data
   if (shownRecId) {
