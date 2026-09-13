@@ -99,7 +99,7 @@
    Bar: `.progress-bar > i` · Ring: `.progress-ring` (conic, --pct in %).
    Decorative gradients are out of the contract. */
 .progress-bar{height:10px;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--color-text-primary) 9%,transparent);overflow:hidden}
-.progress-bar i{display:block;height:100%;width:0;border-radius:var(--radius-pill);background:var(--color-accent);transition:width .7s var(--ease-out)}
+.progress-bar i{display:block;height:100%;width:0;border-radius:var(--radius-pill);background:var(--color-accent);transition:width var(--duration-slow) var(--ease-out)}
 .progress-ring{position:relative;display:grid;place-items:center;border-radius:50%;
   background:conic-gradient(var(--color-accent) calc(var(--pct,0) * 1%),var(--color-accent-soft) 0)}
 
@@ -136,7 +136,7 @@ html[data-theme="dark"] .badge-status.warning{color:#ffcd8a}
   box-shadow:var(--shadow-2);overflow:hidden;max-width:calc(100vw - 32px)}
 html[data-theme="dark"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
 .toast[hidden]{display:none}
-.toast.show{animation:toastIn .3s var(--ease-spring)}
+.toast.show{animation:toastIn var(--duration-base) var(--ease-spring)}
 @keyframes toastIn{from{opacity:0;transform:translateX(50%) translateY(16px)}}
 .toast-btn{border:none;background:transparent;color:var(--color-accent);font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:2px 4px;flex-shrink:0}

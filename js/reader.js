@@ -58,6 +58,22 @@ const withTimeout = (p, ms) => Promise.race([
   new Promise((_, rej) => setTimeout(() => rej(new Error('render-timeout')), ms))
 ]);
 
+/* A timed-out draw can still be attached to the canvas, and pdf.js tracks that
+   attachment per canvas. The previous task therefore has to finish — or be
+   cancelled and allowed to settle — before the canvas is drawn on again. The
+   wait is bounded: a task stuck on a throttled worker must not block the next
+   attempt forever. */
+async function settleRenderTask() {
+  const task = renderTask;
+  renderTask = null;
+  if (!task) return;
+  try { task.cancel(); } catch (e) {}
+  await Promise.race([
+    Promise.resolve(task.promise).catch(() => {}),
+    new Promise(r => setTimeout(r, 1500)),
+  ]);
+}
+
 /* Budget for one page draw. The first page of a document pays for worker
    start-up and font/CMap fetches, which can take many seconds on a slow
    device — a too-tight budget is what pushes books into the browser viewer. */
@@ -65,6 +81,10 @@ const CANVAS_BUDGET = 12000;
 const CANVAS_BUDGET_LAST = 20000;
 const TEXT_BUDGET = 12000;
 const TEXT_BUDGET_LAST = 24000;
+/* Backstop for one complete opening draw. It must sit above the sum of the step
+   budgets above, so the per-step decisions — which know whether it was the
+   canvas or only the text layer that struggled — always decide first. */
+const OPEN_BACKSTOP = 90000;
 
 export function initReader() {
   window.addEventListener('open-book', e => openReader(e.detail));
@@ -79,6 +99,12 @@ export function initReader() {
   $('#readerEngine').onclick = () => switchEngine();
   $('#fallbackRetry').onclick = () => switchEngine('internal');
   $('#readerHint').onclick = () => { $('#readerHint').hidden = true; };
+  /* The goal bar belongs to the book that is open, so it has to follow that
+     book's goal: otherwise it keeps showing an outdated goal until the next
+     page turn. */
+  window.addEventListener('goal-changed', () => {
+    if (curBook && !$('#readerView').hidden) updateGoalBar();
+  });
 
   /* Highlight bar actions */
   $('#hlBar').addEventListener('click', e => {
@@ -200,6 +226,10 @@ async function openReader(id, opts = {}) {
   $('#readerView').hidden = false;
   $('#readerHint').hidden = true;
   $('#readerTitle').textContent = book.title;
+  /* Reset the page chrome to this book before the first draw, so the previous
+     book's page numbers, percentage and goal can't linger while it loads. */
+  updatePageUI();
+  updateGoalBar();
   const thumb = $('#readerThumb');
   if (book.cover) { thumb.src = book.cover; thumb.hidden = false; } else thumb.hidden = true;
   $('#readerLoading').hidden = false;
@@ -216,6 +246,7 @@ async function openReader(id, opts = {}) {
   const browserViewer = book.viewer === 'browser' || (sessionFallback.has(id) && !opts.forceInternal);
 
   let ok = false;
+  let drawn = false;
   if (!browserViewer) {
     try {
       const data = new Uint8Array(await blob.arrayBuffer());
@@ -233,7 +264,8 @@ async function openReader(id, opts = {}) {
     try {
       /* Backstop only: the per-step budgets inside renderPage (canvas, then
          text layer) are what bound the work. */
-      status = await withTimeout(renderPage(), 60000);
+      status = await withTimeout(renderPage(), OPEN_BACKSTOP);
+      drawn = true;
     } catch (err) {
       /* Same rule as a failed draw: a backstop timeout in a throttled hidden
          tab is not evidence that the file can't be rendered. */
@@ -288,7 +320,11 @@ async function openReader(id, opts = {}) {
   if (engine === 'browser') {
     $('#pdfFrame').src = `${pdfObjectUrl}#page=${curPage}&zoom=100`;
   } else {
-    await renderPage();
+    /* A draw that already finished must not be repeated — a second full render
+       costs the same again. Only a first draw that never completed is retried,
+       and only when the tab can actually paint; a throttled background tab is
+       handled by the visibility handler instead. */
+    if (!drawn && document.visibilityState === 'visible') await renderPage();
     if (seq !== openSeq) return;
     maybeShowHighlightHint();
   }
@@ -377,20 +413,21 @@ async function renderPage(keepScroll) {
   let canvasOk = false;
   const budgets = [CANVAS_BUDGET, CANVAS_BUDGET_LAST];
   for (let attempt = 0; attempt < budgets.length && !canvasOk; attempt++) {
-    renderTask = page.render({ canvasContext: ctx, viewport, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
+    /* The previous attempt has to be settled before the canvas is reused,
+       otherwise pdf.js refuses the second render, both attempts are spent on
+       that error and a perfectly renderable page is written off. */
+    await settleRenderTask();
     try {
+      renderTask = page.render({ canvasContext: ctx, viewport, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
       await withTimeout(renderTask.promise, budgets[attempt]);
       canvasOk = true;
     } catch (e) {
       /* A cancelled render was superseded by a newer one, which is not a failure. */
       if (e?.name === 'RenderingCancelledException') { canvasOk = true; break; }
       console.warn(e);
-      /* The timed-out draw may still hold the canvas; stop it before retrying. */
-      try { renderTask.cancel(); } catch (err) {}
-      renderTask = null;
-      await new Promise(r => setTimeout(r, 120));
     }
   }
+  await settleRenderTask();
   if (doc !== pdfDoc || seq !== openSeq) return { canvasOk: true, cancelled: true };
   if (!canvasOk) {
     /* Don't leave the previous page's invisible runs behind: stale text would
@@ -398,6 +435,15 @@ async function renderPage(keepScroll) {
     $('#textLayer').innerHTML = '';
     paintHighlights();
     return { canvasOk: false };
+  }
+
+  /* The page is readable now; the text layer only adds selection on top of it,
+     so it must not keep the reader hidden behind the loading veil. The goal bar
+     is stored state too, so it is revealed together with the page. */
+  if (!$('#readerLoading').hidden) {
+    updatePageUI();
+    updateGoalBar();
+    $('#readerLoading').hidden = true;
   }
 
   /* Text layer — source of truth for selection.
@@ -471,6 +517,10 @@ function gotoPage(n) {
   /* A selection made on the previous page must not be turned into a highlight
      of this one: the rects are measured in that page's coordinate space. */
   clearSelectionState();
+  /* A text layer that timed out on one page says nothing about the next one, and
+     selection is the only way to a highlight — so every page gets a fresh try.
+     The flag only stops repeat attempts on the page that already failed. */
+  textLayerBroken = false;
   const forward = n > curPage;
   curPage = n;
   updateBook(curBook.id, { lastPage: n, lastReadAt: Date.now() });
@@ -508,7 +558,11 @@ function togglePageRead() {
 function updateGoalBar() {
   const bar = $('#goalBar');
   const st = curBook.stats?.[dayKey(new Date())] || { pages: 0, minutes: 0 };
-  const g = curBook.goal?.pagesPerDay;
+  /* Only a positive count is a page goal. A record that carries anything else
+     (an older negative or non-numeric value) is shown as having no page goal
+     instead of a progress track measured against a nonsensical target. */
+  const rawG = Number(curBook.goal?.pagesPerDay);
+  const g = Number.isFinite(rawG) && rawG > 0 ? rawG : null;
   const goalName = curBook.goal?.text ? `<span class="goal-name">🎯 ${esc(curBook.goal.text)}</span>` : '';
   bar.innerHTML = (g || goalName)
     ? `<div class="goal-line">${goalName}<span>${g ? `امروز: ${faNum(st.pages)} از ${faNum(g)} صفحه · ${faNum(st.minutes)} دقیقه` : ''}</span><button id="goalEdit">تغییر هدف</button></div>

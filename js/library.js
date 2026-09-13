@@ -151,7 +151,10 @@ let goalBookId = null;
 export function openGoal(id) {
   goalBookId = id;
   const b = getBook(id);
-  $('#goalPages').value = b.goal?.pagesPerDay || '';
+  const gp = $('#goalPages');
+  gp.value = b.goal?.pagesPerDay > 0 ? b.goal.pagesPerDay : '';
+  /* The input can never ask for more pages than the book has. */
+  gp.max = String(b.numPages || 500);
   $('#goalText').value = b.goal?.text || '';
   const gtype = b.goal?.text ? 'personal' : 'full';
   document.querySelectorAll('.goal-choice').forEach(c => c.classList.toggle('sel', c.dataset.gtype === gtype));
@@ -172,8 +175,13 @@ function initGoal() {
     const sel = document.querySelector('.goal-choice.sel');
     const gtype = sel?.dataset.gtype || 'full';
     const text = gtype === 'personal' ? $('#goalText').value.trim() : '';
-    const v = parseInt($('#goalPages').value);
-    updateBook(goalBookId, { goal: (text || v) ? { type: gtype, text: text || null, pagesPerDay: v || null } : null });
+    /* A daily page goal is a positive count and can never exceed the book, so
+       an empty, zero, negative or non-numeric entry means "no page goal"
+       rather than a value that renders as a broken progress track. */
+    const entered = Number($('#goalPages').value);
+    let pages = Number.isFinite(entered) && entered > 0 ? Math.floor(entered) : null;
+    if (pages && b.numPages) pages = Math.min(pages, b.numPages);
+    updateBook(goalBookId, { goal: (text || pages) ? { type: gtype, text: text || null, pagesPerDay: pages } : null });
     $('#goalOverlay').hidden = true;
     renderShelf();
     window.dispatchEvent(new CustomEvent('goal-changed'));
