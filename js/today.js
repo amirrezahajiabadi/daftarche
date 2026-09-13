@@ -109,8 +109,9 @@ function currentRec() {
     }
   }
   return rec;
-}
-
+}/* Three visually and emotionally distinct empty states (Priority 8.4):
+   no tasks → calm/welcoming with an add CTA · all done → celebrating,
+   acknowledged completion · no recommendation → thinking, non-pressuring. */
 function renderFrog() {
   const wrap = $('#todayFrog');
   if (!wrap) return;
@@ -119,25 +120,38 @@ function renderFrog() {
   heroFrog = frog;
   if (!frog) {
     shownRecId = null;
-    const msg = rec.state === 'all-done'
-      ? `${rec.reason || ALL_DONE_REASON}<br>یه استراحت حسابی به خودت بده 🎉`
-      : 'کاری برای قورت دادن نمونده!<br>یه کار تازه اضافه کن یا به خودت استراحت بده 🎉';
+    const allDone = rec.state === 'all-done';
+    const nothing = rec.state === 'empty';
+    const kind = allDone ? 'done' : nothing ? 'none' : 'stuck';
+    const expr = allDone ? 'celebrating' : 'thinking';
+    const title = allDone ? 'امروز کارت رو جمع کردی.' : 'امروز کاری روی میز نیست.';
+    const msg = allDone
+      ? (rec.reason || ALL_DONE_REASON)
+      : nothing
+        ? 'وقتی کاری اضافه کنی، همین‌جا پیشنهادش رو می‌ذارم.'
+        : (rec.reason || ALL_DONE_REASON);
     wrap.innerHTML = `
-      <div class="frog-hero frog-empty">
-        <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
+      <div class="frog-hero frog-empty frog-empty-${kind}">
+        <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(expr)}</span>
         <span class="frog-kicker">الان چی کار کنیم؟</span>
-        <p class="frog-none">${msg}</p>
+        <h3 class="frog-empty-title"></h3>
+        <p class="frog-none"></p>
+        ${nothing ? '<button class="frog-add" type="button" id="frogAddBtn">+ افزودن کار</button>' : ''}
       </div>`;
+    wrap.querySelector('.frog-empty-title').textContent = title;
+    wrap.querySelector('.frog-none').textContent = msg;
     return;
   }
   const alts = rec.alternatives.filter(a => a.id !== frog.id);
+  /* Visual order (Priority 8.4): title → metadata → reason → actions.
+     The task title outranks the reason; the reason stays secondary. */
   wrap.innerHTML = `
     <div class="frog-hero">
       <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
       <span class="frog-kicker">الان چی کار کنیم؟</span>
       <h3 class="frog-name"></h3>
-      ${rec.reason ? `<p class="rec-reason"></p>` : ''}
       <div class="frog-meta">${recChips(frog)}</div>
+      ${rec.reason ? `<p class="rec-reason"></p>` : ''}
       <div class="frog-actions">
         <button class="frog-start" type="button">شروع کار</button>
         <button class="frog-next" type="button">یکی دیگه</button>
@@ -149,6 +163,8 @@ function renderFrog() {
       </div>` : ''}
     </div>`;
   wrap.querySelector('.frog-name').textContent = frog.text;
+  const startBtn = wrap.querySelector('.frog-start');
+  if (startBtn) startBtn.setAttribute('aria-label', `شروع کار: ${frog.text}`);
   const reasonEl = wrap.querySelector('.rec-reason');
   if (reasonEl) reasonEl.textContent = rec.reason;
   wrap.querySelectorAll('.rec-alt').forEach(b => {
@@ -269,6 +285,7 @@ export function initToday() {
     frog.addEventListener('click', e => {
       if (e.target.closest('.frog-start') && heroFrog) openFocus(heroFrog.id);
       else if (e.target.closest('.frog-next')) skipCurrentFrog();
+      else if (e.target.closest('.frog-add')) $('#todayInput')?.focus();
       else {
         const alt = e.target.closest('.rec-alt');
         if (alt) { shownRecId = alt.dataset.id; renderFrog(); }

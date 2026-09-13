@@ -3,14 +3,19 @@
 import { $ } from './utils.js';
 
 export function confetti() {
+  /* Reduced motion: essential feedback (state change, character reaction) stays;
+     the decorative burst is skipped entirely */
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c = $('#confetti'), ctx = c.getContext('2d');
   c.width = innerWidth; c.height = innerHeight;
   const colors = ['#f4703a', '#ffb45c', '#7fb069', '#ffd97d', '#e4584f'];
-  const P = Array.from({ length: 130 }, () => ({
-    x: innerWidth / 2 + (Math.random() - .5) * 220, y: innerHeight * .35,
-    vx: (Math.random() - .5) * 9, vy: -Math.random() * 9 - 3, g: .28,
-    s: Math.random() * 7 + 4, c: colors[Math.random() * colors.length | 0],
-    r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, life: 90 + Math.random() * 40
+  /* Calm burst: fewer, slower, shorter-lived pieces — a subtle response,
+     not a full-screen celebration */
+  const P = Array.from({ length: 40 }, () => ({
+    x: innerWidth / 2 + (Math.random() - .5) * 180, y: innerHeight * .4,
+    vx: (Math.random() - .5) * 5, vy: -Math.random() * 6 - 2, g: .22,
+    s: Math.random() * 6 + 4, c: colors[Math.random() * colors.length | 0],
+    r: Math.random() * Math.PI, vr: (Math.random() - .5) * .2, life: 55 + Math.random() * 25
   }));
   (function tick() {
     ctx.clearRect(0, 0, c.width, c.height);

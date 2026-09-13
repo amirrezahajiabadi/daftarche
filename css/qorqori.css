@@ -16,7 +16,7 @@
 /* ── Profile: character identity ── */
 .char-card{margin-top:0}
 .char-identity{display:flex;align-items:center;gap:14px;padding:2px 0 4px}
-.char-thumb{width:58px;height:58px;flex-shrink:0;border-radius:18px;background:color-mix(in srgb,var(--green) 14%,transparent);display:grid;place-items:center;padding:3px}
+.char-thumb{width:58px;height:58px;flex-shrink:0;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--green) 14%,transparent);display:grid;place-items:center;padding:3px}
 .char-thumb .qorqori{width:52px;height:52px}
 .char-id-text{min-width:0}
 .char-id-text b{display:block;font-family:var(--font-personality);font-size:17px;font-weight:700}
@@ -24,6 +24,6 @@
 
 @media (max-width:480px){
   .frog-emoji .qorqori{width:90px;height:90px}
-  .char-thumb{width:52px;height:52px;border-radius:16px}
+  .char-thumb{width:52px;height:52px;border-radius:var(--radius-md)}
   .char-thumb .qorqori{width:46px;height:46px}
 }

@@ -108,17 +108,29 @@ export function renderList() {
 export function updateEmpty() {
   const anyVisible = [...listEl.children].some(el => !el.classList.contains('removing'));
   $('#empty').hidden = anyVisible;
+  // The empty-state CTA is presentation-only and rebuilt on each render
+  $('#emptyAddBtn')?.remove();
   if (anyVisible) return;
   const allDone = state.tasks.length && state.tasks.every(t => t.done);
   $('#artDone').hidden = !allDone; $('#artEmpty').hidden = allDone;
   const voc = state.userName ? `${state.userName} جان، ` : '';
   $('#emptyMsg').textContent =
     state.query ? 'چیزی پیدا نشد. عبارت دیگری را امتحان کن.'
-    : !state.tasks.length ? voc + 'لیستت خالیه. اولین کارت رو اضافه کن.'
+    : !state.tasks.length ? 'فعلاً کاری روی میز نیست.'
     : state.catFilter !== 'all' ? `توی دستهٔ «${CATS.find(c => c.key === state.catFilter)?.label}» کاری نیست.`
     : state.filter === 'done' ? 'هنوز کاری را تمام نکرده‌ای.'
-    : allDone ? voc + 'همهٔ کارها انجام شد. خسته نباشی!'
+    : allDone ? 'همهٔ کارهات انجام شده.'
     : voc + 'لیستت خالیه. اولین کارت رو اضافه کن.';
+  // A single calm CTA when the shelf is truly empty — no pressure copy
+  if (!state.tasks.length || allDone) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'empty-add';
+    btn.id = 'emptyAddBtn';
+    btn.textContent = allDone ? 'افزودن کار جدید' : 'افزودن کار';
+    btn.addEventListener('click', () => $('#taskInput')?.focus());
+    $('#empty').appendChild(btn);
+  }
 }
 
 /* ── Actions ── */
