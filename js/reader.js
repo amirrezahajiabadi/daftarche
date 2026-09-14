@@ -133,6 +133,18 @@ export function initReader() {
     resizeTimer = setTimeout(() => renderPage(true), 250);
   });
 
+  /* Keyboard and rotation also resize the *visual* viewport without firing a
+     window resize; without this hook the canvas keeps its stale dimensions and
+     the page stays cropped after the notes field closes. Debounced exactly like
+     the plain resize path. */
+  if (window.visualViewport) {
+    visualViewport.addEventListener('resize', () => {
+      if ($('#readerView').hidden || !pdfDoc || engine === 'browser') return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => renderPage(true), 250);
+    });
+  }
+
   /* A draw that only failed because the tab was hidden gets a second chance as
      soon as the tab is shown — the reader must not fall back for that. */
   document.addEventListener('visibilitychange', () => {
@@ -612,7 +624,7 @@ function onSelectionChange() {
   const sc = stageScroll();
   bar.hidden = false;
   bar.style.left = Math.max(8, Math.min(stage.clientWidth - bar.offsetWidth - 8, first.left - stRect.left + sc.x)) + 'px';
-  bar.style.top = Math.max(8, Math.max(8, first.top - stRect.top + sc.y - bar.offsetHeight - 8)) + 'px';
+  bar.style.top = Math.max(8, Math.min(stage.clientHeight - bar.offsetHeight - 8, first.top - stRect.top + sc.y - bar.offsetHeight - 8)) + 'px';
 }
 
 /* Build a highlight record from a captured selection. `scale` records the

@@ -1,8 +1,19 @@
 /* ═══ Library: Header & Add Button ═══ */
 .import-btn{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:13px;font-weight:600;padding:9px var(--space-4);border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 3px 0 0 rgba(120,55,20,.35);transition:transform var(--duration-fast),box-shadow var(--duration-fast);flex-shrink:0}
 .import-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
-.import-btn:hover{transform:translateY(-2px)}
-.import-btn:active{transform:translateY(2px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+/* Touch ergonomics for the shelf: the import button is a primary action, its
+   tap feedback is instant (no sticky hover on touch); .b-go / .b-del / .b-ghost
+   get invisible hit-area extensions via the shared ::after inset below. */
+.import-btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative}
+.import-btn::after{content:'';position:absolute;inset:-4px}
+/* Hover lift + tint are desktop enhancements only (sticky-hover guard). */
+@media (hover:hover){
+  .import-btn:hover{transform:translateY(-2px)}
+  .lastread:hover{transform:translateY(-1px)}
+  .b-ghost:hover{color:var(--accent);border-color:var(--accent)}
+  .b-del:hover{color:var(--color-danger);background:rgba(228,88,79,.12)}
+}
+.b-del:active{color:var(--color-danger)}
 
 .shelf-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .shelf-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
@@ -16,7 +27,15 @@
 /* ═══ Currently Reading Card — dominant element of Library Home ═══ */
 .lastread{position:relative;display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 26%,var(--border));border-radius:var(--radius-lg);padding:18px 16px;box-shadow:var(--shadow-lg);margin-bottom:var(--space-4);cursor:pointer;transition:transform var(--duration-base),box-shadow var(--duration-base);overflow:hidden;animation:taskIn var(--duration-slow) var(--ease-out)}
 .lastread::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--accent)}
-.lastread:hover{transform:translateY(-1px)}
+/* Flex-wrap lets the title/progress column drop below the cover on very narrow
+   screens (<360px) instead of squeezing or overlapping the artwork. */
+@media (max-width:359px){
+  .lastread{flex-wrap:wrap}
+  .lastread img{width:44px;height:60px}
+  .lr-info{flex-basis:100%;order:3}
+  .lr-top{flex-wrap:wrap;gap:4px}
+  .lr-title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
 .lr-kicker{font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--accent);text-transform:uppercase}
 .lr-goal{font-size:11px;color:var(--text);background:color-mix(in srgb,var(--accent) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);padding:3px 10px;border-radius:var(--radius-pill);align-self:flex-start;font-weight:500;width:fit-content}
 .lastread img{width:56px;height:76px;object-fit:cover;border-radius:var(--radius-xs);border:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow-sm)}
@@ -30,28 +49,37 @@
 .lr-btn{border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 3px 0 0 rgba(120,55,20,.35);flex-shrink:0;transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
 .lr-btn:active{transform:translateY(2px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 
-/* ═══ Book Shelf ═══ */
-.shelf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media (min-width:430px){.shelf-grid{grid-template-columns:repeat(3,1fr)}}
+/* ═══ Book Shelf — fluid column count (no single 430px breakpoint) ═══
+   auto-fill + minmax lets the grid settle at 2/3/4 columns smoothly as the
+   viewport grows, instead of jumping at one arbitrary width. */
+.shelf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+@media (min-width:768px){.shelf-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}}
 
 .book-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;box-shadow:var(--shadow-1);display:flex;flex-direction:column;gap:8px;transition:transform var(--duration-base),box-shadow var(--duration-base);animation:taskIn var(--duration-slow) var(--ease-out) backwards}
-.book-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+/* Hover lift + cover zoom are desktop enhancements only (see base.css). */
+@media (hover:hover){
+  .book-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+  .book-card:hover .book-cover img{transform:scale(1.03)}
+}
 .book-cover{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);overflow:hidden;background:linear-gradient(160deg,var(--accent-soft),var(--bg));display:grid;place-items:center;border:1px solid var(--border)}
 .book-cover img{width:100%;height:100%;object-fit:cover;transition:transform var(--duration-slow) var(--ease-out)}
-.book-card:hover .book-cover img{transform:scale(1.03)}
 .book-cover svg{width:40px;height:40px;stroke:var(--muted);fill:none;stroke-width:1.5;opacity:.5}
 .book-prog{position:absolute;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:0 4px 4px 0;transition:width var(--duration-slow)}
 .book-pct-badge{position:absolute;top:6px;inset-inline-start:6px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--font-personality);font-size:11px;font-weight:700;padding:2px 8px;border-radius:var(--radius-pill);backdrop-filter:blur(4px)}
 .book-title{font-size:13px;font-weight:600;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
 .book-meta{font-size:11px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;font-weight:400}
 .book-actions{display:flex;gap:6px;align-items:center}
-.b-go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;padding:7px 8px;border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 2px 0 0 rgba(120,55,20,.3);transition:transform var(--duration-fast)}
+.b-go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:11px;font-weight:600;padding:7px 8px;border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 2px 0 0 rgba(120,55,20,.3);transition:transform var(--duration-fast);position:relative}
+.b-go::after{content:'';position:absolute;inset:-7px}
 .b-go:active{transform:scale(.94)}
-.b-ghost{border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:11px;font-weight:500;padding:6px 10px;border-radius:var(--radius-pill);cursor:pointer;transition:all var(--duration-fast)}
-.b-ghost:hover{color:var(--accent);border-color:var(--accent)}
-.b-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:var(--radius-xs);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all var(--duration-fast)}
+.b-ghost{border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:11px;font-weight:500;padding:6px 10px;border-radius:var(--radius-pill);cursor:pointer;transition:all var(--duration-fast);position:relative}
+.b-ghost::after{content:'';position:absolute;inset:-7px}
+.b-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:var(--radius-xs);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all var(--duration-fast);position:relative}
+/* Visual size stays subtle; the touch target is what must clear 44px.
+   Without the invisible expansion a thumb tap next to the icon lands on the
+   card (opening the book) instead of the delete button. */
+.b-del::after{content:'';position:absolute;inset:-9px}
 .b-del svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.b-del:hover{color:var(--color-danger);background:rgba(228,88,79,.12)}
 
 /* Completed books — kept, visually quieter */
 .book-done{opacity:.78}
@@ -101,10 +129,13 @@
 #page-focus.scene-forest .scene-forest .flies i{animation-play-state:running}
 
 /* ═══ Reading View ═══ */
-#readerView{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;padding-bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0))}
+#readerView{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;padding-bottom:calc(var(--nav-height) + var(--sab))}
 #readerView[hidden]{display:none}
 
-.reader-top{display:flex;align-items:center;gap:10px;padding:10px 12px;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+/* Safe-area-aware header: on notched phones the title and back button would
+   otherwise sit under the cutout; on devices without one, max() keeps the
+   familiar 10px rhythm. */
+.reader-top{display:flex;align-items:center;gap:10px;padding:calc(10px + var(--sat)) 12px 10px;padding-top:max(10px,var(--sat));background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
 .r-back{border:none;background:var(--accent-soft);color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:8px 14px;border-radius:var(--radius-pill);cursor:pointer;flex-shrink:0;transition:transform var(--duration-fast)}
 .r-back:active{transform:scale(.94)}
 .reader-thumb{width:30px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
@@ -114,7 +145,10 @@
 .reader-sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:400}
 .r-icon{border:none;background:transparent;color:var(--muted);width:36px;height:36px;border-radius:var(--radius-sm);cursor:pointer;display:grid;place-items:center;font-size:16px;transition:all var(--duration-fast);flex-shrink:0;position:relative}
 .r-icon::after{content:'';position:absolute;inset:-5px}
-.r-icon:hover{color:var(--accent);background:var(--accent-soft)}
+@media (hover:hover){
+  .r-icon:hover{color:var(--accent);background:var(--accent-soft)}
+  .fallback-note button:hover{background:var(--accent-soft)}
+}
 
 .goal-bar{padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:400}
 .goal-line{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -123,7 +157,8 @@
 .goal-track i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--accent-2));border-radius:var(--radius-pill);transition:width var(--duration-slow) ease}
 
 /* Reading scene + modes */
-.reader-stage{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px 14px;position:relative;transition:background var(--duration-base)}
+/* Reading scene + modes */
+.reader-stage{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px 14px;position:relative;transition:background var(--duration-base);overscroll-behavior-y:contain}
 .reader-stage.mode-sepia{background:#efe3cd}
 .reader-stage.mode-dark{background:#141118}
 .mode-sepia #pdfFrame{filter:sepia(.28) brightness(.97)}
@@ -141,7 +176,6 @@
 #pdfFrame{flex:1;min-height:0;width:100%;border:none;display:block;border-radius:4px;background:#fff}
 .fallback-note{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;margin-bottom:6px;padding:7px 10px;border-radius:var(--radius-sm);background:color-mix(in srgb,var(--surface) 90%,transparent);border:1px solid var(--border);font-size:11px;color:var(--muted)}
 .fallback-note button{border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;padding:6px 9px;border-radius:var(--radius-xs);transition:background var(--duration-fast) var(--ease-out)}
-.fallback-note button:hover{background:var(--accent-soft)}
 
 /* pdf.js text layer — source of truth for text selection.
    Follows the upstream contract: geometry is driven by --scale-factor, and PDF
@@ -170,8 +204,11 @@ html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 #hlBar[hidden]{display:none}
 @keyframes hlbarIn{from{opacity:0;transform:translateY(4px)}}
 .hlbar-label{font-size:11px;color:var(--muted);font-weight:500}
-.hl-dot{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:var(--hl);transition:transform var(--duration-fast)}
-.hl-dot:hover{transform:scale(1.15)}
+/* Color dots: the 22px swatch stays compact, but each dot owns a 36px touch
+   disc so a thumb picks a color without retrying. */
+.hl-dot{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:var(--hl);transition:transform var(--duration-fast);position:relative}
+.hl-dot::after{content:'';position:absolute;inset:-7px;border-radius:50%}
+@media (hover:hover){.hl-dot:hover{transform:scale(1.15)}}
 .hlbar-note{border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;cursor:pointer;padding:4px 6px}
 
 /* Manual page completion */
@@ -191,26 +228,30 @@ html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 .goal-choices{display:flex;gap:8px;margin:10px 0 4px}
 .goal-choice{flex:1;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:10px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:border-color var(--duration-fast),background var(--duration-fast)}
 .goal-choice.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
-.goal-text-input{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:10px var(--space-3);font-family:var(--font-ui);font-size:13px;color:var(--text);outline:none;margin-bottom:8px}
+.goal-text-input{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:10px var(--space-3);font-family:var(--font-ui);font-size:16px;color:var(--text);outline:none;margin-bottom:8px}
 .goal-text-input:focus{border-color:var(--accent)}
 .goal-daily{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:10px}
-.goal-daily input{width:80px;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:7px 10px;font-family:var(--font-ui);font-size:13px;color:var(--text);outline:none}
+.goal-daily input{width:80px;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:7px 10px;font-family:var(--font-ui);font-size:16px;color:var(--text);outline:none}
 .goal-name{color:var(--text);font-weight:600}
 
 #readerView .reader-stage{user-select:none}
 #readerView .reader-stage #textLayer{user-select:text;-webkit-user-select:text}
 
-/* Reader bottom bar — glass style matching the nav dock */
-.reader-bar{margin:0 12px 10px;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(255,252,245,.62),rgba(255,252,245,.38));backdrop-filter:blur(24px) saturate(1.7);-webkit-backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 18px 44px -18px rgba(122,80,35,.32),inset 0 1px 0 rgba(255,255,255,.65)}
+/* Reader bottom bar — glass style matching the nav dock.
+   Bottom margin clears the home indicator (max keeps the 10px rhythm on
+   devices without one). */
+.reader-bar{margin:0 12px 10px;margin-bottom:max(10px,var(--sab));display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(255,252,245,.62),rgba(255,252,245,.38));backdrop-filter:blur(24px) saturate(1.7);-webkit-backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 18px 44px -18px rgba(122,80,35,.32),inset 0 1px 0 rgba(255,255,255,.65)}
 html[data-theme="dark"] .reader-bar{background:linear-gradient(135deg,rgba(34,29,23,.66),rgba(34,29,23,.44));border-color:rgba(255,220,180,.14);box-shadow:0 18px 44px -18px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.1)}
 .bar-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
 .r-nav{border:none;background:var(--accent-soft);color:var(--accent);width:34px;height:34px;border-radius:var(--radius-xs);cursor:pointer;font-size:17px;font-weight:700;transition:transform var(--duration-fast);flex-shrink:0;position:relative}
 .r-nav::after{content:'';position:absolute;inset:-6px}
 .r-nav:active{transform:scale(.9)}
 .page-ind{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
-.page-ind input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:4px;border-radius:var(--radius-pill);background:var(--border);outline:none}
-.page-ind input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
-.page-ind input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
+/* Page slider: thumb grows from 16px to 20px (≈44px touch disc incl. border)
+   for precise one-finger scrubbing; the thicker track keeps it visible. */
+.page-ind input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:6px;border-radius:var(--radius-pill);background:var(--border);outline:none}
+.page-ind input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
+.page-ind input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
 .page-ind span{font-size:11px;color:var(--muted);white-space:nowrap;font-weight:500}
 .rtimer{border:none;background:var(--green);color:#fff;width:34px;height:34px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-weight:700;transition:all var(--duration-fast);flex-shrink:0;min-width:34px}
 
@@ -220,34 +261,38 @@ html[data-theme="dark"] .reader-bar{background:linear-gradient(135deg,rgba(34,29
 .rtimer.on{background:var(--danger);animation:pulse 1.6s ease-in-out infinite}
 
 /* ═══ Notes Panel ═══ */
-.sheet{position:fixed;bottom:0;left:0;right:0;z-index:95;background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;box-shadow:var(--shadow-2);max-height:70vh;display:flex;flex-direction:column;animation:sheetUp var(--duration-base) var(--ease-out);padding-bottom:env(safe-area-inset-bottom,0)}
+/* Small-viewport height units: svh = the keyboard-closed viewport, dvh = the
+   live one. With a plain vh cap the sheet ignores the keyboard and its bottom
+   rows land underneath it; with dvh-only, a fast keyboard animation can clip
+   the sheet's top. svh-closed, dvh-open is the pairing that stays usable. */
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:95;background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;box-shadow:var(--shadow-2);max-height:85vh;max-height:85svh;max-height:85dvh;display:flex;flex-direction:column;animation:sheetUp var(--duration-base) var(--ease-out);padding-bottom:var(--sab)}
 .sheet[hidden]{display:none}
 @keyframes sheetUp{from{transform:translateY(100%)}}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 18px;border-bottom:1.5px dashed var(--border)}
 .sheet-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 .sheet-head div{display:flex;align-items:center;gap:6px}
-.notes-list{overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.notes-list{overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
 .notes-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px 0;font-weight:400}
 .note-item{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px var(--space-3);cursor:pointer;transition:transform var(--duration-fast),border-color var(--duration-fast)}
-.note-item:hover{border-color:var(--accent)}
 .note-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .note-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .note-text{font-size:12px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:400}
 .note-note{font-size:11px;color:var(--accent);line-height:1.6;font-weight:500}
 .note-page{font-size:10px;color:var(--muted);flex-shrink:0;font-weight:500}
 .note-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0}
-.note-del:hover{color:var(--danger)}
 
-#noteInput{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:10px var(--space-3);font-family:var(--font-ui);font-size:13px;font-weight:400;color:var(--text);outline:none;resize:vertical;margin-bottom:10px}
+#noteInput{width:100%;border:1.5px solid var(--border);background:var(--bg);border-radius:var(--radius-sm);padding:10px var(--space-3);font-family:var(--font-ui);font-size:16px;font-weight:400;color:var(--text);outline:none;resize:vertical;margin-bottom:10px}
 #noteInput:focus{border-color:var(--accent)}
 
+/* The 400px block shrinks visuals, never ergonomics: every control keeps its
+   invisible hit-area expansion, so the effective touch target stays ≥44px. */
 @media (max-width:400px){
   .shelf-grid{gap:10px}
   .book-title{font-size:12px}
   .lastread{padding:10px}
   .lastread img{width:44px;height:60px}
   .lr-btn{padding:7px 12px;font-size:11px}
-  .reader-bar{gap:4px;padding:6px 8px;margin:0 8px 8px}
+  .reader-bar{gap:4px;padding:6px 8px;margin:0 8px;}
   .r-nav{width:30px;height:30px}
   .rtimer{width:30px;height:30px;min-width:30px}
   .r-icon{width:32px;height:32px}

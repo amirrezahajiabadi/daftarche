@@ -17,6 +17,18 @@
 
 *{margin:0;padding:0;box-sizing:border-box}
 
+/* ═══ Safe-Area Insets — one shared definition ═══
+   Mobile devices with a notch / dynamic island / home indicator report these as
+   real lengths only when viewport-fit=cover is set (it is, in index.html).
+   Every floating header/bar/sheet reads the same variables instead of re-deriving
+   env() inline, so the clearance policy stays uniform across views. */
+:root{
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+}
+
 /* ═══ Design Tokens — Daftarche Design System ═══
    Systematic underneath, Organic on top.
    Warm / Organic / Quiet / Expressive / Precise */
@@ -135,6 +147,33 @@ html[data-theme="dark"]{
 html{scroll-behavior:smooth}
 body{font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden;transition:background var(--duration-slow),color var(--duration-slow);-webkit-tap-highlight-color:transparent;line-height:1.6}
 button{touch-action:manipulation;font-family:inherit}
+
+/* Touch ergonomics: pointer-driven only.
+   - touch-action:manipulation on all interactive elements kills the legacy
+     300ms tap delay and accidental double-tap zoom, without blocking scroll.
+   - Contained overscroll on the independent scrollers (reading stage, notes
+     list) stops pull-to-refresh from firing mid-scroll inside the reader.
+   Hover effects stay desktop-only: on touch they lock in after a tap, so the
+   guarded media query is what keeps the touch experience honest. */
+a,button,[role=button],input[type=range],input[type=checkbox],.cal-day,.hl-dot,.goal-choice{touch-action:manipulation}
+.reader-stage,.notes-list{overscroll-behavior-y:contain}
+/* Compact numeric/stepper inputs are pointer-targeted, not typed into, so they
+   keep their small size. Fields users actually type in are pinned to 16px in
+   their own files — iOS Safari zooms the viewport into any focusable field
+   set smaller than that. */
+.focus-presets input,.goal-daily input,.page-ind input[type=range],.focus-task-picker select{font-size:13px}
+
+/* Interactive hover is a desktop enhancement, never a touch state. Without this
+   guard, a tap leaves the pressed element stuck in :hover until the user taps
+   elsewhere ("sticky hover"). @media(hover:hover) matches devices that truly
+   have a hover-capable pointer; touch-first devices skip every rule inside. */
+@media (hover:hover){
+  .theme-btn:hover{transform:translateY(-1px)}
+  .nav-tab:hover{background:var(--glass-hover)}
+  .focus-page-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
+  .settings-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .settings-btn.danger:hover{background:rgba(228,88,79,.1);border-color:var(--danger)}
+}
 input, textarea, select{font-family:inherit}
 
 body::after{content:'';position:fixed;inset:0;z-index:97;pointer-events:none;opacity:.05;
@@ -162,7 +201,7 @@ h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw var
 .subtitle{color:var(--muted);font-size:13px;margin-top:6px;font-weight:400}
 
 .theme-btn{width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-1);position:relative;overflow:hidden;transition:transform var(--duration-base),background var(--duration-slow);flex-shrink:0}
-.theme-btn:hover{transform:translateY(-1px)}
+/* hover state lives in the @media(hover:hover) block above */
 .theme-btn svg{position:absolute;transition:transform var(--duration-slow) var(--ease-out),opacity var(--duration-base)}
 .theme-btn .sun{transform:translateY(-150%) rotate(-90deg);opacity:0}
 html[data-theme="dark"] .theme-btn .sun{transform:none;opacity:1}
@@ -223,7 +262,7 @@ html[data-theme="dark"] .nav-glider{
   cursor:pointer;transition:color var(--duration-fast),background var(--duration-fast);
   -webkit-tap-highlight-color:transparent;
 }
-.nav-tab:hover{background:var(--glass-hover)}
+/* hover state lives in the @media(hover:hover) block above */
 .nav-tab svg{width:19px;height:19px;transition:transform var(--duration-base) var(--ease-out)}
 .nav-tab:active{transform:scale(.94)}
 .nav-tab.active{color:var(--accent);font-weight:600}
@@ -239,7 +278,7 @@ html[data-theme="dark"] .nav-glider{
 .focus-page-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:15px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;box-shadow:var(--shadow-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
 .focus-page-actions .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 .focus-page-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-weight:500;font-size:14px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--duration-fast)}
-.focus-page-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
+/* hover state lives in the @media(hover:hover) block above */
 .focus-task-picker{display:flex;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1.5px dashed var(--border)}
 .focus-task-picker span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
 .focus-task-picker select{flex:1;min-width:0;font-family:var(--font-ui);font-size:13px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:var(--radius-xs);padding:8px 12px;outline:none;cursor:pointer;direction:rtl;font-weight:400}
@@ -252,9 +291,8 @@ html[data-theme="dark"] .nav-glider{
 .settings-value{display:flex;align-items:center;gap:10px}
 .settings-value span{font-size:13px;color:var(--muted);font-weight:400}
 .settings-btn{border:1.5px solid var(--border);background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:5px 14px;border-radius:var(--radius-pill);cursor:pointer;transition:all var(--duration-fast)}
-.settings-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+/* hover states live in the @media(hover:hover) block above */
 .settings-btn.danger{color:var(--danger);border-color:rgba(228,88,79,.3)}
-.settings-btn.danger:hover{background:rgba(228,88,79,.1);border-color:var(--danger)}
 .settings-divider{height:1px;background:var(--border);margin:0 -18px;padding:0 18px}
 .settings-row.danger .settings-label{color:var(--danger)}
 .settings-about{text-align:center;color:var(--muted);font-size:12px;padding:16px 0 8px;line-height:1.7;font-weight:400}
