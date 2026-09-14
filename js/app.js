@@ -153,6 +153,41 @@ function initKeyboard() {
   });
 }
 
+/* ═══ Offline Shell ═══
+   Registers the service worker. Registration waits for the load event so it
+   never competes with the first paint, and a freshly installed worker is only
+   allowed to take over while the page is in the background — a running session
+   is never swapped out from under the user, and there is no forced reload. */
+function initPWA() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const register = () => {
+    navigator.serviceWorker.register(new URL('sw.js', document.baseURI))
+      .then(reg => {
+        const handOver = () => {
+          if (!reg.waiting || document.visibilityState !== 'hidden') return;
+          reg.waiting.postMessage('SKIP_WAITING');
+        };
+        reg.addEventListener('updatefound', () => {
+          const installing = reg.installing;
+          if (!installing) return;
+          installing.addEventListener('statechange', () => {
+            if (installing.state === 'installed') handOver();
+          });
+        });
+        /* Hand over as the app goes to the background or is closed: the moment
+           the user is not looking at the loaded build. */
+        document.addEventListener('visibilitychange', handOver);
+        addEventListener('pagehide', handOver);
+        handOver();
+      })
+      .catch(() => { /* the app runs fine without it */ });
+  };
+
+  if (document.readyState === 'complete') register();
+  else addEventListener('load', register);
+}
+
 /* ═══ Startup ═══ */
 safe('تم', initTheme);
 safe('اسم', initName);
@@ -178,6 +213,7 @@ if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day
 
 safe('نام', applyName);
 safe('رندر اولیه', () => { renderList(); notify(); });
+safe('پوستهٔ آفلاین', initPWA);
 
 /* First visit: stay on the Today page and ask for the name */
 if (!state.userName) {
