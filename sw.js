@@ -14,7 +14,7 @@
    when the page asks it to (see the message handler), so a running session is
    never swapped out mid-task. */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 
 const STATIC_CACHE = `daftarche-static-${VERSION}`;
 const RUNTIME_CACHE = `daftarche-runtime-${VERSION}`;
@@ -45,6 +45,7 @@ const SHELL = [
   'js/app.js',
   'js/audio.js',
   'js/bus.js',
+  'js/changelog.js',
   'js/confetti.js',
   'js/constants.js',
   'js/decision.js',
@@ -73,6 +74,7 @@ const SHELL = [
   'assets/fonts/Estedad-Mad.woff2',
   'assets/fonts/Estedad[wght].woff2',
   'assets/icons/apple-touch-icon.png',
+  'assets/icons/favicon.svg',
   'assets/icons/icon-192.png',
   'assets/icons/icon-512.png',
   'assets/icons/icon-maskable-192.png',

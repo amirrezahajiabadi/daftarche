@@ -8,6 +8,7 @@ import { RIZOLO_AVATAR, rizoloMarkup } from './rizolo.js';
 import { KHABALO_AVATAR, khabaloMarkup } from './khabalo.js';
 import { FEKRBAZ_AVATAR, fekrbazMarkup } from './fekrbaz.js';
 import { JINGOOL_AVATAR, jingoolMarkup } from './jingool.js';
+import { APP_VERSION, openChangelog } from './changelog.js';
 
 const AV_KEY = 'daftarche-avatar';
 const SEEN_KEY = 'daftarche-firstseen';
@@ -131,6 +132,9 @@ export function renderProfile() {
   /* Settings */
   const th = $('#profTheme'); if (th) th.textContent = document.documentElement.dataset.theme === 'dark' ? 'تاریک' : 'روشن';
   const pm = $('#profPomo'); if (pm) pm.textContent = faNum(state.pomoMin) + ' دقیقه';
+  /* Release note label, Persian digits, "2.0.0" → "۲.۰" */
+  const pv = $('#profVersion');
+  if (pv) pv.textContent = 'نسخهٔ ' + APP_VERSION.split('.').slice(0, 2).join('.').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
 
 function buildGrid() {
@@ -159,6 +163,8 @@ export function initProfile() {
   if (close) close.onclick = () => { $('#avatarOverlay').hidden = true; };
   $('#avatarOverlay')?.addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.hidden = true; });
   $('#profileEditName')?.addEventListener('click', () => window.dispatchEvent(new CustomEvent('edit-name')));
+
+  $('#profChangelog')?.addEventListener('click', () => openChangelog());
 
   const tb = $('#profThemeBtn');
   if (tb) tb.onclick = () => {

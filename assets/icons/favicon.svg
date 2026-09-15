@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>دَفتَرچه</title>
+  <!-- The same mark the installed app icons use: a warm notebook whose binding sits
+       on the right, because the book opens the way Persian is read. Geometry here is
+       identical to the raster icons, so the tab, the home screen and the app agree. -->
+  <rect width="512" height="512" rx="112" fill="#f6efe3"/>
+  <rect x="3.5" y="3.5" width="505" height="505" rx="108.5" fill="none" stroke="#efe4d2" stroke-width="7"/>
+  <!-- Pages peeking out from under the cover, with a soft shaded outer edge -->
+  <rect x="90" y="116" width="8" height="280" rx="4" fill="#e7dac2" opacity=".8"/>
+  <rect x="97" y="110" width="44" height="292" rx="8" fill="#fffaf0"/>
+  <!-- Cover, with three written lines of uneven length -->
+  <rect x="142" y="95" width="275" height="322" rx="25" fill="#f4703a"/>
+  <g fill="#feefdf">
+    <rect x="180" y="165" width="142" height="13" rx="6"/>
+    <rect x="180" y="226" width="167" height="13" rx="6"/>
+    <rect x="180" y="287" width="117" height="13" rx="6"/>
+  </g>
+  <!-- Right-hand binding, with its three stitches -->
+  <rect x="377" y="131" width="22" height="251" rx="11" fill="#d95c28"/>
+  <g fill="#efcab4">
+    <rect x="383" y="163" width="10" height="10" rx="5"/>
+    <rect x="383" y="251" width="10" height="10" rx="5"/>
+    <rect x="383" y="339" width="10" height="10" rx="5"/>
+  </g>
+</svg>

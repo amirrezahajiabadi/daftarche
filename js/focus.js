@@ -1,10 +1,10 @@
 import { state, getTask } from './state.js';
 import { savePomo, loadSession, saveSession, clearSession } from './store.js';
-import { addSessionToHistory } from './focushistory.js';
-import { $, faNum, faDigits } from './utils.js';
+import { addSessionToHistory, getHistory } from './focushistory.js';
+import { $, faNum, faDigits, formatDuration, normalizeFa, startOfToday } from './utils.js';
 import { APP_TITLE } from './constants.js';
 import { confetti, beep } from './confetti.js';
-import { setTaskDone } from './tasks.js';
+import { setTaskDone, dueLabel } from './tasks.js';
 import { notify, subscribe } from './bus.js';
 import { fekrbazMarkup } from './fekrbaz.js';
 import { qorqoriMarkup } from './qorqori.js';
@@ -314,6 +314,7 @@ function fmtClock(sec) {
 function renderFocusPage() {
   const card = $('.focus-page-card');
   if (!card) return;
+  delete card.dataset.pick;
   const session = getActiveSession();
   const ended = state.session && state.session.status === 'completed' && !state.session._reflectDone;
 
@@ -367,32 +368,127 @@ function syncRunningUI() {
   document.title = session.status === 'active' ? `${fmtClock(remain)} · دَفتَرچه` : APP_TITLE;
 }
 
-/* Pick view: the current selection flow, with the task's estimated
-   duration as the suggested session length */
+/* ═══ Pick view — the task book ═══
+   Open tasks are laid out as a page of the notebook instead of a system
+   dropdown: every entry carries its own deadline and estimate, the one the user
+   focused on last sits first under a small ribbon, and the chosen one gets a
+   hand-drawn tick. Choosing stays deliberate — the session still starts only
+   from the button, which now waits until something is actually picked. */
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const SEARCH_FROM = 8;   // from this many open tasks the book gets a search line
+
+/* Days back in words, for the continuity ribbon */
+function relDay(ts) {
+  const then = new Date(ts); then.setHours(0, 0, 0, 0);
+  const diff = Math.round((startOfToday() - then) / 864e5);
+  if (diff <= 0) return 'امروز';
+  if (diff === 1) return 'دیروز';
+  if (diff <= 7) return `${faNum(diff)} روز پیش`;
+  return '';
+}
+
+/* Open tasks, with the one from the most recent finished session moved to the
+   top. Everything else keeps the order the list already has — the picker never
+   ranks, it only remembers. */
+function openTasksForPick() {
+  const open = state.tasks.filter(t => !t.done);
+  const rec = getHistory().find(r => r.taskId && open.some(t => t.id === r.taskId));
+  if (!rec) return { open, rec: null };
+  return { open: [open.find(t => t.id === rec.taskId), ...open.filter(t => t.id !== rec.taskId)], rec };
+}
+
+/* One factual line about the load on the desk — counts only, never a score */
+function openSummary(open) {
+  const late = open.filter(t => !!t.dueDate && dueLabel(t.dueDate)?.cls === 'late').length;
+  const today = open.filter(t => !!t.dueDate && dueLabel(t.dueDate)?.cls === 'today').length;
+  const parts = [`${faNum(open.length)} کار روی میز`];
+  if (late) parts.push(late === 1 ? '۱ کار از مهلت گذشته' : `${faNum(late)} کار از مهلت گذشته`);
+  else if (today) parts.push(today === 1 ? '۱ کار با مهلت امروز' : `${faNum(today)} کار با مهلت امروز`);
+  else if (open.length >= SEARCH_FROM) parts.push('هر کدوم رو خواستی بردار');
+  return parts.join(' · ');
+}
+
+/* One entry of the book: title first, then its own deadline and estimate */
+function pickRowHtml(task, rec) {
+  const meta = [];
+  if (rec) {
+    const day = relDay(rec.endedAt);
+    meta.push(`<span class="pick-note">آخرین تمرکزت${day ? ' · ' + day : ''}</span>`);
+  }
+  const dl = task.dueDate ? dueLabel(task.dueDate) : null;
+  if (dl) meta.push(`<span class="due-chip ${dl.cls}">${dl.ltr ? `<span dir="ltr">${esc(dl.text)}</span>` : esc(dl.text)}</span>`);
+  const dur = formatDuration(task.durationMin);
+  if (dur) meta.push(`<span class="dur-chip">${esc(dur)}</span>`);
+  return `
+      <label class="pickrow">
+        <input type="radio" name="focusTask" value="${esc(task.id)}">
+        <span class="pickrow-tick" aria-hidden="true">${TICK}</span>
+        <span class="pickrow-main">
+          <span class="pickrow-title">${esc(task.text)}</span>
+          ${meta.length ? `<span class="pickrow-meta">${meta.join('')}</span>` : ''}
+        </span>
+      </label>`;
+}
+
+/* Nothing to focus on yet: a warm note, never an error */
+function renderPickEmpty(card) {
+  const hasTasks = state.tasks.length > 0;
+  card.dataset.pick = '1';
+  card.innerHTML = `
+    <span class="focus-char" aria-hidden="true">${qorqoriMarkup(hasTasks ? 'celebrating' : 'default')}</span>
+    <p class="focus-task">${hasTasks ? 'همه کارات تموم شده.' : 'هنوز کاری روی میز نیست.'}</p>
+    <p class="focus-sub">${hasTasks ? 'یه کار تازه اضافه کن تا روش تمرکز کنیم.' : 'اول یه کار اضافه کن، بعدش میایم سراغ تمرکز.'}</p>
+    <div class="focus-page-actions">
+      <button class="go" id="pickAdd">افزودن کار</button>
+    </div>`;
+  card.querySelector('#pickAdd').addEventListener('click', () =>
+    window.dispatchEvent(new CustomEvent('navigate', { detail: 'tasks' })));
+}
+
+/* Pick view: the task book, with the task's estimate as the suggested length */
 function renderPickView() {
   const card = $('.focus-page-card');
   if (!card) return;
-  const undone = state.tasks.filter(t => !t.done);
+  const { open, rec } = openTasksForPick();
+  if (!open.length) { renderPickEmpty(card); return; }
+
+  card.dataset.pick = '1';
+  const rows = open.map(t => pickRowHtml(t, t.id === rec?.taskId ? rec : null)).join('');
   card.innerHTML = `
     <span class="focus-char" aria-hidden="true">${qorqoriMarkup('default')}</span>
-    <p class="focus-task">یه کار از لیست انتخاب کن</p>
-    <div class="focus-task-picker">
-      <span>کار مورد نظر:</span>
-      <select id="focusTaskSelect" aria-label="انتخاب کار"></select>
+    <p class="focus-task">${state.userName ? esc(state.userName) + '، ' : ''}کدوم کار رو برداریم؟</p>
+    <p class="focus-sub">${openSummary(open)}</p>
+    <div class="pickbook">
+      <button type="button" class="pickbook-head" id="pickToggle" aria-expanded="false" aria-controls="pickBookList">
+        <span>کار مورد نظرت</span>
+        <span class="pickbook-count">${faNum(open.length)} کار</span>
+        <svg class="pickbook-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="pickbook-body" id="pickBody">
+        <div class="pickbook-body-inner">
+      ${open.length > SEARCH_FROM ? `<div class="pickbook-search"><input id="pickSearch" type="search" autocomplete="off" placeholder="بین کارهات بگرد…" aria-label="جست‌وجو در کارها"></div>` : ''}
+      <div class="pickbook-list" id="pickBookList" role="radiogroup" aria-label="انتخاب کار">${rows}</div>
+      <p class="pickbook-none" id="pickNone" hidden>چیزی با این اسم پیدا نشد.</p>
+        </div>
+      </div>
     </div>
     <div class="focus-presets" id="focusPresets"></div>
     <div class="focus-page-actions">
-      <button class="go" id="focusStartBtn">شروع تمرکز</button>
+      <button class="go" id="focusStartBtn" disabled>شروع تمرکز</button>
     </div>`;
-  const sel = card.querySelector('#focusTaskSelect');
-  sel.innerHTML = '<option value="">— انتخاب کن —</option>';
-  undone.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.textContent = t.text;
-    sel.appendChild(opt);
-  });
 
+  const startBtn = card.querySelector('#focusStartBtn');
+  let selId = '';
+
+  /* The book starts closed; its head is the handle. Opening stays a
+     deliberate tap, the way a real notebook stays shut until picked up. */
+  const body = card.querySelector('#pickBody');
+  card.querySelector('#pickToggle').addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    card.querySelector('#pickToggle').setAttribute('aria-expanded', String(open));
+  });
   const presets = card.querySelector('#focusPresets');
   const buildPresets = suggested => {
     presets.innerHTML = '';
@@ -410,12 +506,39 @@ function renderPickView() {
       presets.appendChild(b);
     });
   };
-  const syncPresets = () => buildPresets(getTask(sel.value)?.durationMin || null);
-  sel.addEventListener('change', syncPresets);
+  const syncPresets = () => buildPresets(getTask(selId)?.durationMin || null);
+
+  /* Selection: the start button only wakes up once a task is chosen */
+  const list = card.querySelector('#pickBookList');
+  list.addEventListener('change', e => {
+    const input = e.target.closest('input[name="focusTask"]');
+    if (!input) return;
+    selId = input.value;
+    startBtn.disabled = false;
+    syncPresets();
+  });
+
+  /* A long book gets a search line that also matches Persian spelling variants */
+  const search = card.querySelector('#pickSearch');
+  if (search) {
+    const rowEls = [...list.querySelectorAll('.pickrow')];
+    const none = card.querySelector('#pickNone');
+    search.addEventListener('input', () => {
+      const q = normalizeFa(search.value.trim());
+      let shown = 0;
+      rowEls.forEach(row => {
+        const hit = !q || normalizeFa(row.querySelector('.pickrow-title').textContent).includes(q);
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      none.hidden = shown > 0;
+    });
+  }
+
   syncPresets();
 
-  card.querySelector('#focusStartBtn').addEventListener('click', () => {
-    const task = getTask(sel.value);
+  startBtn.addEventListener('click', () => {
+    const task = getTask(selId);
     if (!task) return;
     const chosen = presets.querySelector('button.sel');
     const min = chosen ? Number(chosen.dataset.min) : (task.durationMin || 25);
@@ -544,8 +667,8 @@ function showSessionSummary() {
    when the card is empty or already showing the pick view. */
 function refreshIfPickView() {
   const card = $('.focus-page-card');
-  if (!card || getActiveSession()) return;
-  const showingPick = !!card.querySelector('#focusTaskSelect');
+  if (!card || state.session) return;
+  const showingPick = card.dataset.pick === '1';
   if (showingPick || !card.innerHTML.trim()) renderFocusPage();
 }
 

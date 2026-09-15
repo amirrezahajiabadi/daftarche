@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <title>دَفتَرچه — لیست کارهای خودمون</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>%F0%9F%93%93</text></svg>">
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="دَفتَرچه">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/components2.css">
@@ -539,6 +541,13 @@
         <span class="settings-label">پیش‌فرض تمرکز</span>
         <div class="settings-value"><span id="profPomo"></span></div>
       </div>
+      <div class="settings-row">
+        <span class="settings-label">تغییرات نسخه</span>
+        <div class="settings-value">
+          <span id="profVersion"></span>
+          <button class="settings-btn" id="profChangelog">بخونم</button>
+        </div>
+      </div>
       <div class="settings-divider"></div>
       <div class="settings-row danger">
         <span class="settings-label">پاک‌کردن همهٔ داده‌ها</span>
@@ -663,5 +672,7 @@
 </div>
 
 <script type="module" src="js/app.js"></script>
+<!-- Changelog is built and injected by js/changelog.js (keeps the release
+     data decoupled; no static markup to maintain) -->
 </body>
 </html>

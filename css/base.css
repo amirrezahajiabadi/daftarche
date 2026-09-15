@@ -161,7 +161,7 @@ a,button,[role=button],input[type=range],input[type=checkbox],.cal-day,.hl-dot,.
    keep their small size. Fields users actually type in are pinned to 16px in
    their own files — iOS Safari zooms the viewport into any focusable field
    set smaller than that. */
-.focus-presets input,.goal-daily input,.page-ind input[type=range],.focus-task-picker select{font-size:13px}
+.focus-presets input,.goal-daily input,.page-ind input[type=range]{font-size:13px}
 
 /* Interactive hover is a desktop enhancement, never a touch state. Without this
    guard, a tap leaves the pressed element stuck in :hover until the user taps
@@ -277,12 +277,70 @@ html[data-theme="dark"] .nav-glider{
 .focus-page-actions{display:flex;gap:8px;width:100%}
 .focus-page-actions .go{flex:1;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:15px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;box-shadow:var(--shadow-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
 .focus-page-actions .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+.focus-page-actions .go:disabled{opacity:.5;box-shadow:none;cursor:not-allowed}
+.focus-page-actions .go:disabled:active{transform:none}
 .focus-page-actions .ghost{flex:1;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-ui);font-weight:500;font-size:14px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--duration-fast)}
 /* hover state lives in the @media(hover:hover) block above */
-.focus-task-picker{display:flex;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1.5px dashed var(--border)}
-.focus-task-picker span{font-size:12px;color:var(--muted);flex-shrink:0;font-weight:500}
-.focus-task-picker select{flex:1;min-width:0;font-family:var(--font-ui);font-size:13px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:var(--radius-xs);padding:8px 12px;outline:none;cursor:pointer;direction:rtl;font-weight:400}
-.focus-task-picker select:focus{border-color:var(--accent)}
+/* The task book — the pick view's list of open tasks.
+   A page of the notebook rather than a system dropdown: paper surface with a
+   strip of tape, hairline rules between entries, the last-focused task pinned
+   first under a small ribbon, and a hand-drawn tick on the chosen one. The list
+   scrolls inside the card, so a long list never grows the card itself. */
+.pickbook{position:relative;width:100%;text-align:start;background:var(--color-surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px 12px;box-shadow:var(--shadow-1)}
+.pickbook::before{content:'';position:absolute;inset-inline-start:20px;top:-8px;width:46px;height:15px;border-radius:2px;background:var(--tape);opacity:.7;transform:rotate(-1.5deg);pointer-events:none}
+.pickbook-head{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding-bottom:6px;border-bottom:1.5px dashed var(--border);background:transparent;border-top:none;border-inline:none;cursor:pointer;font-family:var(--font-ui);text-align:start;color:inherit}
+.pickbook-head span{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+@media (hover:hover){
+  .pickbook-head:hover span{color:var(--text)}
+}
+.pickbook-head:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px;border-radius:var(--radius-xs)}
+.pickbook-count{margin-inline-start:auto;font-weight:500;font-size:10.5px;opacity:.85}
+.pickbook-chev{flex-shrink:0;width:15px;height:15px;color:var(--muted);transition:transform var(--duration-base) var(--ease-out)}
+.pickbook-head[aria-expanded="true"] .pickbook-chev{transform:rotate(180deg)}
+/* The book body: a height-animated reveal, default shut. Grid-template-rows
+   gives a smooth open/close without measuring scrollHeight in JS. */
+.pickbook-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--duration-base) var(--ease-out)}
+.pickbook-body.open{grid-template-rows:1fr}
+.pickbook-body-inner{overflow:hidden;min-height:0}
+@media (prefers-reduced-motion:reduce){
+  .pickbook-body{transition:none}
+  .pickbook-chev{transition:none}
+}
+.pickbook-search{padding:8px 0 2px}
+.pickbook-search input{width:100%;font-family:var(--font-ui);font-size:13px;border:none;border-bottom:1.5px dashed var(--border);background:transparent;color:var(--text);padding:6px 2px;outline:none;direction:rtl}
+.pickbook-search input:focus{border-bottom-color:var(--accent)}
+.pickbook-search input::placeholder{color:var(--muted);opacity:.8}
+.pickbook-list{display:flex;flex-direction:column;max-height:196px;max-height:min(196px,34dvh);overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:var(--color-border-strong) transparent}
+/* Chromium: keep the little wheel unobtrusive and theme-aware */
+.pickbook-list::-webkit-scrollbar{width:6px}
+.pickbook-list::-webkit-scrollbar-thumb{background:var(--color-border-strong);border-radius:999px}
+.pickbook-list::-webkit-scrollbar-track{background:transparent}
+.pickrow{position:relative;display:flex;align-items:flex-start;gap:10px;min-height:44px;flex-shrink:0;padding:9px 4px;border-bottom:1px solid var(--border);border-radius:var(--radius-xs);cursor:pointer;transition:background var(--duration-fast)}
+.pickrow[hidden]{display:none}
+.pickrow:last-child{border-bottom:none}
+/* The input stays focusable and announced; the whole row is the target and the
+   radio itself covers a 44px touch column while staying visually hidden.
+   Rows grow with their content (title + meta never clip or bleed into the
+   next row) — min-height was removed because it forced the chip to overflow. */
+.pickrow input{position:absolute;inset-inline-start:0;top:50%;transform:translateY(-50%);width:44px;height:44px;margin:0;opacity:0;pointer-events:none}
+.pickrow::after{content:'';position:absolute;inset:0}
+@media (hover:hover){
+  .pickrow:hover{background:var(--accent-soft)}
+}
+.pickrow:has(input:checked){background:var(--accent-soft)}
+.pickrow:has(input:focus-visible){outline:2px solid var(--color-focus);outline-offset:1px}
+.pickrow-tick{display:grid;place-items:center;flex-shrink:0;width:20px;height:20px;margin-top:1px;border:1.5px dashed var(--color-border-strong);border-radius:50%;color:transparent;transition:color var(--duration-fast),background var(--duration-fast),border-color var(--duration-fast)}
+.pickrow-tick svg{width:12px;height:12px}
+.pickrow:has(input:checked) .pickrow-tick{background:var(--accent);border-color:var(--accent);border-style:solid;color:#fff}
+.pickrow-main{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.pickrow-title{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.6;overflow-wrap:anywhere}
+.pickrow:has(input:checked) .pickrow-title{font-weight:600}
+.pickrow-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:1px}
+/* Deadline and estimate read as labels here, not as controls */
+.pickrow-meta .due-chip,.pickrow-meta .dur-chip{cursor:default;font-size:10px;padding:2px 8px;line-height:1.5}
+.pickrow-meta .due-chip:hover,.pickrow-meta .dur-chip:hover{transform:none}
+.pick-note{font-size:10px;font-weight:600;line-height:1.6;padding:2px 8px;border-radius:var(--radius-pill);color:var(--color-accent-strong);background:var(--accent-soft)}
+.pickbook-none{padding:14px 0 6px;font-size:11.5px;text-align:center;color:var(--muted)}
 
 /* ═══ Settings ═══ */
 .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 18px;box-shadow:var(--shadow-sm)}
@@ -342,7 +400,8 @@ button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
   .focus-page-card{padding:22px 16px;gap:14px}
   .focus-page-actions .go{font-size:14px;padding:11px}
   .focus-page-actions .ghost{font-size:13px;padding:11px}
-  .focus-task-picker{flex-wrap:wrap}
+  .pickbook-list{max-height:min(168px,30dvh)}
+  .pickrow{padding:8px 2px}
   .settings-row{padding:12px 0}
   .settings-label{font-size:13px}
   .settings-value span{font-size:12px}

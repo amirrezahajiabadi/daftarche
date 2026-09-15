@@ -140,3 +140,39 @@ html[data-theme="dark"] .overlay{background:rgba(0,0,0,.5)}
   .focus-pill{padding:8px 14px;font-size:12px;bottom:calc(var(--nav-height) + var(--sab) + 8px)}
   .focus-pill svg{width:13px;height:13px}
 }
+
+/* ═══ What's New — changelog dialog ═══
+   Reuses the .overlay scrim and the .name-card paper language; the release
+   list itself is a narrow column of entries so the dialog reads like a
+   notebook page, not an admin panel. */
+.changelog-card{max-width:340px;text-align:start;padding:24px 22px 20px}
+.changelog-card .badge{margin:0 auto}
+.changelog-card h2{margin:12px 0 2px;font-size:20px;text-align:center}
+.changelog-sub{color:var(--muted);font-size:12.5px;margin:0 0 12px;line-height:1.7;font-weight:400;text-align:center}
+.changelog-body{max-height:min(46dvh,380px);overflow-y:auto;overscroll-behavior-y:contain;margin:0 -6px;padding:0 6px 4px;scrollbar-width:thin;scrollbar-color:var(--color-border-strong) transparent}
+.changelog-body::-webkit-scrollbar{width:6px}
+.changelog-body::-webkit-scrollbar-thumb{background:var(--color-border-strong);border-radius:999px}
+.changelog-entry{padding:12px 0;border-bottom:1.5px dashed var(--border)}
+.changelog-entry:last-child{border-bottom:none}
+.changelog-ver{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.changelog-ver b{font-family:var(--font-personality);font-size:14px;color:var(--accent)}
+.changelog-ver span{font-size:11px;color:var(--muted);font-weight:500}
+.changelog-title{font-family:var(--font-ui);font-size:13.5px;font-weight:600;margin:6px 0 8px;line-height:1.7}
+.changelog-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.changelog-item{display:flex;align-items:center;gap:10px;font-size:12.5px;line-height:1.7;color:var(--text);font-weight:400}
+.changelog-icon{flex-shrink:0;width:26px;height:26px;display:grid;place-items:center;font-size:13px;background:var(--accent-soft);border-radius:var(--radius-sm)}
+.changelog-card .go{margin-top:14px;width:100%;min-height:44px;border:none;background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:600;padding:12px;border-radius:var(--radius-sm);cursor:pointer;box-shadow:var(--shadow-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+.changelog-card .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+@media (hover:hover){
+  .changelog-card .go:hover{transform:translateY(-2px)}
+}
+/* Clear the notch at the top and the home bar at the bottom: the dialog is
+   vertically centered, so only bottom padding matters on small screens */
+@media (max-width:400px){
+  .changelog-card{padding:22px 16px calc(16px + var(--sab));max-width:100%}
+}
+/* Body scroll lock while the dialog is open */
+body.no-scroll{overflow:hidden}
+@media (prefers-reduced-motion:reduce){
+  .changelog-overlay,.changelog-card{animation:none}
+}

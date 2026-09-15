@@ -14,6 +14,7 @@ import { initInsights, renderInsights } from './insights.js';
 import { initFocusHistory, renderFocusHistory } from './focushistory.js';
 import { initToday } from './today.js';
 import { initDuePicker } from './duepicker.js';
+import { initChangelogCheck } from './changelog.js';
 
 /* Each section is initialized separately; an error in one section doesn't break the rest of the app */
 const safe = (name, fn) => {
@@ -73,13 +74,27 @@ function initNavigation() {
 }
 
 /* ═══ Theme ═══ */
+
+/* The browser paints its own chrome (Android status bar, Safari toolbar) from the
+   theme-color meta. It has to follow the theme actually in use rather than the system
+   preference alone, and it is read from the same token the CSS paints with so the
+   brand color and the interface can never drift apart. */
+function syncThemeColor() {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) return;
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim();
+  if (bg) meta.setAttribute('content', bg);
+}
+
 function initTheme() {
   const saved = loadTheme() || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
   document.documentElement.dataset.theme = saved;
+  syncThemeColor();
   document.querySelectorAll('.theme-btn').forEach(btn => {
     btn.onclick = () => {
       const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = n;
+      syncThemeColor();
       saveTheme(n);
       renderProfile();
     };
@@ -207,6 +222,7 @@ safe('بینش‌ها', initInsights);
 safe('سابقه تمرکز', initFocusHistory);
 safe('امروز', initToday);
 safe('مهلت', initDuePicker);
+safe("چی خبر", initChangelogCheck);
 
 const dl = $('#dateLine');
 if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
