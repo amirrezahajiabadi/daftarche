@@ -37,9 +37,17 @@ function nextDur(cur) {
 }
 function refreshDurChip(li, task) {
   const btn = li.querySelector('.dur-chip');
-  if (!task.durationMin) { if (btn) btn.remove(); return; }
+  if (!btn) return;
+  if (!task.durationMin) {
+    btn.className = 'dur-chip none';
+    btn.textContent = '+ زمان';
+    btn.title = 'افزودن زمان تقریبی';
+    return;
+  }
   const label = formatDuration(task.durationMin);
-  if (btn) { btn.textContent = label; btn.title = `زمان تقریبی: ${label} — کلیک برای تغییر`; }
+  btn.className = 'dur-chip';
+  btn.textContent = label;
+  btn.title = `زمان تقریبی: ${label} — کلیک برای تغییر`;
 }
 
 /* ── Due Date (Jalali) ── */
@@ -83,7 +91,7 @@ function createTaskEl(task, delay = 0) {
   const durLabel = formatDuration(task.durationMin);
   const durHtml = durLabel
     ? `<button class="dur-chip" title="زمان تقریبی: ${durLabel} — کلیک برای تغییر">${durLabel}</button>`
-    : '';
+    : `<button class="dur-chip none" title="افزودن زمان تقریبی">+ زمان</button>`;
   li.innerHTML = `
     <span class="grip" aria-hidden="true">${ICONS.grip}</span>
     <button class="pri-dot" title="اولویت: ${P_LABEL[li.dataset.p]} — کلیک برای تغییر" aria-label="تغییر اولویت"></button>
