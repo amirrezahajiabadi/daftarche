@@ -146,6 +146,12 @@ html[data-theme="dark"] .toast-btn{color:var(--color-accent)}
 .toast-bar[dir="ltr"],[dir="ltr"] .toast-bar{transform-origin:left}
 @keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
+/* Sticky variant: no auto-dismiss bar, stays until the user acts.
+   Used by the update prompt — the action must never time out. */
+.toast-sticky{font-size:14px;padding:14px 16px;gap:var(--space-4)}
+.toast-sticky .toast-btn{padding:8px 10px;min-height:44px;display:inline-flex;align-items:center}
+@media (prefers-reduced-motion: reduce){.toast-sticky,.toast-sticky .toast-btn{transition:none}}
+
 /* ═══ 12. Empty State ═══
    Context + Character + Next Step. Never generic text. */
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);

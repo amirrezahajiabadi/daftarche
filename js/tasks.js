@@ -3,6 +3,7 @@ import { saveTasks } from './store.js';
 import { $, faNum, startOfToday, dueKeyFromOffset, normalizeFa, parseDurationMin, formatDuration } from './utils.js';
 import { P_CYCLE, P_LABEL, CATS, ICONS } from './constants.js';
 import { notify } from './bus.js';
+import { bellHtml, refreshBell, setTaskNotify, notificationsSupported, bindPersistence } from './notifications.js';
 import { confetti } from './confetti.js';
 import { recordDay } from './week.js';
 import { openFocus, clearFocus } from './focus.js';
@@ -11,6 +12,10 @@ import { formatJalaliDate } from './jalali.js';
 
 const listEl = $('#taskList');
 const save = () => saveTasks(state.tasks);
+
+/* The notifications module persists through these hooks so it never touches
+   the task list's internals directly. */
+bindPersistence({ save, notify });
 
 export const matches = t => state.filter === 'all' || (state.filter === 'active' ? !t.done : t.done);
 export const visible = () => state.tasks.filter(t =>
@@ -100,6 +105,7 @@ function createTaskEl(task, delay = 0) {
     <button class="cat-tag" style="--cc:${cat.color}" title="دسته: ${cat.label} — کلیک برای تغییر">${cat.label}</button>
     ${durHtml}
     ${dueHtml}
+    ${notificationsSupported() ? bellHtml(task) : ''}
     <button class="focus-btn" title="تایمر تمرکز" aria-label="تایمر تمرکز">${ICONS.clock}</button>
     <button class="del" aria-label="حذف">${ICONS.trash}</button>`;
   li.querySelector('.title').textContent = task.text;
@@ -259,7 +265,7 @@ function syncOrder() {
 
 /* ── Events ── */
 export function initTasks() {
-  listEl.addEventListener('click', e => {
+  listEl.addEventListener('click', async e => {
     const li = e.target.closest('.task'); if (!li) return;
     const task = getTask(li.dataset.id); if (!task) return;
     if (e.target.closest('.check')) toggleTask(li, task);
@@ -286,13 +292,25 @@ export function initTasks() {
       openDuePicker({
         current: task.dueDate || null,
         onPick: key => {
+          const dateChanged = task.dueDate !== key;
           task.dueDate = key; save();
+          // A new deadline re-arms the reminder so nothing fires twice for one date
+          if (dateChanged && task.notifiedStatus) task.notifiedStatus = 'none';
           refreshDueChip(li, task);
           const chip = li.querySelector('.due-chip');
           if (chip) animateChipFlip(chip);
           notify();
         },
       });
+    }
+    else if (e.target.closest('.bell-btn')) {
+      const next = !(task.notify === true);
+      const granted = await setTaskNotify(task, next);
+      if (granted) {
+        refreshBell(li, task);
+        const bell = li.querySelector('.bell-btn');
+        if (bell) animateChipFlip(bell);
+      }
     }
     else if (e.target.closest('.dur-chip')) {
       const btn = e.target.closest('.dur-chip');

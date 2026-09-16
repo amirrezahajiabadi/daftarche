@@ -1,0 +1,15 @@
+{
+  "name": "daftarche-push-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web Push backend for دَفتَرچه — stores subscriptions and dispatches due-date reminders via VAPID",
+  "main": "push-server.js",
+  "scripts": {
+    "start": "node push-server.js",
+    "keys": "node -e \"const wp=require('web-push');console.log(JSON.stringify(wp.generateVAPIDKeys(),null,2))\""
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "web-push": "^3.6.7"
+  }
+}

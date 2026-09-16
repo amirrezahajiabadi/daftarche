@@ -13,6 +13,7 @@ import { initProfile, renderProfile } from './profile.js';
 import { initInsights, renderInsights } from './insights.js';
 import { initFocusHistory, renderFocusHistory } from './focushistory.js';
 import { initToday } from './today.js';
+import { initNotifications, notificationsSupported } from './notifications.js';
 import { initDuePicker } from './duepicker.js';
 import { initChangelogCheck } from './changelog.js';
 
@@ -170,28 +171,64 @@ function initKeyboard() {
 
 /* ═══ Offline Shell ═══
    Registers the service worker. Registration waits for the load event so it
-   never competes with the first paint, and a freshly installed worker is only
-   allowed to take over while the page is in the background — a running session
-   is never swapped out from under the user, and there is no forced reload. */
+   never competes with the first paint. A freshly installed worker is offered
+   to the user as a persistent toast: tapping it swaps the worker and the page
+   reloads exactly once onto the new build. As a fallback, the hand-over also
+   happens silently while the page is in the background — a running session is
+   still never swapped out from under the user without a reload. */
 function initPWA() {
   if (!('serviceWorker' in navigator)) return;
+
+  /* controllerchange fires after SKIP_WAITING; reload once so the old JS that
+     is already running is replaced by the new build (guard against loops). */
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    location.reload();
+  });
+
+  const offerUpdate = worker => {
+    const toast = $('#updateToast');
+    const btn = $('#updateBtn');
+    if (!toast || !btn || !worker) return;
+    toast.hidden = false;
+    requestAnimationFrame(() => toast.classList.add('show'));
+    if (!btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        toast.classList.remove('show');
+        toast.hidden = true;
+        worker.postMessage('SKIP_WAITING');
+        /* controllerchange reloads; if it never fires (edge cases), recover
+           after a grace period so the user is not stuck on the old build. */
+        setTimeout(() => { if (!reloading) location.reload(); }, 3000);
+      });
+    }
+  };
 
   const register = () => {
     navigator.serviceWorker.register(new URL('sw.js', document.baseURI))
       .then(reg => {
-        const handOver = () => {
-          if (!reg.waiting || document.visibilityState !== 'hidden') return;
-          reg.waiting.postMessage('SKIP_WAITING');
-        };
+        /* An update may already be waiting from a previous visit. */
+        if (reg.waiting && navigator.serviceWorker.controller) offerUpdate(reg.waiting);
+
         reg.addEventListener('updatefound', () => {
           const installing = reg.installing;
           if (!installing) return;
           installing.addEventListener('statechange', () => {
-            if (installing.state === 'installed') handOver();
+            if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+              offerUpdate(reg.waiting);
+            }
           });
         });
-        /* Hand over as the app goes to the background or is closed: the moment
-           the user is not looking at the loaded build. */
+
+        /* Fallback hand-over as the app goes to the background or is closed:
+           the moment the user is not looking at the loaded build. */
+        const handOver = () => {
+          if (!reg.waiting || document.visibilityState !== 'hidden') return;
+          reg.waiting.postMessage('SKIP_WAITING');
+        };
         document.addEventListener('visibilitychange', handOver);
         addEventListener('pagehide', handOver);
         handOver();
@@ -222,6 +259,9 @@ safe('بینش‌ها', initInsights);
 safe('سابقه تمرکز', initFocusHistory);
 safe('امروز', initToday);
 safe('مهلت', initDuePicker);
+/* Due-date watcher: silently no-ops until the user grants notification
+   permission from a task card. */
+if (notificationsSupported()) safe('یادآوری‌ها', () => initNotifications(() => state.tasks));
 safe("چی خبر", initChangelogCheck);
 
 const dl = $('#dateLine');

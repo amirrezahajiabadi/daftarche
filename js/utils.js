@@ -46,3 +46,16 @@ export const formatDuration = min => {
   const h = Math.floor(m / 60), r = m % 60;
   return r === 0 ? `${faNum(h)} ساعت` : `${faNum(h)} ساعت و ${faNum(r)} دقیقه`;
 };
+
+/* ═══ Web Push ═══ */
+
+/* Convert a URL-safe Base64 VAPID public key to the Uint8Array that
+   pushManager.subscribe expects. Pure JS — no dependencies. */
+export function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const output = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i);
+  return output;
+}

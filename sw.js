@@ -14,7 +14,7 @@
    when the page asks it to (see the message handler), so a running session is
    never swapped out mid-task. */
 
-const VERSION = 'v3';
+const VERSION = 'v6';
 
 const STATIC_CACHE = `daftarche-static-${VERSION}`;
 const RUNTIME_CACHE = `daftarche-runtime-${VERSION}`;
@@ -59,6 +59,8 @@ const SHELL = [
   'js/jingool.js',
   'js/khabalo.js',
   'js/library.js',
+  'js/notifications.js',
+  'js/push-service.js',
   'js/profile.js',
   'js/progress.js',
   'js/qorqori.js',
@@ -128,6 +130,63 @@ self.addEventListener('activate', event => {
 /* ── The page decides when an installed update may take over ── */
 self.addEventListener('message', event => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+/* ── Notifications: tapping an alert opens (or focuses) the app ──
+   Deep-links to the task list; when the payload carries a specific task the
+   URL keeps that context so the list can highlight it. */
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const extra = event.notification.data && event.notification.data.taskId
+    ? `?task=${encodeURIComponent(event.notification.data.taskId)}`
+    : '';
+  const target = new URL(`index.html${extra}`, self.location.origin).href;
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    // Focus an existing window if one is open, otherwise open a fresh one
+    for (const client of all) {
+      try {
+        await client.focus();
+        if (client.navigate) await client.navigate(target);
+        return;
+      } catch { /* try the next window */ }
+    }
+    await self.clients.openWindow(target);
+  })());
+});
+
+/* ── Push: reminders delivered by the push server while the app is closed ──
+   Every notification is Persian, right-to-left, and carries the deep-link
+   context the notificationclick handler above consumes. */
+self.addEventListener('push', event => {
+  let data = { title: 'دَفتَرچه', body: 'شما یک یادآوری جدید دارید!' };
+  if (event.data) {
+    try { data = event.data.json(); }
+    catch { data = { body: event.data.text() }; }
+  }
+  const options = {
+    body: data.body || '',
+    icon: data.icon || 'assets/icons/icon-192.png',
+    badge: data.badge || 'assets/icons/icon-192.png',
+    tag: data.tag || 'general-notification',
+    dir: 'rtl',
+    lang: 'fa',
+    data: data.data || { url: '/' },
+  };
+  event.waitUntil(self.registration.showNotification(data.title || 'دَفتَرچه', options));
+});
+
+/* A subscription that the push service reports as gone (user cleared site
+   data, reinstalled, endpoint rotated) must be dropped server-side; the
+   page is told so it can re-subscribe on the next user interaction. */
+self.addEventListener('pushsubscriptionchange', event => {
+  event.waitUntil((async () => {
+    try { await event.subscription.unsubscribe(); } catch { /* already gone */ }
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of all) {
+      try { client.postMessage({ type: 'push-subscription-invalid' }); } catch { /* ignore */ }
+    }
+  })());
 });
 
 async function staleWhileRevalidate(request, cacheName) {

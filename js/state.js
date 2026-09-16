@@ -25,6 +25,12 @@ function normalizeTask(t) {
   task.dueDate = task.dueDate && DAY_KEY_RE.test(task.dueDate) ? task.dueDate : null;
   if (!task.created) task.created = Date.now();
   task.doneAt = task.done ? (task.doneAt || Date.now()) : null;
+  /* Notification fields (optional, safe defaults for old data):
+     notify         — per-task switch, user controlled
+     notifiedStatus — dedupe marker so a task is never nagged repeatedly:
+                      'none' | 'soon' (due today) | 'overdue' (past due) */
+  task.notify = typeof task.notify === 'boolean' ? task.notify : false;
+  if (!['none', 'soon', 'overdue'].includes(task.notifiedStatus)) task.notifiedStatus = 'none';
   return task;
 }
 

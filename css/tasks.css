@@ -102,6 +102,19 @@ html[data-theme="dark"] .dur-chip{color:#a79bf5}
 .focus-btn:hover{color:var(--accent);background:var(--accent-soft);transform:scale(1.12)}
 .task.done .focus-btn{display:none}
 
+/* ── Reminder bell (per-task notification switch) ──
+   Off: quiet, same family as the focus button. On: accent-tinted so the
+   state is readable by color AND shape (filled clapper dot). */
+.bell-btn{border:none;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:var(--radius-xs);cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:.55;position:relative;transition:all var(--duration-fast)}
+.bell-btn::after{content:'';position:absolute;inset:-6px;border-radius:var(--radius-sm)}
+.bell-btn:hover{color:var(--accent);background:var(--accent-soft);opacity:1;transform:scale(1.12)}
+.bell-btn.on{opacity:1;color:var(--accent)}
+.bell-btn.on::before{content:'';position:absolute;bottom:5px;inset-inline-end:5px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.task.done .bell-btn{display:none}
+@media (hover:none){.bell-btn{opacity:.7}}
+.bell-btn:focus-visible{outline:2px solid var(--color-focus,var(--accent));outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.bell-btn{transition:none}.bell-btn:hover{transform:none}}
+
 .del{border:none;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:var(--radius-xs);cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:0;transform:scale(.8);position:relative;transition:all var(--duration-fast)}
 .del::after{content:'';position:absolute;inset:-6px;border-radius:var(--radius-sm)}
 .task:hover .del{opacity:1;transform:none}
@@ -147,6 +160,8 @@ html[data-theme="dark"] .dur-chip{color:#a79bf5}
   .del::after{inset:-8px}
   .focus-btn{order:3;opacity:.7;width:28px;height:28px}
   .focus-btn::after{inset:-8px}
+  .bell-btn{order:3;opacity:.7;width:28px;height:28px}
+  .bell-btn::after{inset:-8px}
   .pri-dot{order:5;margin-inline-start:34px}
   .pri-dot::after{inset:-12px}
   .cat-tag{order:6;font-size:10px;padding:2px 8px}
