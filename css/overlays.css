@@ -1,4 +1,9 @@
-.overlay{position:fixed;inset:0;z-index:100;background:rgba(46,41,33,.35);backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px;animation:fadeIn var(--duration-base) ease}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(46,41,33,.35);backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px;animation:fadeIn var(--duration-base) ease;overflow-y:auto;overscroll-behavior:contain}
+/* On a short viewport (landscape phone, keyboard open) the scrim becomes the
+   scroll container so the panel stays reachable. Its own scrollbar would only
+   add noise over the scrim and would shrink the panel mid-dialog, so it is
+   hidden — touch, wheel and focus-scrolling still move it. */
+.overlay::-webkit-scrollbar{width:0;height:0}
 /* The warm brown scrim only dims a light page. Over the dark background it would
    composite to a lighter value than the page itself, so the panel would stop
    reading as elevated — dark mode needs a scrim that actually darkens. */

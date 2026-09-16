@@ -63,7 +63,7 @@ function build() {
         <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
       </span>
       <h2 id="changelogTitle">چی تغییر کرد؟</h2>
-      <p class="changelog-sub">چیزهای تازه‌ای که به دَفتَرچه اضافه شد</p>
+      <p class="changelog-sub">این چیزا تازه به دَفتَرچه اضافه شدن</p>
       <div class="changelog-body">${CHANGELOG.map(entryHtml).join('')}</div>
       <button class="go" id="changelogOk">فهمیدم</button>
     </div>`;
