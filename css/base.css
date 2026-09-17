@@ -161,7 +161,7 @@ a,button,[role=button],input[type=range],input[type=checkbox],.cal-day,.hl-dot,.
    keep their small size. Fields users actually type in are pinned to 16px in
    their own files — iOS Safari zooms the viewport into any focusable field
    set smaller than that. */
-.focus-presets input,.goal-daily input,.page-ind input[type=range]{font-size:13px}
+.focus-presets input,.goal-daily input,.set-row input[type=range],.dock-pop-page input[type=range]{font-size:13px}
 
 /* Interactive hover is a desktop enhancement, never a touch state. Without this
    guard, a tap leaves the pressed element stuck in :hover until the user taps
@@ -385,7 +385,7 @@ button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
   /* Decorative elements and ambient loops are frozen, not just accelerated */
   .doodle,.frog-emoji,.frog-ico svg,.empty .art,.spark,.frog-hero::before,.frog-hero::after,
   .rain-drops i,.flies i,.waves svg,.ring-wrap.complete,.streak.hot svg,.task[data-p="high"] .pri-dot,
-  .focus-pill.running::after,.rtimer.on{animation:none!important}
+  .focus-pill.running::after,.reader-timer.on{animation:none!important}
   /* Decorative transforms off; state/feedback transforms still apply instantly */
   .task:hover,.frog:hover,.lastread:hover,.book-card:hover,.progress-card:hover,.header-avatar:hover,
   .moods button:hover,.t-row:hover,.note-item:hover,.cat-chip:hover{transform:none!important}

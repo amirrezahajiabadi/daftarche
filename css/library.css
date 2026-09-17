@@ -158,18 +158,31 @@
 
 /* Reading scene + modes */
 /* Reading scene + modes */
-.reader-stage{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px 14px;position:relative;transition:background var(--duration-base);overscroll-behavior-y:contain}
-.reader-stage.mode-sepia{background:#efe3cd}
-.reader-stage.mode-dark{background:#141118}
-.mode-sepia #pdfFrame{filter:sepia(.28) brightness(.97)}
-.mode-dark #pdfFrame{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.92)}
+/* The extra bottom padding keeps the last lines of a zoomed page clear of the
+   floating study dock. */
+.reader-stage{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px 14px 92px;position:relative;transition:background var(--duration-base);overscroll-behavior-y:contain;--reader-bright:1;--reader-fx:brightness(1)}
+.reader-stage.mode-sepia{background:#efe3cd;--reader-fx:sepia(.3) saturate(.94)}
+.reader-stage.mode-dark{background:#141118;--reader-fx:invert(.92) hue-rotate(180deg) contrast(.92)}
+/* Optical filters act on the rendered page itself — the pdf.js canvas, or the
+   fallback iframe — never on the container, so the page frame's shadow and
+   every reader control keep their true colours. Highlights are deliberately
+   left out: they carry their own authored colour and already switch blend mode
+   with the theme, while an inverted highlight would lose its hue.
+   The rule only turns on when a mode or a brightness change actually alters
+   something, which keeps plain light mode completely filter-free. */
+.reader-stage.has-fx :is(#pdfCanvas,#pdfFrame){filter:var(--reader-fx) brightness(var(--reader-bright))}
+/* Sepia paper tone. The sepia() filter can only warm a white page by a couple of
+   units — the paper colour itself comes from a colour-only multiply overlay,
+   which never resamples the page, so glyphs stay exactly as crisp as pdf.js drew
+   them while the blue channel drops enough to matter in low light. */
+.reader-stage.mode-sepia .page-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;background:#efdec0;mix-blend-mode:multiply;opacity:.62}
 .mode-dark .page-wrap{background:#1b1b1b}
 
 .reader-loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.06);z-index:5}
 .reader-loading[hidden]{display:none}
 .spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
 
-.page-wrap{position:relative;margin:auto;box-shadow:var(--shadow-lg);border-radius:4px;background:#fff;width:100%;height:100%;overflow:hidden;flex-shrink:0;direction:ltr}
+.page-wrap{position:relative;isolation:isolate;margin:auto;box-shadow:var(--shadow-lg);border-radius:4px;background:#fff;width:100%;height:100%;overflow:hidden;flex-shrink:0;direction:ltr}
 #pdfCanvas{display:block;position:absolute;inset:0}
 #pdfFallback{position:absolute;inset:0;display:flex;flex-direction:column}
 #pdfFallback[hidden]{display:none}
@@ -195,11 +208,29 @@
 #highlightLayer i{position:absolute;border-radius:2px}
 html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 
-/* One-time hint that text can be highlighted (internal renderer only) */
+/* Freehand pen — the optional draw surface. It sits between the text layer and
+   the highlight layer; when the pen is off it is pointer-transparent so
+   selection keeps working exactly as before. */
+#drawLayer{position:absolute;inset:0;pointer-events:none;z-index:0}
+#drawLayer.pen-on{pointer-events:auto;touch-action:none;cursor:crosshair;z-index:1}
+#textLayer.pen-off{pointer-events:none}
+#drawLayer.eraser-on{pointer-events:auto;touch-action:none;cursor:cell;z-index:1}
+
+/* Live eraser halo: follows the pointer while erasing so the user sees the
+   exact kill zone. The element is created on gesture start and removed on
+   gesture end — never left behind between books or engines. */
+.eraser-cursor{position:fixed;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
+  border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--surface) 55%,transparent);
+  pointer-events:none;z-index:30;will-change:left,top}
+
+/* One-time hint that the pen can highlight anything on the page (internal
+   renderer only) */
 .reader-hint{position:absolute;top:10px;inset-inline:14px;z-index:4;text-align:center;padding:8px 12px;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--border);box-shadow:var(--shadow-lg);font-size:11.5px;color:var(--muted);animation:hlbarIn var(--duration-fast) var(--ease-out)}
 .reader-hint[hidden]{display:none}
 
 /* Contextual highlight toolbar */
+/* Contextual selection toolbar (kept for text-selection highlights; the hand
+   tool and the popover share the colour swatches with it) */
 #hlBar{position:absolute;z-index:6;display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-pill);padding:6px 12px;box-shadow:var(--shadow-lg);animation:hlbarIn var(--duration-fast) var(--ease-out)}
 #hlBar[hidden]{display:none}
 @keyframes hlbarIn{from{opacity:0;transform:translateY(4px)}}
@@ -209,7 +240,23 @@ html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 .hl-dot{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:var(--hl);transition:transform var(--duration-fast);position:relative}
 .hl-dot::after{content:'';position:absolute;inset:-7px;border-radius:50%}
 @media (hover:hover){.hl-dot:hover{transform:scale(1.15)}}
+.hl-dot.sel{border-color:var(--text)}
 .hlbar-note{border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;cursor:pointer;padding:4px 6px}
+
+/* Pen toggle inside the pen popover */
+.dock-tool{display:inline-flex;align-items:center;gap:5px;border:none;background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:700;padding:8px 10px;border-radius:var(--radius-xs);cursor:pointer;white-space:nowrap;position:relative;transition:color var(--duration-fast) var(--ease-out),background var(--duration-fast) var(--ease-out)}
+.dock-tool::after{content:'';position:absolute;inset:-4px -2px}
+.dock-tool.on{background:var(--accent-soft);color:var(--accent)}
+
+/* Nib-size picker: three dots at true relative sizes, each with a grown hit
+   area, so the choice is self-explanatory without labels. */
+.pen-widths{display:flex;align-items:center;gap:2px}
+.pen-width{display:grid;place-items:center;width:30px;height:30px;border:none;background:transparent;border-radius:50%;cursor:pointer;position:relative;transition:background var(--duration-fast) var(--ease-out)}
+.pen-width::after{content:'';position:absolute;inset:-7px;border-radius:50%}
+.pen-width i{display:block;border-radius:50%;background:currentColor;color:var(--muted);transition:color var(--duration-fast) var(--ease-out)}
+.pen-width.on{background:var(--accent-soft)}
+.pen-width.on i{color:var(--accent)}
+@media (hover:hover){.pen-width:hover i{color:var(--accent)}}
 
 /* Manual page completion */
 .mark-read{border:1.5px solid color-mix(in srgb,var(--green) 55%,transparent);background:color-mix(in srgb,var(--green) 12%,var(--surface));color:var(--green);font-family:var(--font-ui);font-size:12px;font-weight:700;padding:7px 14px;border-radius:var(--radius-pill);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform var(--duration-fast),background var(--duration-fast),color var(--duration-fast);position:relative}
@@ -240,25 +287,113 @@ html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 /* Reader bottom bar — glass style matching the nav dock.
    Bottom margin clears the home indicator (max keeps the 10px rhythm on
    devices without one). */
-.reader-bar{margin:0 12px 10px;margin-bottom:max(10px,var(--sab));display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(255,252,245,.62),rgba(255,252,245,.38));backdrop-filter:blur(24px) saturate(1.7);-webkit-backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 18px 44px -18px rgba(122,80,35,.32),inset 0 1px 0 rgba(255,255,255,.65)}
-html[data-theme="dark"] .reader-bar{background:linear-gradient(135deg,rgba(34,29,23,.66),rgba(34,29,23,.44));border-color:rgba(255,220,180,.14);box-shadow:0 18px 44px -18px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.1)}
+/* Header timer — a quiet glass capsule that only reports elapsed time.
+   It stays low-opacity until it is running or focused, so the reading surface
+   keeps the attention. */
+.reader-timer{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:color-mix(in srgb,var(--surface) 64%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--muted);font-family:var(--font-ui);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;padding:8px 12px;border-radius:var(--radius-pill);cursor:pointer;flex-shrink:0;opacity:.66;position:relative;transition:opacity var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out),background var(--duration-fast) var(--ease-out)}
+/* The capsule stays visually quiet, but its hit area is grown to the 44px
+   touch minimum the rest of the reader follows. */
+.reader-timer::after{content:'';position:absolute;inset:-5px}
+.reader-timer.on{opacity:1;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 38%,var(--border));background:var(--accent-soft)}
+@media (hover:hover){.reader-timer:hover{opacity:1}}
+.reader-timer:focus-visible{opacity:1}
+
+/* ═══ Floating Study Dock ═══
+   One pill replaces the old full-width bar: page stepping and the three tools
+   that belong to reading. The wrapper is fixed only to anchor the pill to the
+   viewport and clear the home indicator; it is pointer-transparent, so page
+   gestures and text selection pass straight through to the document. */
+.reader-dock{position:fixed;inset-inline:0;bottom:calc(var(--nav-height) + var(--sab) + 14px);z-index:20;display:flex;justify-content:center;pointer-events:none;opacity:1;transform:translateY(0);transition:transform var(--duration-base) var(--ease-out),opacity var(--duration-base) var(--ease-out)}
+/* Zen: the dock steps aside while the reader scrolls forward and returns on a
+   tap, so no control ever floats over the lines being read. */
+.reader-dock.zen{opacity:0;transform:translateY(calc(100% + 28px))}
+/* A hidden dock must not keep an invisible tab stop below the viewport. */
+.reader-dock.zen .dock-pill{pointer-events:none}
+.dock-pill{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:var(--radius-pill);background:linear-gradient(135deg,rgba(255,252,245,.72),rgba(255,252,245,.46));backdrop-filter:blur(22px) saturate(1.7);-webkit-backdrop-filter:blur(22px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 16px 38px -16px rgba(122,80,35,.34),inset 0 1px 0 rgba(255,255,255,.65)}
+html[data-theme="dark"] .dock-pill{background:linear-gradient(135deg,rgba(34,29,23,.7),rgba(34,29,23,.48));border-color:rgba(255,220,180,.14);box-shadow:0 16px 38px -16px rgba(0,0,0,.74),inset 0 1px 0 rgba(255,255,255,.1)}
+/* 42px visual + 3px hit-area ring keeps every dock control above the 44px
+   touch minimum. */
+.dock-btn{border:none;background:transparent;color:var(--muted);width:42px;height:42px;border-radius:var(--radius-pill);cursor:pointer;display:grid;place-items:center;font-size:19px;font-family:var(--font-ui);font-weight:700;line-height:1;position:relative;transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
+.dock-btn::after{content:'';position:absolute;inset:-3px;border-radius:inherit}
+.dock-btn.on{background:var(--accent-soft);color:var(--accent)}
+
+/* Pen indicator dot: mirrors the live nib — colour of the stroke, size of the
+   nib. Sits in the button's corner so the icon stays readable. */
+.pen-indicator{position:absolute;inset-block-end:5px;inset-inline-start:7px;width:7px;height:7px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 2px var(--surface);transition:background var(--duration-fast) var(--ease-out),transform var(--duration-fast) var(--ease-out);transform:scale(.9)}
+.pen-indicator.w-thin{width:4px;height:4px}
+.pen-indicator.w-medium{width:7px;height:7px}
+.pen-indicator.w-thick{width:10px;height:10px;transform:scale(1)}
+.dock-nav{color:var(--accent)}
+.dock-page{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:64px;border:none;background:transparent;color:var(--text);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:12px 10px;border-radius:var(--radius-pill);cursor:pointer;position:relative;transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
+.dock-page::after{content:'';position:absolute;inset:-4px 0;border-radius:inherit}
+.dock-page.on{background:var(--accent-soft);color:var(--accent)}
+/* Page state is never colour-only: a dot marks a page that is already done. */
+.dock-page.is-read::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.dock-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 2px}
 .bar-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
-.r-nav{border:none;background:var(--accent-soft);color:var(--accent);width:34px;height:34px;border-radius:var(--radius-xs);cursor:pointer;font-size:17px;font-weight:700;transition:transform var(--duration-fast);flex-shrink:0;position:relative}
-.r-nav::after{content:'';position:absolute;inset:-6px}
-.r-nav:active{transform:scale(.9)}
-.page-ind{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
-/* Page slider: thumb grows from 16px to 20px (≈44px touch disc incl. border)
-   for precise one-finger scrubbing; the thicker track keeps it visible. */
-.page-ind input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:6px;border-radius:var(--radius-pill);background:var(--border);outline:none}
-.page-ind input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
-.page-ind input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
-.page-ind span{font-size:11px;color:var(--muted);white-space:nowrap;font-weight:500}
-.rtimer{border:none;background:var(--green);color:#fff;width:34px;height:34px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-weight:700;transition:all var(--duration-fast);flex-shrink:0;min-width:34px}
+
+/* Dock popovers — one small menu at a time, anchored to the pill */
+/* The centring translate lives inside the keyframes as well: an entrance
+   animation that only animates transform would otherwise override the
+   centring for its whole duration and park the menu off to one side. */
+.dock-pop{position:absolute;bottom:calc(100% + 10px);inset-inline-start:50%;transform:translateX(50%);pointer-events:auto;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-pill);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);animation:dockPopIn var(--duration-fast) var(--ease-out)}
+@keyframes dockPopIn{from{opacity:0;transform:translateX(50%) translateY(6px)}to{opacity:1;transform:translateX(50%)}}
+.dock-pop[hidden]{display:none}
+.dock-pop-label{font-size:11px;color:var(--muted);font-weight:500}
+.dock-pop-btn{border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:8px;border-radius:var(--radius-xs);cursor:pointer;white-space:nowrap;position:relative}
+.dock-pop-btn::after{content:'';position:absolute;inset:-6px -2px}
+.dock-pop-page{flex-direction:column;align-items:stretch;gap:12px;width:min(300px,86vw);padding:14px}
+.dock-pop-page input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:var(--radius-pill);background:var(--border);outline:none}
+.dock-pop-page input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
+.dock-pop-page input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
 
 @media (max-width:400px){
   #hlBar{gap:5px;padding:5px 9px}
 }
-.rtimer.on{background:var(--danger);animation:pulse 1.6s ease-in-out infinite}
+/* ═══ Reading settings sheet ═══
+   Light mode, brightness, zoom and the renderer switch live together here so
+   the dock only keeps what is used while reading. */
+/* The sheet is anchored to the viewport bottom, and the app's bottom nav floats
+   above it — so the content carries the nav's clearance itself, otherwise the
+   last row would sit behind the nav and be untappable. */
+.settings-body{overflow:auto;padding:14px 18px calc(20px + var(--nav-height) + var(--sab));display:flex;flex-direction:column;gap:14px;overscroll-behavior-y:contain}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.set-label{font-size:12px;font-weight:600;color:var(--text)}
+.set-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.set-chip{display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:12px;font-weight:600;min-height:44px;padding:0 16px;border-radius:var(--radius-pill);cursor:pointer;transition:border-color var(--duration-fast) var(--ease-out),background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
+.set-chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.set-chip.wide{padding:0 22px}
+.set-val{font-size:11px;color:var(--muted);font-weight:600;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+.set-row input[type=range]{flex:1;min-width:110px;-webkit-appearance:none;appearance:none;height:6px;border-radius:var(--radius-pill);background:var(--border);outline:none}
+.set-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
+.set-row input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);cursor:grab}
+.set-hint{margin:0;font-size:11px;line-height:1.9;color:var(--muted)}
+.set-hint-inline{font-size:10.5px;color:var(--muted)}
+
+/* ═══ Floating zoom & page-mode stack ═══
+   Zoom and the page tint are the two controls used mid-reading, so they get a
+   quiet stack on the page margin instead of hiding behind a menu. It keeps out
+   of the way of the pen trail: vertical column, far side of the page. */
+.reader-float{position:fixed;inset-inline-end:10px;bottom:calc(var(--nav-height) + var(--sab) + 96px);z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;opacity:1;transform:translateY(0);transition:transform var(--duration-base) var(--ease-out),opacity var(--duration-base) var(--ease-out)}
+.reader-dock.zen ~ .reader-float,.reader-float.zen{opacity:0;transform:translateY(14px);pointer-events:none}
+.float-btn{pointer-events:auto;width:42px;height:42px;border:none;border-radius:var(--radius-pill);background:var(--surface);color:var(--accent);font-family:var(--font-ui);font-size:19px;font-weight:700;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;transition:transform var(--duration-fast) var(--ease-out),background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
+.float-btn::after{content:'';position:absolute;inset:-3px;border-radius:inherit}
+.float-btn:active{transform:scale(.92)}
+.float-btn.mode-light{color:var(--accent);background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 30%,var(--border))}
+.float-btn svg{display:block}
+.float-val{pointer-events:none;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:var(--font-ui);font-size:10px;font-weight:700;padding:3px 6px;border-radius:var(--radius-pill);font-variant-numeric:tabular-nums}
+/* The single mode button rotates through the three tints; only the active
+   glyph is visible. */
+.float-btn .m-sepia,.float-btn .m-moon{display:none}
+.float-btn.mode-sepia .m-sun{display:none}
+.float-btn.mode-sepia .m-sepia{display:block}
+.float-btn.mode-dark .m-sun,.float-btn.mode-dark .m-sepia{display:none}
+.float-btn.mode-dark .m-moon{display:block}
+.float-btn.mode-sepia,.float-btn.mode-dark{background:var(--surface);color:var(--accent)}
+
+@media (max-width:400px){
+  .float-btn{width:38px;height:38px;font-size:17px}
+}
 
 /* ═══ Notes Panel ═══ */
 /* Small-viewport height units: svh = the keyboard-closed viewport, dvh = the
@@ -271,12 +406,13 @@ html[data-theme="dark"] .reader-bar{background:linear-gradient(135deg,rgba(34,29
 .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 18px;border-bottom:1.5px dashed var(--border)}
 .sheet-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 .sheet-head div{display:flex;align-items:center;gap:6px}
-.notes-list{overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
+.notes-list{overflow:auto;padding:12px 16px calc(12px + var(--nav-height) + var(--sab));display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
 .notes-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px 0;font-weight:400}
 .note-item{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px var(--space-3);cursor:pointer;transition:transform var(--duration-fast),border-color var(--duration-fast)}
 .note-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .note-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .note-text{font-size:12px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:400}
+.note-text .free-tag{font-style:italic;color:var(--muted);font-weight:500}
 .note-note{font-size:11px;color:var(--accent);line-height:1.6;font-weight:500}
 .note-page{font-size:10px;color:var(--muted);flex-shrink:0;font-weight:500}
 .note-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0}
@@ -292,9 +428,9 @@ html[data-theme="dark"] .reader-bar{background:linear-gradient(135deg,rgba(34,29
   .lastread{padding:10px}
   .lastread img{width:44px;height:60px}
   .lr-btn{padding:7px 12px;font-size:11px}
-  .reader-bar{gap:4px;padding:6px 8px;margin:0 8px;}
-  .r-nav{width:30px;height:30px}
-  .rtimer{width:30px;height:30px;min-width:30px}
+  .dock-pill{gap:2px;padding:5px 6px}
+  .dock-btn{width:38px;height:38px;font-size:17px}
+  .dock-page{min-width:56px;padding:11px 8px}
   .r-icon{width:32px;height:32px}
   .reader-top{gap:8px}
 }

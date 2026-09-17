@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   session: 'daftarche-focus-session',
   focusHistory: 'daftarche-focus-history',
   frogDismissed: 'daftarche-frog-dismissed',
+  penWidth: 'daftarche-pen-width',
 };
 
 export const P_CYCLE = { low: 'mid', mid: 'high', high: 'low' };

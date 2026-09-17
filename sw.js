@@ -14,7 +14,7 @@
    when the page asks it to (see the message handler), so a running session is
    never swapped out mid-task. */
 
-const VERSION = 'v6';
+const VERSION = 'v12';
 
 const STATIC_CACHE = `daftarche-static-${VERSION}`;
 const RUNTIME_CACHE = `daftarche-runtime-${VERSION}`;
