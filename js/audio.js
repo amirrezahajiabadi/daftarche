@@ -222,10 +222,11 @@ export function setAmbience(scene, soundOn) {
 }
 
 /* ═══ User Tracks (IndexedDB) ═══ */
+const DB_NAME = 'daftarche-audio';
 let dbP = null;
 function db() {
   if (!dbP) dbP = new Promise((res, rej) => {
-    const r = indexedDB.open('daftarche-audio', 1);
+    const r = indexedDB.open(DB_NAME, 1);
     r.onupgradeneeded = () => r.result.createObjectStore('tracks', { keyPath: 'id' });
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -249,4 +250,24 @@ export async function addUserTrack(t) {
 export async function removeUserTrack(id) {
   const d = await db();
   return new Promise(res => { const tx = d.transaction('tracks', 'readwrite'); tx.objectStore('tracks').delete(id); tx.oncomplete = res; });
+}
+
+/* Clear All: uploaded tracks are the user's own files and are removed with the
+   rest of their data. As with the library database, the connection this page
+   holds is closed first — otherwise the delete request is blocked by our own
+   open handle and the files survive the wipe. Resolves true only when the
+   database is really gone. */
+export function clearUserAudioData() {
+  return new Promise(resolve => {
+    const remove = () => {
+      const req = indexedDB.deleteDatabase(DB_NAME);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+      req.onblocked = () => resolve(false);
+    };
+    db().then(
+      d => { try { d.close(); } catch (e) {} dbP = null; remove(); },
+      () => { dbP = null; remove(); }
+    );
+  });
 }

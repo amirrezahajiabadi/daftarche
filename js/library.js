@@ -18,10 +18,11 @@ export const bookPct = b => (b.numPages ? Math.round((bookDone(b).size / b.numPa
 export const bookComplete = b => !!b.numPages && bookDone(b).size >= b.numPages;
 
 /* ── IndexedDB for the PDF file ── */
+const DB_NAME = 'daftarche-books';
 let dbP = null;
 function db() {
   if (!dbP) dbP = new Promise((res, rej) => {
-    const r = indexedDB.open('daftarche-books', 1);
+    const r = indexedDB.open(DB_NAME, 1);
     r.onupgradeneeded = () => r.result.createObjectStore('books', { keyPath: 'id' });
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -43,6 +44,31 @@ async function putBook(rec) {
 async function delBookBlob(id) {
   const d = await db();
   return new Promise(res => { const tx = d.transaction('books', 'readwrite'); tx.objectStore('books').delete(id); tx.oncomplete = res; });
+}
+
+/* Clear All: the whole library database goes, PDF files included, because that
+   store is the user's own reading material and no part of it is recoverable
+   once the metadata is gone. The connection this page is holding is closed
+   first — an open handle of our own makes the delete request blocked, and a
+   blocked request would leave the files on disk while the app reports a clean
+   wipe. Resolves true only when the database is really gone; a failed or
+   blocked delete resolves false so the caller can say so instead of reloading
+   as if everything had been removed. */
+export function clearLibraryData() {
+  return new Promise(resolve => {
+    const remove = () => {
+      const req = indexedDB.deleteDatabase(DB_NAME);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+      req.onblocked = () => resolve(false);
+    };
+    /* A connection may still be opening; it is awaited so it is closed before
+       the delete request is issued, and dropped so a later use reopens fresh. */
+    db().then(
+      d => { try { d.close(); } catch (e) {} dbP = null; remove(); },
+      () => { dbP = null; remove(); }
+    );
+  });
 }
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

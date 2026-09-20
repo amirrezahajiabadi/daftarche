@@ -2,7 +2,8 @@
 import { $, faNum, dayKey } from './utils.js';
 import { state } from './state.js';
 import { saveTheme } from './store.js';
-import { getBooks } from './library.js';
+import { getBooks, clearLibraryData } from './library.js';
+import { clearUserAudioData } from './audio.js';
 import { QORQORI_AVATAR, qorqoriMarkup } from './qorqori.js';
 import { RIZOLO_AVATAR, rizoloMarkup } from './rizolo.js';
 import { KHABALO_AVATAR, khabaloMarkup } from './khabalo.js';
@@ -174,15 +175,21 @@ export function initProfile() {
     renderProfile();
   };
   const cl = $('#profClear');
-  if (cl) cl.onclick = () => {
+  if (cl) cl.onclick = async () => {
     if (!confirm('همهٔ داده‌ها پاک بشه؟ این کار قابل برگشت نیست.')) return;
+    /* localStorage holds tasks, settings and the book metadata; the PDF files
+       and the uploaded music live in their own databases and are removed
+       explicitly. Both results are awaited before the page leaves, so a wipe
+       that could not finish is reported instead of being reloaded away as a
+       success. */
+    const [booksCleared, audioCleared] = await Promise.all([
+      clearLibraryData(),
+      clearUserAudioData(),
+    ]);
     localStorage.clear();
-    // localStorage.clear() only clears tasks/settings/book metadata;
-    // the PDF files themselves live separately in IndexedDB and must be deleted explicitly.
-    const req = indexedDB.deleteDatabase('daftarche-books');
-    const finish = () => location.reload();
-    req.onsuccess = finish;
-    req.onerror = finish;
-    req.onblocked = finish;
+    if (!booksCleared || !audioCleared) {
+      alert('فایل‌های کتاب یا موسیقی پاک نشدن؛ اگه تب دیگه‌ای از دفترچه بازه ببندش و دوباره امتحان کن.');
+    }
+    location.reload();
   };
 }

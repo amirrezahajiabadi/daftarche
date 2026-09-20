@@ -1,0 +1,18 @@
+PASS  server started with secrets  → OUT: [push-server] روی پورت 3199 گوش می‌دهد — 0 اشتراک فعال — env=development test-push=on
+
+PASS  GET public VAPID key
+PASS  valid subscribe
+PASS  invalid subscribe (http endpoint)
+PASS  invalid subscribe (missing keys)
+PASS  invalid subscribe (garbage p256dh)
+PASS  duplicate subscription dedup (count stays 1)  → count=1
+PASS  valid unsubscribe
+PASS  invalid unsubscribe (non-https)
+PASS  unauthorized send-due-reminders
+PASS  unauthorized test-push
+PASS  authorized send-due-reminders (empty due)
+PASS  authorized test-push (no subscribers)
+PASS  malformed JSON
+PASS  oversized payload (17kb rejected)
+PASS  invalid task structure rejected  → dueCount=0
+PASS  oversized task list (>500) rejected

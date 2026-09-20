@@ -12,6 +12,11 @@ import { enablePush, disablePush } from './push-service.js';
 
 const BELL_SVG = ICONS.bell;
 
+/* Notification artwork resolved against the document so the icon and badge
+   stay correct when the app is served from a subpath, not only from a domain
+   root. */
+const NOTIFY_ICON = new URL('assets/icons/icon-192.png', document.baseURI).href;
+
 /* Persistence + reactivity are owned by the pages that render the list; the
    module only flips fields and asks for a save/refresh via these hooks. */
 let _save = null, _notify = null, _getTasks = null;
@@ -50,15 +55,15 @@ async function showNotification(title, body, tag) {
       await reg.showNotification(title, {
         body,
         tag,                        // one notification per task, not a pile
-        icon: 'assets/icons/icon-192.png',
-        badge: 'assets/icons/icon-192.png',
+        icon: NOTIFY_ICON,
+        badge: NOTIFY_ICON,
         lang: 'fa',
         dir: 'rtl',
         data: { action: 'open-tasks' },
         actions: [{ action: 'open-tasks', title: 'دیدن کارها' }],
       });
     } else {
-      new Notification(title, { body, tag, icon: 'assets/icons/icon-192.png', lang: 'fa', dir: 'rtl' });
+      new Notification(title, { body, tag, icon: NOTIFY_ICON, lang: 'fa', dir: 'rtl' });
     }
   } catch { /* notifications are a bonus — the app never depends on them */ }
 }

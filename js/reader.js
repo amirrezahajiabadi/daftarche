@@ -54,6 +54,11 @@ const STROKE_COLORS = { yellow: '#f6c445', green: '#9fce7f', blue: '#8fb7d9', pi
    comes back exactly as the reader left it. */
 const PEN_WIDTHS = { thin: 8, medium: 14, thick: 22 };
 let strokeWidth = PEN_WIDTHS.medium;
+/* A stroke records its nib in page-space px, which is the same unit every
+   repaint uses. Records written when the nib was kept by name still carry the
+   name, and records from before the choice existed carry neither — both fall
+   back to the default nib so their drawn look is preserved. */
+const nibPx = w => typeof w === 'number' ? w : (PEN_WIDTHS[w] || PEN_WIDTHS.medium);
 let drawCtx = null, drawStroke = null;
 let penHintShown = false;
 /* Eraser state. eraseActive turns every drag on the draw surface into a
@@ -1101,11 +1106,9 @@ function gotoPage(n) {
      selection is the only way to a highlight — so every page gets a fresh try.
      The flag only stops repeat attempts on the page that already failed. */
   textLayerBroken = false;
-  const forward = n > curPage;
   curPage = n;
   updateBook(curBook.id, { lastPage: n, lastReadAt: Date.now() });
   curBook.lastPage = n;
-  if (forward) addToday('pages', 1);
   if (engine === 'browser') {
     $('#pdfFrame').src = `${pdfObjectUrl}#page=${n}&zoom=${Math.round(zoom * 100)}`;
   } else {
@@ -1125,10 +1128,16 @@ function updateMarkBtn() {
 
 function togglePageRead() {
   const done = new Set(curBook.completedPages || []);
-  if (done.has(curPage)) done.delete(curPage);
-  else done.add(curPage);
+  const marked = !done.has(curPage);
+  if (marked) done.add(curPage);
+  else done.delete(curPage);
   curBook.completedPages = [...done];
-  updateBook(curBook.id, { completedPages: curBook.completedPages, lastReadAt: Date.now() });
+  /* The day's page count moves with this very action and with nothing else:
+     marking a page read counts it, unmarking takes it back, never below zero.
+     It is written in the same update as the page itself, so the goal bar and
+     the book's progress can never disagree about what was read today. */
+  curBook.stats = withTodayPages(curBook.stats, marked ? 1 : -1);
+  updateBook(curBook.id, { completedPages: curBook.completedPages, stats: curBook.stats, lastReadAt: Date.now() });
   updatePageUI();
   updateGoalBar();
   if (bookComplete(curBook)) celebrateCompletion();
@@ -1239,7 +1248,7 @@ function paintHighlights() {
       if (drawCtx) {
         drawCtx.strokeStyle = STROKE_COLORS[h.color] || STROKE_COLORS.yellow;
         drawCtx.globalAlpha = .85;
-        drawCtx.lineWidth = PEN_WIDTHS[h.width] || PEN_WIDTHS.medium;
+        drawCtx.lineWidth = nibPx(h.width);
         drawCtx.lineCap = 'round';
         drawCtx.lineJoin = 'round';
         drawCtx.beginPath();
@@ -1399,6 +1408,17 @@ function stopTimerSession() {
 }
 
 /* ── Daily stats ── */
+/* Returns the book's stats with today's page count moved by `delta`, keeping
+   the other days and the day's reading minutes untouched. */
+function withTodayPages(stats, delta) {
+  const k = dayKey(new Date());
+  const next = Object.assign({}, stats || {});
+  const day = Object.assign({ pages: 0, minutes: 0 }, next[k]);
+  day.pages = Math.max(0, (Number(day.pages) || 0) + delta);
+  next[k] = day;
+  return next;
+}
+
 function addToday(kind, v) {
   const k = dayKey(new Date());
   curBook.stats = curBook.stats || {};
@@ -1406,3 +1426,5 @@ function addToday(kind, v) {
   curBook.stats[k][kind] += v;
   updateBook(curBook.id, { stats: curBook.stats });
 }
+
+

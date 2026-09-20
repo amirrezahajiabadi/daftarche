@@ -24,6 +24,11 @@ const KEEP = [STATIC_CACHE, RUNTIME_CACHE];
    root and under a project subpath. */
 const BASE = new URL('./', self.location);
 const shellURL = path => new URL(path, BASE).href;
+/* Notifications point back into the project, so their deep-links and artwork
+   resolve against the worker's own base and land correctly both at a domain
+   root and under a project subpath. A deployment may hand over an absolute
+   URL instead; that one passes through untouched. */
+const projectURL = p => new URL(String(p || '').replace(/^\/+/, ''), BASE).href;
 
 /* Everything the app needs to boot and run with no network at all. */
 const SHELL = [
@@ -140,7 +145,7 @@ self.addEventListener('notificationclick', event => {
   const extra = event.notification.data && event.notification.data.taskId
     ? `?task=${encodeURIComponent(event.notification.data.taskId)}`
     : '';
-  const target = new URL(`index.html${extra}`, self.location.origin).href;
+  const target = projectURL(`index.html${extra}`);
   event.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     // Focus an existing window if one is open, otherwise open a fresh one
@@ -166,8 +171,8 @@ self.addEventListener('push', event => {
   }
   const options = {
     body: data.body || '',
-    icon: data.icon || 'assets/icons/icon-192.png',
-    badge: data.badge || 'assets/icons/icon-192.png',
+    icon: projectURL(data.icon || 'assets/icons/icon-192.png'),
+    badge: projectURL(data.badge || 'assets/icons/icon-192.png'),
     tag: data.tag || 'general-notification',
     dir: 'rtl',
     lang: 'fa',

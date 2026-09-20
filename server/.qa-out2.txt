@@ -1,0 +1,10 @@
+PASS  persistence after restart (dedup, count=1)  → count=1
+PASS  corrupted store: server still boots  → [push-server] روی پورت 3199 گوش می‌دهد — 0 اشتراک فعال — env=development test-push=on
+FAIL  corrupted store: recovery logged
+FAIL  CORS: unexpected origin rejected
+PASS  CORS: allowed origin accepted
+PASS  CORS: OPTIONS preflight
+FAIL  CORS: preflight from bad origin rejected
+PASS  CORS: no-origin (same-origin) allowed
+PASS  security headers present  → cache-control=no-store
+FAIL  rate limit kicks in (429)  → last=200
