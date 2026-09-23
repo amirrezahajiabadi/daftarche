@@ -1,10 +1,15 @@
 /* ═══ What's New — changelog engine ═══
-   The version string and the changelog entries live here, decoupled from the
-   rest of the app. Adding a release means appending one object to CHANGELOG —
-   nothing else needs to change. The engine compares APP_VERSION with the last
-   version the user acknowledged (localStorage) and shows the dialog once. */
+   The changelog entries live here, decoupled from the rest of the app. Adding
+   a release means appending one object to CHANGELOG and moving the release
+   number in js/version.js — nothing else needs to change. The engine compares
+   that number with the last one the user acknowledged (localStorage) and shows
+   the dialog once.
 
-export const APP_VERSION = '2.0.0';
+   The release number is read from js/version.js, the same single file the
+   service worker loads, so the dialog and the offline build cannot drift. If
+   it is unavailable the running release is unknown and the dialog stays shut. */
+
+export const APP_VERSION = self.DAFTARCHE_RELEASE || '';
 
 export const CHANGELOG = [
   {
@@ -86,7 +91,9 @@ function close() {
   if (cleanup) { cleanup(); cleanup = null; }
   document.body.classList.remove('no-scroll');
   if (lastFocus) { lastFocus.focus(); lastFocus = null; }
-  try { localStorage.setItem(SEEN_KEY, APP_VERSION); } catch (e) { /* storage unavailable: dialog just reappears next visit */ }
+  if (APP_VERSION) {
+    try { localStorage.setItem(SEEN_KEY, APP_VERSION); } catch (e) { /* storage unavailable: dialog just reappears next visit */ }
+  }
 }
 
 export function openChangelog() {
@@ -122,6 +129,6 @@ export function openChangelog() {
 export function initChangelogCheck() {
   let seen = null;
   try { seen = localStorage.getItem(SEEN_KEY); } catch (e) { /* fall through: show */ }
-  if (seen === APP_VERSION) return;
+  if (!APP_VERSION || seen === APP_VERSION) return;
   setTimeout(() => openChangelog(), 600);
 }

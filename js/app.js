@@ -208,7 +208,11 @@ function initPWA() {
   };
 
   const register = () => {
-    navigator.serviceWorker.register(new URL('sw.js', document.baseURI))
+    /* `updateViaCache: 'none'` keeps an update check on the network: the worker
+       and the release marker it loads must never be answered from the browser's
+       HTTP cache, or a deploy would only be noticed whenever that cache happens
+       to expire. */
+    navigator.serviceWorker.register(new URL('sw.js', document.baseURI), { updateViaCache: 'none' })
       .then(reg => {
         /* An update may already be waiting from a previous visit. */
         if (reg.waiting && navigator.serviceWorker.controller) offerUpdate(reg.waiting);

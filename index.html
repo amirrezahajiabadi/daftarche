@@ -749,6 +749,10 @@
   <button class="toast-btn" id="updateBtn">به‌روزرسانی</button>
 </div>
 
+<!-- Release identity: the one file that names the current release and the
+     offline build. The service worker reads the same file, so the two can
+     never disagree. Loaded before the module entry. -->
+<script src="js/version.js"></script>
 <script type="module" src="js/app.js"></script>
 <!-- Changelog is built and injected by js/changelog.js (keeps the release
      data decoupled; no static markup to maintain) -->

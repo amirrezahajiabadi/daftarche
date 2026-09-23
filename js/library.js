@@ -1,8 +1,14 @@
 /* ═══ Library: Reading Workspace — Shelf, Reading State, Goal, Storage ═══ */
 import { $, faNum } from './utils.js';
+import { readJSON } from './store.js';
 
 const META_KEY = 'daftarche-books-meta';
-let books = JSON.parse(localStorage.getItem(META_KEY) || '[]');
+/* Read through the storage layer's guarded reader: a corrupt value falls back
+   to an empty shelf instead of throwing while this module is being evaluated,
+   which would otherwise stop the whole app from booting. A value that parses
+   but is not a list is treated the same way. */
+const storedBooks = readJSON(META_KEY, null);
+let books = Array.isArray(storedBooks) ? storedBooks : [];
 const saveMeta = () => localStorage.setItem(META_KEY, JSON.stringify(books));
 
 export const getBooks = () => books;

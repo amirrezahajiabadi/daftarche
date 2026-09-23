@@ -1,12 +1,21 @@
-/* ═══ Web Push — background reminder layer ═══
-   Additive upgrade over js/notifications.js (local timers): when the push
-   server is reachable, the subscription is created from the same user
-   interaction that grants permission (the task bell), so closing the app
-   no longer silences due-date reminders. iOS/iPadOS 16.4+ standalone PWAs
-   are covered by the exact same standards-based path — the permission
-   request always originates from a real user gesture. */
+/* ═══ Web Push — deferred background reminder layer ═══
+   Optional infrastructure, kept in the tree but turned OFF for the current
+   release. The official reminder mechanism is the local scheduler in
+   js/notifications.js: it runs inside the open app from a task's bell and
+   needs no server. This module is the additive background upgrade (reminders
+   keep arriving while the app is fully closed) — it is enabled per
+   deployment, once a push server and an external scheduler exist.
+
+   While WEB_PUSH_ENABLED is false, nothing in the normal app path creates a
+   subscription or talks to a push server: the task bell still schedules and
+   shows local reminders exactly as before. */
 
 import { urlBase64ToUint8Array } from './utils.js';
+
+/* The single switch for the deferred background layer. Flip to true only
+   together with a reachable server (see server/README.md) and a scheduler;
+   there is deliberately no UI control that can turn it on mid-release. */
+const WEB_PUSH_ENABLED = false;
 
 /* Where the push server lives. Same origin by default; a deployment can
    point this at a dedicated host without touching the rest of the app. */
@@ -57,6 +66,7 @@ export async function getPushSubscription() {
    the push subscription, then registration with the backend.
    Resolves with the subscription, or null when push is unavailable/denied. */
 export async function enablePush() {
+  if (!WEB_PUSH_ENABLED) return null;
   if (!pushSupported()) return null;
 
   // Permission: never prompted outside a direct user interaction.
@@ -96,6 +106,7 @@ export async function enablePush() {
 /* ── Unsubscribe ──
    Tears the subscription down locally and informs the backend. */
 export async function disablePush() {
+  if (!WEB_PUSH_ENABLED) return;
   if (!pushSupported()) return;
   try {
     const sub = await getPushSubscription();
@@ -114,6 +125,7 @@ export async function disablePush() {
    subscription with the backend (covers the case where the backend store
    was rebuilt but the client subscription is still valid). */
 export async function syncExistingSubscription() {
+  if (!WEB_PUSH_ENABLED) return;
   if (!pushSupported()) return;
   try {
     const sub = await getPushSubscription();

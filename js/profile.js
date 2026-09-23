@@ -133,9 +133,11 @@ export function renderProfile() {
   /* Settings */
   const th = $('#profTheme'); if (th) th.textContent = document.documentElement.dataset.theme === 'dark' ? 'تاریک' : 'روشن';
   const pm = $('#profPomo'); if (pm) pm.textContent = faNum(state.pomoMin) + ' دقیقه';
-  /* Release note label, Persian digits, "2.0.0" → "۲.۰" */
+  /* Release note label, Persian digits, "2.0.0" → "۲.۰". The release number
+     comes from js/version.js; if that file is unavailable the label is left
+     as it is rather than showing a wrong version. */
   const pv = $('#profVersion');
-  if (pv) pv.textContent = 'نسخهٔ ' + APP_VERSION.split('.').slice(0, 2).join('.').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  if (pv && APP_VERSION) pv.textContent = 'نسخهٔ ' + APP_VERSION.split('.').slice(0, 2).join('.').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
 
 function buildGrid() {

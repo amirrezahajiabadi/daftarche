@@ -2,10 +2,16 @@
 
 import { STORAGE_KEYS } from './constants.js';
 
-const read = (key, fallback) => {
+/* Guarded read of one stored value: a corrupt entry falls back instead of
+   throwing, so a malformed value can never take an import down at module
+   evaluation time. Exported for the modules that own their own key and would
+   otherwise parse storage themselves. */
+export const readJSON = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
 };
+
+const read = readJSON;
 
 export const loadTasks   = ()    => read(STORAGE_KEYS.tasks, null);
 export const saveTasks   = t    => localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(t));

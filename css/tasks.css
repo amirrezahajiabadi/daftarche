@@ -151,26 +151,47 @@ html[data-theme="dark"] .dur-chip{color:#a79bf5}
 
 .app:has(.focus-pill:not([hidden])) .list-footer{padding-bottom:60px}
 
-/* ═══ Responsive: Tasks ═══ */
+/* ═══ Task row layout ═══
+   The row is arranged for the width it actually has, not for the size of the
+   screen. The content column is capped at 480px at every viewport (see .app in
+   base.css), so on a wide screen a single line still has to share ~440px with
+   nine controls: the title then holds a few pixels and wraps one character per
+   line. The compact two-row arrangement is therefore the row's own layout at
+   every size — Row 1: checkbox + title + the row's own controls; Row 2:
+   metadata + actions. (.task::after below is a zero-height line break, not
+   decoration.) */
+.task{flex-wrap:wrap;row-gap:8px;column-gap:10px}
+.task::after{content:'';display:block;order:4;flex-basis:100%;height:0}
+.check{order:0}
+.title{order:1}
+.del{order:2}
+.focus-btn{order:3}
+.bell-btn{order:3}
+.pri-dot{order:5;margin-inline-start:34px}
+.cat-tag{order:6}
+.due-chip{order:7}
+.dur-chip{order:8}
+
+/* ═══ Responsive: Tasks ═══
+   Compact scale for genuinely small screens. The arrangement above never
+   changes at a breakpoint — only sizes do — so a row can't rearrange itself
+   around a title that has no room left. */
 @media (max-width:480px){
-  .task{flex-wrap:wrap;row-gap:8px;column-gap:10px;padding:12px 14px;margin-bottom:8px;border-radius:var(--radius-md)}
+  .task{padding:12px 14px;margin-bottom:8px;border-radius:var(--radius-md)}
   .grip{display:none}
-  .task::after{content:'';display:block;order:4;flex-basis:100%;height:0}
-  /* Row 1: checkbox + title (+ delete) — always in reach; Row 2: metadata + actions */
-  .check{order:0;width:24px;height:24px}
+  .check{width:24px;height:24px}
   .check::after{inset:-10px}
-  .title{order:1;font-size:14px}
-  .del{order:2;opacity:.7;transform:none;width:28px;height:28px}
+  .title{font-size:14px}
+  .del{opacity:.7;transform:none;width:28px;height:28px}
   .del::after{inset:-8px}
-  .focus-btn{order:3;opacity:.7;width:28px;height:28px}
+  .focus-btn{opacity:.7;width:28px;height:28px}
   .focus-btn::after{inset:-8px}
-  .bell-btn{order:3;opacity:.7;width:28px;height:28px}
+  .bell-btn{opacity:.7;width:28px;height:28px}
   .bell-btn::after{inset:-8px}
-  .pri-dot{order:5;margin-inline-start:34px}
   .pri-dot::after{inset:-12px}
-  .cat-tag{order:6;font-size:10px;padding:2px 8px}
-  .due-chip{order:7;font-size:10px;padding:2px 8px}
-  .dur-chip{order:8;font-size:10px;padding:2px 8px}
+  .cat-tag{font-size:10px;padding:2px 8px}
+  .due-chip{font-size:10px;padding:2px 8px}
+  .dur-chip{font-size:10px;padding:2px 8px}
   .frog{padding:10px 12px;gap:10px}
   .frog-ico{width:36px;height:36px;border-radius:var(--radius-xs)}
   .frog-ico svg{width:22px;height:22px}

@@ -27,6 +27,16 @@ function updateStreakUI() {
   $('#streakVal').textContent = s > 0 ? `${faNum(s)} روز پیاپی` : 'اولین تیک رو بزن';
 }
 
+/* ── Mood: read stored values defensively ──
+   The picker writes 1..5, but storage can still hold something else — a value
+   from an older scale, a hand-edited key, a string. Reading it as "no mood for
+   that day" keeps a stray value from being used as an index into MOODS, which
+   used to throw while the chart was being built. */
+const readMood = value => {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= MOODS.length ? n : 0;
+};
+
 /* ── Week chart: animate only the first render, then update smoothly ── */
 let chartInitialized = false;
 
@@ -39,7 +49,7 @@ function renderChart() {
     days.push({
       k, letter: WEEKDAY_LETTERS[d.getDay()], today: i === 0,
       n: state.tasks.filter(t => t.done && t.doneAt && dayKey(new Date(t.doneAt)) === k).length,
-      mood: state.moods[k] || 0,
+      mood: readMood(state.moods[k]),
     });
   }
   const max = Math.max(...days.map(x => x.n), 1);
@@ -105,7 +115,7 @@ function buildMoods() {
 }
 
 function renderMoods() {
-  const cur = state.moods[dayKey(new Date())] || 0;
+  const cur = readMood(state.moods[dayKey(new Date())]);
   const buttons = document.querySelectorAll('#moods button');
   buttons.forEach((b, i) => {
     b.classList.toggle('sel', i + 1 === cur);

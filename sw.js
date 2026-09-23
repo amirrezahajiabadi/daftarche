@@ -1,23 +1,39 @@
 /* ═══ Service Worker — offline shell ═══
    Strategy, per asset class:
-     · navigations → network-first, falling back to the cached shell so the app
-       opens offline and still picks up a new build as soon as one is reachable
-     · same-origin assets (css/js/fonts/icons) → stale-while-revalidate: instant
-       and offline-capable, refreshed in the background for the next visit
+     · the app document and the same-origin files it asks for → served from the
+       release cache this worker owns, so a page load can never pair a new
+       index.html with the previous build's styles or modules; the network is
+       consulted only for something this release did not cache (the very first
+       controlled load, or a cache the browser evicted)
+     · a navigation that is not the app document → the network answers, with the
+       cached document as the offline fallback
      · the versioned pdf.js build on the CDN → cache-first, because those URLs
        are immutable and the Reader needs them to render offline
    Book binaries and reading data never pass through here. Everything the Reader
    persists (pdf files, highlights, notes, focus history) lives in IndexedDB and
    is read directly by the app, so no user content is duplicated into a cache.
 
+   A release is the unit of change. `install` writes a whole cache for the next
+   build and `activate` drops every earlier one, so a release is never applied
+   in pieces: the cache is only filled as a set, and swapping a running client
+   over happens through the worker lifecycle below (the page offers the update,
+   or hands over quietly while it is in the background). That is why js/version.js
+   has to move for any change to a shell file — it is what makes the new worker
+   install at all.
+
    Updates are never forced. A new worker installs quietly and only takes over
    when the page asks it to (see the message handler), so a running session is
    never swapped out mid-task. */
 
-const VERSION = 'v12';
+/* Release identity, from the one file the page reads as well. The path is
+   relative to this worker's own script URL, so it lands inside whatever
+   subpath the project is served from. */
+try { importScripts('./js/version.js'); } catch { /* deploy is missing it; the fallback below keeps the worker usable */ }
 
-const STATIC_CACHE = `daftarche-static-${VERSION}`;
-const RUNTIME_CACHE = `daftarche-runtime-${VERSION}`;
+const BUILD = self.DAFTARCHE_BUILD || 'unknown';
+
+const STATIC_CACHE = `daftarche-static-${BUILD}`;
+const RUNTIME_CACHE = `daftarche-runtime-${BUILD}`;
 const KEEP = [STATIC_CACHE, RUNTIME_CACHE];
 
 /* Resolving against the script URL keeps every path correct both at a domain
@@ -77,6 +93,7 @@ const SHELL = [
   'js/tasks.js',
   'js/today.js',
   'js/utils.js',
+  'js/version.js',
   'js/week.js',
   'assets/fonts/Estedad-Mad.woff2',
   'assets/fonts/Estedad[wght].woff2',
@@ -109,8 +126,18 @@ const isPdfJs = href => href.startsWith(PDFJS_PREFIX);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(STATIC_CACHE);
-    /* Individual adds so one missing file can never abort the whole install,
-       and `reload` so a stale HTTP cache entry is not baked into the shell. */
+    /* The shell of this build is already cached. That is a release which moved
+       only the version marker: every other file is byte-identical, so the
+       marker is re-read and nothing else is touched — no pointless download,
+       and no window where a cache someone is reading from is short of files. */
+    const held = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
+    if (SHELL.every(path => held.has(new URL(shellURL(path)).pathname))) {
+      await cache.add(new Request(shellURL('js/version.js'), { cache: 'reload' })).catch(() => {});
+      return;
+    }
+    /* A build this cache has not seen: individual adds so one missing file can
+       never abort the whole install, and `reload` so a stale HTTP cache entry
+       is not baked into the shell. */
     await Promise.allSettled(
       SHELL.map(path => cache.add(new Request(shellURL(path), { cache: 'reload' })))
     );
@@ -194,19 +221,6 @@ self.addEventListener('pushsubscriptionchange', event => {
   })());
 });
 
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  const network = fetch(request).then(res => {
-    if (res && res.ok) cache.put(request, res.clone());
-    return res;
-  }).catch(() => null);
-  if (cached) return cached;
-  const fresh = await network;
-  if (fresh) return fresh;
-  return Response.error();
-}
-
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
@@ -216,27 +230,51 @@ async function cacheFirst(request, cacheName) {
   return res;
 }
 
-/* A hanging connection must not hold the app closed; after this long the cached
-   shell is served and the network copy still lands for the next launch. */
-const NAV_TIMEOUT = 3500;
+/* The app document, in every form a deployment asks for it: the directory the
+   project is served from, and index.html inside it — either can carry the
+   deep-link query a notification click adds. */
+const APP_DOCS = new Set([
+  new URL(shellURL('.')).pathname,
+  new URL(shellURL('index.html')).pathname,
+]);
 
-async function networkFirstShell(request) {
+async function cachedShell(request) {
   const cache = await caches.open(STATIC_CACHE);
-  const fromNetwork = fetch(request).then(res => {
-    if (res && res.ok) cache.put(shellURL('index.html'), res.clone());
-    return res;
-  }).catch(() => null);
+  return (await cache.match(request)) || (await cache.match(shellURL('index.html')));
+}
 
-  const raced = await Promise.race([
-    fromNetwork,
-    new Promise(resolve => setTimeout(() => resolve('timeout'), NAV_TIMEOUT)),
-  ]);
-  if (raced && raced !== 'timeout') return raced;
-
-  const cached = await cache.match(shellURL('index.html'));
+/* The app document, served from this release's own cache so the markup and the
+   styles/modules loaded underneath it always belong to the same build. Nothing
+   of this release cached yet (first controlled load, or a cache the browser
+   evicted) is the one case that goes to the network; what comes back is kept,
+   so the app still opens offline from then on. */
+async function releaseDocument(request) {
+  const cached = await cachedShell(request);
   if (cached) return cached;
-  const late = await fromNetwork;
-  return late || Response.error();
+  const res = await fetch(request).catch(() => null);
+  if (res && res.ok) {
+    const cache = await caches.open(STATIC_CACHE);
+    cache.put(shellURL('index.html'), res.clone());
+  }
+  return res || Response.error();
+}
+
+/* Everything else the document asks for, from that same release cache. A file
+   this release does not hold is served live and deliberately not written into
+   the cache: a release is only ever filled as a whole, by install. */
+async function releaseAsset(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  return fetch(request);
+}
+
+/* A navigation that is not the app document (an unexpected path): the network
+   answers, and the cached document keeps the app reachable offline. */
+async function networkThenShell(request) {
+  const res = await fetch(request).catch(() => null);
+  if (res) return res;
+  return (await cachedShell(request)) || Response.error();
 }
 
 self.addEventListener('fetch', event => {
@@ -262,9 +300,9 @@ self.addEventListener('fetch', event => {
   if (target.pathname === new URL(shellURL('sw.js')).pathname) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstShell(request));
+    event.respondWith(APP_DOCS.has(target.pathname) ? releaseDocument(request) : networkThenShell(request));
     return;
   }
 
-  event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+  event.respondWith(releaseAsset(request));
 });

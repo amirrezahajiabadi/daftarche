@@ -9,16 +9,59 @@
       selection, highlights or notes.
    pdf.js is only used for rendering/counting, never for reading state.
    Reading state (currentPage, completedPages, goal, highlights, notes) lives
-   in the book meta record — fully separated from UI. */
+   in the book meta record — fully separated from UI.
+   The renderer itself is fetched on demand (loadPdfJs below), never as part of
+   the app's module graph: a CDN that is slow, blocked or down must not keep the
+   notebook from opening. */
 import { $, faNum, faDigits, dayKey } from './utils.js';
 import { STORAGE_KEYS } from './constants.js';
 import { getBook, updateBook, getBookBlob, renderShelf, bookDone, bookPct, bookComplete } from './library.js';
 import { recordDay } from './week.js';
 import { jingoolMarkup } from './jingool.js';
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs';
 
 const PDFJS_BASE = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS_BASE}/build/pdf.worker.min.mjs`;
+
+/* ── The renderer, loaded when a book is actually opened ──
+   Deliberately not a top-level import: this module is part of the app's boot
+   graph, so a static import would make a third-party host a prerequisite for
+   the whole notebook. The first book pays for the download; every later book
+   reuses the same module instance.
+
+   Recovery after a failed load needs a different URL: a module loader keeps the
+   failed response for an address for the rest of the document, so asking for
+   the same one again never reaches the network. The first attempt therefore
+   uses the plain URL — the one the service worker keeps for offline and the one
+   a book opened normally has always used — and only a retry carries a token.
+   Both the module and the worker it spawns get that token, so a retry is a real
+   second try rather than a repeat of the remembered failure; nothing is added
+   to the URL on the normal path. */
+let pdfjsLib = null;
+let pdfjsLoad = null;
+let pdfjsAttempt = 0;
+
+const pdfjsFile = (file, attempt) =>
+  `${PDFJS_BASE}/${file}${attempt ? `?retry=${attempt}` : ''}`;
+
+function loadPdfJs() {
+  if (pdfjsLib) return Promise.resolve(pdfjsLib);
+  if (!pdfjsLoad) {
+    const attempt = pdfjsAttempt;
+    pdfjsLoad = import(pdfjsFile('build/pdf.min.mjs', attempt))
+      .then(mod => {
+        mod.GlobalWorkerOptions.workerSrc = pdfjsFile('build/pdf.worker.min.mjs', attempt);
+        pdfjsLib = mod;
+        return mod;
+      })
+      .catch(err => { pdfjsLoad = null; pdfjsAttempt++; throw err; });
+  }
+  return pdfjsLoad;
+}
+
+/* Shown when the renderer itself could not be fetched — as opposed to a file
+   that failed to render. The browser viewer keeps the book readable either
+   way, but here the cause is worth naming and retrying is worthwhile: the
+   engine switch in study settings re-opens the book on our own renderer. */
+const NO_ENGINE_TEXT = 'موتور نمایش PDF در دسترس نیست؛ اتصال اینترنت را بررسی کن و دوباره تلاش کن. تا آن وقت نمایشگر ساده فعال است و متن، هایلایت و یادداشت در دسترس نیست.';
 
 /* Persian/Arabic/CJK documents often reference predefined CMaps and standard
    font programs that ship with pdf.js instead of inside the file. When those
@@ -773,16 +816,25 @@ async function openReader(id, opts = {}) {
 
   let ok = false;
   let drawn = false;
+  let engineMissing = false;
   if (!browserViewer) {
     try {
+      const lib = await loadPdfJs();
+      if (seq !== openSeq) return;
       const data = new Uint8Array(await blob.arrayBuffer());
       if (seq !== openSeq) return;
-      const doc = await pdfjsLib.getDocument({ data, ...PDF_ASSETS }).promise;
+      const doc = await lib.getDocument({ data, ...PDF_ASSETS }).promise;
       if (seq !== openSeq) { doc.destroy(); return; }
       pdfDoc = doc;
       ok = true;
     } catch (err) {
-      console.warn('رندر اختصاصی ممکن نشد؛ نمایشگر مرورگر استفاده می‌شود:', err);
+      /* A renderer that never arrived is a different situation from a file
+         that failed to render: the browser viewer covers both, but only this
+         one is about the connection rather than about the book. */
+      engineMissing = !pdfjsLib;
+      console.warn(engineMissing
+        ? 'موتور نمایش PDF در دسترس نبود؛ نمایشگر مرورگر استفاده می‌شود:'
+        : 'رندر اختصاصی ممکن نشد؛ نمایشگر مرورگر استفاده می‌شود:', err);
     }
   }
   if (ok) {
@@ -813,19 +865,23 @@ async function openReader(id, opts = {}) {
   }
   if (!ok) {
     engine = 'browser';
-    sessionFallback.add(id);              /* remembered for this session only */
+    /* Only a book that failed to render is remembered for this session. A
+       renderer that failed to download says nothing about the file, so the
+       next open — or the engine switch in study settings — tries again. */
+    if (!engineMissing) sessionFallback.add(id);
     if (pdfDoc) { try { pdfDoc.destroy(); } catch (e) {} pdfDoc = null; }
     if (!book.numPages) {
       try {
+        const lib = await loadPdfJs();
         const data = await blob.arrayBuffer();
-        const doc = await pdfjsLib.getDocument({ data, ...PDF_ASSETS }).promise;
+        const doc = await lib.getDocument({ data, ...PDF_ASSETS }).promise;
         if (seq !== openSeq) { doc.destroy(); return; }
         updateBook(id, { numPages: doc.numPages });
         book.numPages = doc.numPages;
         doc.destroy();
       } catch (e) { console.warn('گرفتن تعداد صفحه‌ها ممکن نشد:', e); }
     }
-    engageFallbackUI(book.viewer === 'browser' ? 'manual' : 'auto');
+    engageFallbackUI(book.viewer === 'browser' ? 'manual' : engineMissing ? 'engine' : 'auto');
   } else {
     engine = 'internal';
     sessionFallback.delete(id);
@@ -878,7 +934,9 @@ function engageFallbackUI(reason) {
   $('#pdfFallback').hidden = false;
   $('#fallbackText').textContent = reason === 'manual'
     ? 'نمایشگر مرورگر فعال است؛ متن، هایلایت و یادداشت در دسترس نیست.'
-    : 'این فایل با نمایشگر داخلی رندر نشد؛ متن، هایلایت و یادداشت در دسترس نیست.';
+    : reason === 'engine'
+      ? NO_ENGINE_TEXT
+      : 'این فایل با نمایشگر داخلی رندر نشد؛ متن، هایلایت و یادداشت در دسترس نیست.';
 }
 
 function closeReader() {
@@ -1000,7 +1058,7 @@ async function renderPage(keepScroll) {
   tl.style.height = viewport.height + 'px';
   /* Selection is the only way to a highlight, so a heavy RTL page (thousands
      of runs) gets a second, longer attempt before the page is written off. */
-  if (!textLayerBroken) {
+  if (!textLayerBroken && pdfjsLib) {
     const textBudgets = [TEXT_BUDGET, TEXT_BUDGET_LAST];
     for (let attempt = 0; attempt < textBudgets.length; attempt++) {
       try {
