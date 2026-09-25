@@ -9,6 +9,7 @@
 
 import { ICONS } from './constants.js';
 import { enablePush, disablePush } from './push-service.js';
+import { isBusy } from './calm.js';
 
 const BELL_SVG = ICONS.bell;
 
@@ -70,34 +71,59 @@ async function showNotification(title, body, tag) {
 
 /* ── Scheduler ──
    Walks the open tasks once and fires what is due. Called on boot and on
-   a gentle interval; each call is cheap (a date comparison per task). */
+   a gentle interval; each call is cheap (a date comparison per task).
+
+   What is due is not always what may be said. A reminder is an interruption,
+   so it obeys the same calm rule as the update prompt (js/calm.js): never while
+   the reader is typing, inside a focus session, or answering a dialog. Being in
+   the background is not "busy" here — a notification is exactly how someone who
+   is not looking at the app gets told.
+
+   When the moment is taken, the phase is NOT written down: nothing is marked as
+   delivered, so the task keeps being found by every later pass. That is what
+   makes a held reminder wait instead of disappear — and it also means a
+   reminder held when the app is closed simply arrives on the next open. While
+   one is held, a quiet check keeps asking until it can speak. */
+const RETRY_MS = 15000;
+let retry = 0;
+const stopRetrying = () => { clearInterval(retry); retry = 0; };
+
+/* What a task has to say right now, phase by phase. null = silence. */
+function dueFor(t, todayStr) {
+  if (!t || t.done || !t.notify || !t.dueDate) return null;
+  if (t.notifiedStatus === 'overdue') return null;   // terminal phase already delivered
+  if (t.dueDate < todayStr) return 'overdue';
+  if (t.dueDate === todayStr && t.notifiedStatus !== 'soon') return 'soon';
+  return null;
+}
+
+function deliver(t, phase) {
+  t.notifiedStatus = phase;
+  if (phase === 'overdue') showNotification('یه کار از موعدش گذشت!', t.text, `daftarche-overdue-${t.id}`);
+  else showNotification('مهلت امروزشه', t.text, `daftarche-soon-${t.id}`);
+}
+
 export function checkDueTasksAndNotify(tasks) {
-  if (!notificationsSupported() || Notification.permission !== 'granted') return;
+  if (!notificationsSupported() || Notification.permission !== 'granted') { stopRetrying(); return; }
   const d = new Date(); d.setHours(0, 0, 0, 0);
   const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-  let changed = false;
+  const due = [];
   for (const t of tasks) {
-    if (!t || t.done || !t.notify || !t.dueDate) continue;
-    if (t.notifiedStatus === 'overdue') continue; // terminal phase already delivered
-
-    const isToday = t.dueDate === todayStr;
-    const isPast = t.dueDate < todayStr;
-    if (!isToday && !isPast) continue;
-
-    if (isPast) {
-      if (t.notifiedStatus !== 'overdue') {
-        t.notifiedStatus = 'overdue';
-        changed = true;
-        showNotification('یه کار از موعدش گذشت!', t.text, `daftarche-overdue-${t.id}`);
-      }
-    } else if (t.notifiedStatus !== 'soon' && t.notifiedStatus !== 'overdue') {
-      t.notifiedStatus = 'soon';
-      changed = true;
-      showNotification('مهلت امروزشه', t.text, `daftarche-soon-${t.id}`);
-    }
+    const phase = dueFor(t, todayStr);
+    if (phase) due.push([t, phase]);
   }
-  if (changed) persist();
+  if (!due.length) { stopRetrying(); return; }
+
+  if (isBusy()) {
+    /* Silent from here: the phase stays unwritten and the clock keeps asking. */
+    if (!retry) retry = setInterval(() => { if (_getTasks) checkDueTasksAndNotify(_getTasks()); }, RETRY_MS);
+    return;
+  }
+
+  stopRetrying();
+  for (const [t, phase] of due) deliver(t, phase);
+  persist();
 }
 
 /* ── Per-task switch (called from the bell button on a task card) ──
@@ -130,6 +156,9 @@ export async function setTaskNotify(task, on) {
    No permission prompt here — just start watching (no-ops until granted). */
 export function initNotifications(getTasks) {
   if (!notificationsSupported()) return;
+  /* The retry clock needs to know where the list is, and the app hands it over
+     here; bindPersistence() may have it too. Either one is enough. */
+  if (getTasks && !_getTasks) _getTasks = getTasks;
   const run = () => checkDueTasksAndNotify(getTasks());
   run();
   // Re-register an already-valid push subscription with the backend (no

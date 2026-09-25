@@ -1,0 +1,209 @@
+/* ═══ Stats page ═══
+   One window, five windows to look through. The page speaks the same paper
+   language as the rest of the app: a card per subject, a dashed rule inside,
+   the accent only where a number deserves attention. */
+
+/* ── Chips and the row they sit in ──
+   These two are used by this page alone now: the profile shows one entry box
+   instead of its own stat chips, and the insights moved in here. They used to be
+   defined in profile.css, where nobody but this page would look for them. */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-chip{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) 14px;display:flex;flex-direction:column;gap:var(--space-1);box-shadow:var(--shadow-1);transition:transform var(--duration-base)}
+@media (hover:hover){.stat-chip:hover{transform:translateY(-1px)}}
+.stat-chip b{font-family:var(--font-personality);font-size:22px;font-weight:700;color:var(--accent)}
+.stat-chip span{font-size:11px;color:var(--muted);font-weight:400}
+
+/* ── The window switcher: a segmented row, the same interaction as the task
+   filters (a pill that slides), drawn as a control instead of a bar. ── */
+.stat-range{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;background:var(--color-surface);
+  border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+.stat-range-btn{position:relative;border:none;background:transparent;font-family:var(--font-ui);font-size:12.5px;
+  font-weight:600;color:var(--muted);padding:9px 2px;border-radius:var(--radius-xs);cursor:pointer;min-width:0;
+  transition:color var(--duration-base),background var(--duration-base)}
+.stat-range-btn.sel{color:#fff;background:var(--accent);box-shadow:var(--shadow-accent)}
+.stat-range-btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── The card the reader can take away ──
+   A labelled door rather than a bare icon: nobody looks for a share button on a
+   page they have never seen. */
+.stats-share{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;
+  border:1.5px dashed var(--color-border-strong);background:var(--surface);color:var(--accent);
+  border-radius:var(--radius-md);font-family:var(--font-ui);font-size:13.5px;font-weight:600;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform var(--duration-fast) var(--ease-out),border-color var(--duration-fast),box-shadow var(--duration-fast)}
+@media (hover:hover){.stats-share:hover{transform:translateY(-1px);border-color:var(--accent);box-shadow:var(--shadow-1)}}
+.stats-share:active{transform:translateY(1px)}
+.stats-share:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.stats-share svg{width:17px;height:17px;flex:0 0 auto}
+
+/* ── Headline numbers ── */
+.stat-head{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-head .stat-chip b{font-size:20px}
+#statsDelta{margin:6px 0 0;font-size:12px;font-weight:600;color:var(--accent)}
+#statsDelta[hidden]{display:none}
+
+/* The chart card is the app's old week-card, and its head holds the streak pill
+   beside the meta line: both are pushed to the far end, away from the title. */
+.week-head .streak{margin-inline-start:auto}
+
+/* ── The chart gets busier as the window gets longer: more columns, thinner
+   bars, and labels only where they can be read. ── */
+.stat-chart.busy{gap:3px}
+.stat-chart.busy .col .bar{max-width:14px;border-radius:4px 4px 2px 2px}
+.stat-chart.busy .col span{font-size:9px;letter-spacing:-.02em}
+.stat-meta{font-size:11px;color:var(--muted);font-weight:500}
+
+/* Bars rise once, on a keyframe, and land at their written height — the height
+   is in the inline style, so a frame that never runs still shows the real bar
+   instead of an empty stub. Scoped to this page's chart. */
+.stat-chart .col .bar.grow{animation:barUp var(--duration-slow) var(--ease-out) both;animation-delay:var(--d,0ms)}
+@keyframes barUp{from{height:0}}
+
+/* ── Sections ── */
+.stat-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:2px;
+  transition:background var(--duration-slow)}
+.stat-section[hidden]{display:none}
+.stat-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+.stat-sec-head strong{font-family:var(--font-personality);font-size:15px;font-weight:700}
+.stat-sec-head span{font-size:11px;color:var(--muted);font-weight:500}
+.stat-sec-head button{border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);
+  font-size:12px;font-weight:700;cursor:pointer;padding:6px 8px;border-radius:var(--radius-xs);min-height:36px}
+.stat-sec-head button:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* A line: label right, value left, an optional hint under the value */
+.stat-line{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px dashed var(--border);font-size:13px}
+.stat-line:last-child{border-bottom:none}
+.stat-line>span{color:var(--muted)}
+.stat-line>b{margin-inline-start:auto;font-weight:700;font-family:var(--font-personality);color:var(--text)}
+.stat-line>i{font-style:normal;font-size:11px;color:var(--muted);font-weight:500}
+
+/* Category share: a name, a track, a count */
+.stat-barrow{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px}
+.stat-barrow-name{min-width:52px;color:var(--text)}
+.stat-barrow-track{flex:1;height:7px;border-radius:99px;background:var(--color-surface);border:1px solid var(--color-border);overflow:hidden}
+.stat-barrow-track i{display:block;height:100%;border-radius:99px;transition:width var(--duration-slow) var(--ease-out);animation:barGrow var(--duration-slow) var(--ease-out) both}
+@keyframes barGrow{from{width:0}}
+.stat-barrow b{min-width:20px;text-align:center;font-weight:700;color:var(--muted)}
+.stat-barrow-pct{width:34px;text-align:end;font-style:normal;font-size:11px;color:var(--muted)}
+
+/* Mood: five little columns, one per feeling */
+.stat-moods{display:flex;gap:10px;align-items:flex-end;padding:10px 0 2px}
+.stat-mood{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.stat-mood .mdot{width:8px;height:8px;border-radius:50%}
+.stat-mood-bar{width:100%;height:44px;display:flex;align-items:flex-end;background:var(--color-surface);
+  border:1px solid var(--color-border);border-radius:var(--radius-xs);overflow:hidden}
+.stat-mood-bar i{display:block;width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:height var(--duration-slow) var(--ease-out);animation:colGrow var(--duration-slow) var(--ease-out) both}
+@keyframes colGrow{from{height:0}}
+.stat-mood b{font-size:11px;color:var(--muted);font-weight:600}
+
+/* ── سابقهٔ تمرکز: one row per session, at a glance ──
+   The face carries how it felt, the title carries what it was, and the day and
+   the length sit at the far end. Nothing wraps: a row is a line, and a long
+   title shortens rather than pushing the numbers off the edge. */
+.stat-sessions{display:flex;flex-direction:column}
+.stat-session{display:flex;align-items:center;gap:9px;padding:8px 0;
+  border-bottom:1px dashed var(--border);font-size:13px}
+.stat-session:last-child{border-bottom:none}
+.stat-session-face{flex:0 0 auto;width:25px;height:25px;display:grid;place-items:center;font-size:13px;
+  line-height:1;background:var(--color-bg);border:1px solid var(--color-border);border-radius:50%}
+.stat-session-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-weight:600;color:var(--text)}
+.stat-session-done{flex:0 0 auto;color:var(--green);font-size:12px;font-weight:700}
+.stat-session-when{flex:0 0 auto;color:var(--muted);font-size:11.5px}
+.stat-session-min{flex:0 0 auto;color:var(--muted);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Toggle that opens the rest of a long archive */
+.stat-more{width:100%;min-height:40px;margin-top:8px;border:1.5px dashed var(--color-border-strong);
+  background:transparent;color:var(--accent);border-radius:var(--radius-sm);font-family:var(--font-ui);
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:border-color var(--duration-fast),transform var(--duration-fast)}
+.stat-more[hidden]{display:none}
+@media (hover:hover){.stat-more:hover{border-color:var(--accent);transform:translateY(-1px)}}
+.stat-more:active{transform:translateY(1px)}
+.stat-more:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── Insights, inside the section that holds them ──
+   They keep their own card language; only the frame around them is the
+   section's. */
+.stat-section .stats-row{margin-top:4px}
+.stat-section .insight-suggestion{margin-top:10px;padding:12px 14px;border:1px solid var(--accent);
+  background:var(--accent-soft);border-radius:var(--radius-sm)}
+.stat-section .insight-suggestion[hidden]{display:none}
+.stat-section .insight-suggestion .vibe-head{margin-bottom:0}
+.stat-section .insights-list{margin-top:10px}
+
+/* ── The profile's one door into all of this ── */
+.stats-entry{display:block;width:100%;text-align:start;font-family:var(--font-ui);color:var(--text);cursor:pointer;
+  transition:transform var(--duration-fast) var(--ease-out)}
+@media (hover:hover){.stats-entry:hover{transform:translateY(-1px)}}
+.stats-entry:active{transform:translateY(1px)}
+.stats-entry:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.stats-entry .vibe-head{margin-bottom:6px}
+.stats-entry-go{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--accent);border:1.5px solid var(--border);
+  border-radius:var(--radius-pill);padding:5px 14px}
+.stats-entry-hint{display:block;font-size:12px;line-height:1.9;color:var(--muted)}
+
+/* ── Card templates ──
+   A template is a palette, written as the card's own tokens so one set of names
+   serves the canvas, the panel and the chips in the picker: the dot on a chip is
+   painted from the very values the card would print with. «app» is not a palette
+   of its own — it points the card at the interface's tokens, so a card made in
+   the dark comes out dark.   The palettes themselves live once, in css/base.css — both the interface's
+   themes and the card's templates are cut from that one table. */
+
+/* ── Share card panel ──
+   The dialog is an overlay now (the app's own centred component), so the scrim
+   behind it — dimmed, and blurred where the browser can — comes from
+   css/overlays.css and the panel can never land on the tab bar. Everything that
+   belongs to this dialog alone is here: a compact panel, a small preview, two
+   buttons. As a full-width sheet it used to fill the viewport and make a square
+   card read as a page; bounded and centred, the card is what the eye lands on. */
+.share-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:380px;max-height:min(84dvh,660px);display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:var(--shadow-2);animation:popCard var(--duration-base) var(--ease-out)}
+.share-panel .sheet-head{padding:12px 14px}
+.share-body{overflow:auto;padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
+.share-preview{position:relative;display:grid;place-items:center;min-height:0;padding:8px;background:var(--bg);
+  border:1px solid var(--border);border-radius:var(--radius-sm)}
+.share-preview img{display:block;width:auto;height:auto;max-width:min(100%,270px);
+  max-height:min(32dvh,270px);border-radius:10px;box-shadow:var(--shadow-1);
+  transition:opacity var(--duration-fast)}
+.share-preview img[hidden],.share-spinner[hidden]{display:none}
+/* While the next template is being painted the card that is still on screen
+   dims: the preview says «not final» without taking away what the reader chose. */
+.share-panel.is-busy .share-preview img{opacity:.4}
+.share-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--border);
+  border-top-color:var(--accent);animation:shareSpin 1s linear infinite}
+@keyframes shareSpin{to{transform:rotate(360deg)}}
+.share-note{margin:0;font-size:11.5px;line-height:1.8;color:var(--muted)}
+.share-note:empty{display:none}
+.share-actions{display:flex;gap:8px}
+.share-actions button{flex:1;min-height:42px;border-radius:var(--radius-sm);font-family:var(--font-ui);
+  font-size:13.5px;font-weight:600;cursor:pointer;transition:transform var(--duration-fast)}
+.share-actions button:active{transform:translateY(1px)}
+.share-go{border:none;background:var(--accent);color:#fff;box-shadow:var(--shadow-accent)}
+.share-go[hidden]{display:none}
+.share-ghost{border:1.5px solid var(--border);background:transparent;color:var(--text)}
+.share-go:focus-visible,.share-ghost:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── The template picker ──
+   The two rows themselves are the shared picker (components2.css, js/chipgroup.js);
+   the dialog only stacks them. */
+.share-style{display:flex;flex-direction:column;gap:8px}
+
+@media (max-width:400px){
+  .stat-range-btn{font-size:11.5px;padding:8px 1px}
+  .stat-head .stat-chip b{font-size:18px}
+  .share-actions{flex-direction:column}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .stats-share,.stat-range-btn,.stat-barrow-track i,.stat-mood-bar i,.stat-chip,.stats-entry,
+  .share-actions button,.share-preview img,.stat-more{transition:none}
+  .stat-barrow-track i,.stat-mood-bar i,.stat-chart .col .bar.grow{animation:none}
+  .stats-share:hover,.stats-share:active,.stats-entry:hover,.stats-entry:active{transform:none}
+  /* The opening rise is movement for its own sake; the panel can simply be
+     there. The spinner keeps turning though — a frozen ring would read as a
+     broken loading indicator. */
+  .share-panel{animation:none}
+  .share-spinner{animation-duration:1.6s}
+}

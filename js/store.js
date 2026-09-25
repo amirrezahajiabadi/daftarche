@@ -37,5 +37,16 @@ export const clearSession = ()   => localStorage.removeItem(STORAGE_KEYS.session
 export const loadFocusHistory = ()  => read(STORAGE_KEYS.focusHistory, []);
 export const saveFocusHistory = h  => localStorage.setItem(STORAGE_KEYS.focusHistory, JSON.stringify(h));
 
+/* The stats window the reader last chose. A view preference, not data — if it
+   is missing or unreadable the stats page falls back to its default range. */
+export const loadStatsRange = ()    => localStorage.getItem(STORAGE_KEYS.statsRange) || '';
+export const saveStatsRange = key   => localStorage.setItem(STORAGE_KEYS.statsRange, key);
+
+/* The share card's template — a colour and a layout. A view preference like the
+   stats range, not data: an unreadable value falls back to the default pair in
+   js/sharecard.js, which is also where the keys are defined. */
+export const loadCardStyle = ()    => read(STORAGE_KEYS.cardStyle, null);
+export const saveCardStyle = style => localStorage.setItem(STORAGE_KEYS.cardStyle, JSON.stringify(style));
+
 export const loadTheme   = ()    => localStorage.getItem(STORAGE_KEYS.theme);
 export const saveTheme   = t    => localStorage.setItem(STORAGE_KEYS.theme, t);

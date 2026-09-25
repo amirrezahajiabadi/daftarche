@@ -4,19 +4,34 @@
 .header-avatar svg,.header-avatar img{width:100%;height:100%;border-radius:var(--radius-xs);object-fit:cover;display:block}
 
 .profile-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:26px 18px;box-shadow:var(--shadow-1);display:flex;flex-direction:column;align-items:center;gap:var(--space-3);text-align:center}
-.avatar-big{width:104px;height:104px;border-radius:50%;border:2.5px dashed var(--accent);background:var(--bg);cursor:pointer;overflow:hidden;position:relative;transition:transform var(--duration-base);padding:0}
-.avatar-big:hover{transform:scale(1.03)}
+/* ── Profile photo (the person, not the companion) ──
+   One circle, two honest states: empty it invites a photo (the circle itself is
+   the action, so it carries no pen badge), filled it shows the photo and keeps
+   the pen as the "change" cue. The photo is downscaled on the way in (see
+   js/profile.js) so it is always a small square — object-fit only has to centre
+   it here. */
+.avatar-big{width:104px;height:104px;border-radius:50%;border:2.5px dashed var(--accent);background:var(--bg);cursor:pointer;overflow:hidden;position:relative;transition:transform var(--duration-base),box-shadow var(--duration-base),border-color var(--duration-base);padding:0}
 .avatar-big svg,.avatar-big img{width:100%;height:100%;object-fit:cover;display:block}
-.avatar-big::after{content:'✎';position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--accent);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:12px;border:2px solid var(--surface)}
+.avatar-big.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--accent-soft);color:var(--accent)}
+.avatar-big.empty::after{content:none}
+.avatar-big .ph-ico{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.avatar-big .ph-txt{font-size:10px;font-weight:700;line-height:1.4;color:var(--accent)}
+.avatar-big.has-photo{border-style:solid;border-color:var(--accent);background:var(--bg)}
+.avatar-big.has-photo::after{content:'✎';position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--accent);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:12px;border:2px solid var(--surface)}
+
+/* A halo, not a lift: same language as the character tiles below. */
+@media (hover:hover){
+  .avatar-big:hover{transform:scale(1.03);box-shadow:0 0 0 3px var(--accent-soft),0 12px 26px -12px var(--accent)}
+}
+
+.photo-remove{border:none;background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:600;padding:8px 14px;border-radius:var(--radius-pill);cursor:pointer;transition:color var(--duration-fast),background var(--duration-fast)}
+.photo-remove:hover{color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.photo-remove[hidden]{display:none}
+.photo-hint{color:var(--danger);font-size:12px;font-weight:500;line-height:1.7}
+.photo-hint[hidden]{display:none}
 .profile-name-row{display:flex;align-items:center;gap:10px}
 .profile-name-row strong{font-family:var(--font-personality);font-size:24px;font-weight:700}
 .profile-sub{color:var(--muted);font-size:12px;font-weight:400}
-
-.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat-chip{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) 14px;display:flex;flex-direction:column;gap:var(--space-1);box-shadow:var(--shadow-1);transition:transform var(--duration-base)}
-.stat-chip:hover{transform:translateY(-1px)}
-.stat-chip b{font-family:var(--font-personality);font-size:22px;font-weight:700;color:var(--accent)}
-.stat-chip span{font-size:11px;color:var(--muted);font-weight:400}
 
 /* Badges */
 .badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -28,14 +43,42 @@
 .badge.locked::after{content:'🔒';position:absolute;top:6px;inset-inline-end:6px;font-size:10px}
 .badge.unlocked{border-color:var(--accent);background:var(--accent-soft);animation:pop var(--duration-base)}
 
-/* Avatar picker */
+/* ═══ Character picker ═══
+   Five companions, laid out so that reaching one is easy and choosing one is
+   unmistakable — without turning the choice into decoration. The chosen tile
+   says it once: a plain accent border, a light tint, its name in the accent
+   colour and a small tick. There is no second ring around it and no glow: a
+   halo *and* a border *and* a shadow around one tile is three ways of saying
+   the same thing, and the shadow is the one that costs a paint.
+   The halo survives as the hover cue alone — one thin line just outside the
+   tile, which only scales and fades, so following the pointer costs no paint
+   on the tile itself. */
 .avatar-card{max-width:400px}
 .avatar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
-.avatar-opt{border:2.5px solid transparent;background:var(--bg);border-radius:var(--radius-md);padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all var(--duration-fast)}
-.avatar-opt svg{width:56px;height:56px}
-.avatar-opt span{font-size:11px;color:var(--muted);font-weight:500}
-.avatar-opt.sel{border-color:var(--accent);background:var(--accent-soft)}
-.avatar-opt:hover{transform:translateY(-1px)}
+.avatar-opt{position:relative;border:2.5px solid transparent;background:var(--bg);border-radius:var(--radius-md);padding:10px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:96px;transition:transform var(--duration-fast) var(--ease-out),background var(--duration-fast),border-color var(--duration-fast),opacity var(--duration-fast)}
+.avatar-opt svg{width:56px;height:56px;pointer-events:none}
+.avatar-opt span{font-size:11px;color:var(--muted);font-weight:500;pointer-events:none}
+/* The halo: out of the flow, never in the way of the tap */
+.avatar-opt::before{content:'';position:absolute;inset:-5px;border-radius:calc(var(--radius-md) + 5px);border:2px solid color-mix(in srgb,var(--accent) 50%,transparent);opacity:0;transform:scale(.97);pointer-events:none;transition:opacity var(--duration-fast) var(--ease-out),transform var(--duration-base) var(--ease-out)}
+/* Quiet the rest so the chosen one can speak — a little, not a spotlight */
+.avatar-opt:not(.sel){opacity:.88}
+.avatar-opt.sel{border-color:var(--accent);background:var(--accent-soft);opacity:1}
+.avatar-opt.sel span{color:var(--accent);font-weight:700}
+.avatar-opt.sel::after{content:'✓';position:absolute;top:-6px;inset-inline-end:-6px;width:18px;height:18px;background:var(--accent);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;line-height:1}
+.avatar-opt:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px}
+@media (hover:hover){
+  .avatar-opt:hover{transform:translateY(-2px);opacity:1}
+  .avatar-opt:hover::before{opacity:1;transform:scale(1)}
+  .avatar-opt:hover:not(.sel){border-color:color-mix(in srgb,var(--accent) 38%,transparent);background:var(--accent-soft)}
+  /* The halo marks the tile you would pick; the chosen one already carries its
+     own border, so it is not ringed a second time. */
+  .avatar-opt.sel:hover::before{opacity:0}
+}
+.avatar-opt:active{transform:scale(.97)}
+/* The confirmation below the grid: full-width primary, with the quiet way out
+   under it — the same pair the name card uses. */
+.avatar-card .go:disabled{opacity:.5;box-shadow:none;cursor:not-allowed}
+.avatar-card .go:disabled:active{transform:none}
 
 @media (max-width:400px){
   .avatar-big{width:92px;height:92px}
@@ -43,6 +86,13 @@
   .badges{gap:8px}
   .badge b{font-size:10px}
   .avatar-opt svg{width:48px;height:48px}
+}
+/* Reduced motion: the halo, the border and the tick stay (they carry meaning),
+   the movement goes. */
+@media (prefers-reduced-motion:reduce){
+  .avatar-opt,.avatar-opt::before{transition:none}
+  .avatar-opt:hover{transform:none}
+  .avatar-opt:active{transform:none}
 }
 
 /* ═══ Insights (opens from Profile) ═══ */
@@ -64,12 +114,3 @@
 .insight-suggestion{border-color:var(--accent);background:var(--accent-soft)}
 .insight-suggestion p{margin:8px 0 0;font-size:13.5px;line-height:2}
 
-.insights-back-btn{display:block;width:100%;margin-top:14px;padding:13px;border-radius:var(--radius-sm);border:1.5px solid var(--color-accent);background:var(--color-accent-soft);color:var(--color-accent);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform var(--duration-fast)}
-.insights-back-btn:hover{transform:translateY(-1px)}
-/* ═══ Focus History (opens from Profile) ═══ */
-.fh-list{display:flex;flex-direction:column;gap:10px}
-.fh-record{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:13px 15px;display:flex;flex-direction:column;gap:7px}
-.fh-record-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
-.fh-title{font-size:14.5px;font-weight:700;min-width:0;overflow-wrap:anywhere}
-.fh-when{font-size:12.5px;color:var(--muted);white-space:nowrap}
-.fh-record-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}

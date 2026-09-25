@@ -1,4 +1,4 @@
-/* ═══ Progress Ring, Filters, Category Bar, Daily Frog ═══ */
+/* ═══ Filters, Category Bar, Daily Frog, List Footer ═══ */
 
 import { state } from './state.js';
 import { $, faNum, startOfToday } from './utils.js';
@@ -6,32 +6,15 @@ import { CATS } from './constants.js';
 import { subscribe } from './bus.js';
 import { renderList, collapse } from './tasks.js';
 
-/* ── Progress ring + counter ── */
-let currentDisplayPct = 0, animFrameId = null;
+/* ── Footer counter ──
+   The progress ring and the sentence under it moved to the stats page
+   (js/stats.js), where they answer for the window the reader has chosen there
+   instead of for the whole list. What is left here is the list's own footer. */
 
 function updateProgress() {
   const total = state.tasks.length;
   const done = state.tasks.filter(t => t.done).length;
-  const targetPct = total ? Math.round((done / total) * 100) : 0;
 
-  const ring = $('#ringWrap');
-  ring.style.setProperty('--pct', targetPct);
-  if (targetPct === 100 && total > 0) ring.classList.add('complete');
-  else ring.classList.remove('complete');
-
-  if (animFrameId) cancelAnimationFrame(animFrameId);
-  const startPct = currentDisplayPct;
-  const startTime = performance.now();
-  function tick(now) {
-    const progress = Math.min((now - startTime) / 800, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    currentDisplayPct = Math.round(startPct + (targetPct - startPct) * ease);
-    $('#percentVal').textContent = faNum(currentDisplayPct);
-    if (progress < 1) animFrameId = requestAnimationFrame(tick);
-  }
-  animFrameId = requestAnimationFrame(tick);
-
-  $('#stats').textContent = total ? `${faNum(done)} از ${faNum(total)} کار انجام شده` : 'هنوز کاری ثبت نشده';
   $('#counter').textContent = total ? `${faNum(total - done)} کار باقی‌مانده` : '';
   $('#clearBtn').style.visibility = done ? 'visible' : 'hidden';
 }
@@ -72,8 +55,17 @@ function updateCatCounts() {
 /* ── Filters ── */
 function movePill() {
   const act = document.querySelector('.filters button.active'), pill = $('#pill');
+  if (!act || !pill) return;
   pill.style.width = act.offsetWidth + 'px';
   pill.style.transform = `translateX(${act.offsetLeft}px)`;
+}
+
+/* Measuring the active filter forces layout; a resize fires many events per
+   second, so the measurement is taken once per frame instead of once per event. */
+let pillFrame = 0;
+function schedulePill() {
+  if (pillFrame) return;
+  pillFrame = requestAnimationFrame(() => { pillFrame = 0; movePill(); });
 }
 
 /* ── Daily frog ── */
@@ -126,7 +118,7 @@ export function initProgress() {
     movePill();
     renderList();
   });
-  addEventListener('resize', movePill);
+  addEventListener('resize', schedulePill);
   movePill();
 
   $('#clearBtn').onclick = () => {

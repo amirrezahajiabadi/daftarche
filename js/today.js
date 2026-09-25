@@ -112,12 +112,28 @@ function currentRec() {
 }/* Three visually and emotionally distinct empty states (Priority 8.4):
    no tasks → calm/welcoming with an add CTA · all done → celebrating,
    acknowledged completion · no recommendation → thinking, non-pressuring. */
-function renderFrog() {
+/* What the hero is currently showing, so an unchanged recommendation can be
+   left exactly as it is. Every change that reaches the bus used to tear the
+   card down and build it again, which restarted the companion's idle motion and
+   the chip pop-in even when the suggestion, its reason and its alternatives were
+   all identical — the card twitched for nothing on every check-off. */
+let lastFrogSig = '';
+
+/* `force` is for the moves the user asked for directly (skip, picking an
+   alternative): those must redraw even when the suggestion comes out the same,
+   because a tap with no visible response reads as a broken button. */
+function renderFrog(force) {
   const wrap = $('#todayFrog');
   if (!wrap) return;
   const rec = currentRec();
   const frog = rec.primary ? getTask(rec.primary.id) : null;
   heroFrog = frog;
+  const alts = frog ? rec.alternatives.filter(a => a.id !== frog.id) : [];
+  const sig = frog
+    ? ['task', frog.id, frog.text, frog.p || 'mid', frog.dueDate || '', frog.durationMin || '', rec.reason || '', alts.map(a => a.id).join(','), frogExpr()].join('~')
+    : ['none', rec.state, rec.reason || ''].join('~');
+  if (!force && sig === lastFrogSig) return;
+  lastFrogSig = sig;
   if (!frog) {
     shownRecId = null;
     const allDone = rec.state === 'all-done';
@@ -142,7 +158,6 @@ function renderFrog() {
     wrap.querySelector('.frog-none').textContent = msg;
     return;
   }
-  const alts = rec.alternatives.filter(a => a.id !== frog.id);
   /* Visual order (Priority 8.4): title → metadata → reason → actions.
      The task title outranks the reason; the reason stays secondary. */
   wrap.innerHTML = `
@@ -177,7 +192,7 @@ function skipCurrentFrog() {
   if (!heroFrog) return;
   skippedRecs.set(heroFrog.id, (skippedRecs.get(heroFrog.id) || 0) + 1);
   shownRecId = null;
-  renderFrog();
+  renderFrog(true);
 }
 
 /* ── Today's tasks ── */
@@ -186,7 +201,9 @@ function todayRow(t) {
   li.className = 't-row' + (t.done ? ' done' : '');
   li.dataset.id = t.id;
   let dueChip = '';
-  if (!t.done && t.dueDate) {
+  /* The chip is built for finished tasks too and hidden in CSS: the row is
+     updated in place when it is checked off, so its markup has to stay stable. */
+  if (t.dueDate) {
     const dl = dueLabel(t.dueDate);
     if (dl.cls === 'late' || dl.cls === 'today' || dl.cls === 'soon') dueChip = `<span class="t-due ${dl.cls}">${dl.text}</span>`;
   }
@@ -203,22 +220,64 @@ function todayRow(t) {
   return li;
 }
 
+/* The rows are keyed by task id and reconciled in place.
+   Rebuilding the list on every change (the previous behaviour) replaced the row
+   the user had just tapped, so one check-off replayed the entrance animation of
+   the whole list and the tapped row never finished its own tick. Now a change
+   updates the rows it actually affects: a check-off only toggles that row, and
+   only genuinely new rows animate in. Order changes reuse the same elements, so
+   nothing flickers when a finished task moves down a group. */
+const liveRows = new Map(); // taskId → { el, sig }
+const rowSig = t => [t.text, t.p || 'mid', t.dueDate || '', t.durationMin || ''].join('|');
+
 function renderTodayList() {
   const list = $('#todayList');
   if (!list) return;
   const undone = todayPending().slice().sort((a, b) => frogScore(b) - frogScore(a));
   const rows = [...undone, ...todayDone()].slice(0, LIST_CAP);
-  list.innerHTML = '';
+
   if (!rows.length) {
-    const li = document.createElement('li');
-    li.className = 't-empty';
-    li.textContent = state.tasks.length
-      ? 'چیزی برای امروز برنامه‌ریزی نشده؛ هر کاری خواستی از بالا اضافه کن ✨'
-      : 'هنوز کاری نساختی — اولین کار امروزت رو از بالا اضافه کن ✨';
-    list.appendChild(li);
+    liveRows.forEach(entry => { if (!entry.el.dataset.exiting) entry.el.remove(); });
+    liveRows.clear();
+    if (!list.querySelector('.t-empty')) {
+      const li = document.createElement('li');
+      li.className = 't-empty';
+      li.textContent = state.tasks.length
+        ? 'چیزی برای امروز برنامه‌ریزی نشده؛ هر کاری خواستی از بالا اضافه کن ✨'
+        : 'هنوز کاری نساختی — اولین کار امروزت رو از بالا اضافه کن ✨';
+      list.appendChild(li);
+    }
     return;
   }
-  rows.forEach(t => list.appendChild(todayRow(t)));
+  list.querySelector('.t-empty')?.remove();
+
+  const wanted = new Set(rows.map(t => t.id));
+  liveRows.forEach((entry, id) => {
+    if (wanted.has(id)) return;
+    liveRows.delete(id);
+    /* A row already on its way out (just deleted) owns its own removal —
+       animateOut takes it off the document when the exit has played. */
+    if (!entry.el.dataset.exiting) entry.el.remove();
+  });
+
+  let next = list.firstElementChild;
+  rows.forEach(t => {
+    const sig = rowSig(t);
+    let entry = liveRows.get(t.id);
+
+    // Reuse the row, or build a fresh element for changed/new/vanished markup
+    if (!entry || !entry.el.isConnected || entry.sig !== sig) {
+      const el = todayRow(t);
+      if (entry && entry.el.isConnected) entry.el.replaceWith(el);
+      entry = { el, sig };
+      liveRows.set(t.id, entry);
+    } else {
+      entry.el.classList.toggle('done', !!t.done);
+    }
+
+    if (next === entry.el) next = entry.el.nextElementSibling;
+    else list.insertBefore(entry.el, next);
+  });
 }
 
 /* ── Daily progress ── */
@@ -288,7 +347,7 @@ export function initToday() {
       else if (e.target.closest('.frog-add')) $('#todayInput')?.focus();
       else {
         const alt = e.target.closest('.rec-alt');
-        if (alt) { shownRecId = alt.dataset.id; renderFrog(); }
+        if (alt) { shownRecId = alt.dataset.id; renderFrog(true); }
       }
     });
   }

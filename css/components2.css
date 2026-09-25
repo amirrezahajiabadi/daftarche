@@ -112,7 +112,7 @@
 .badge-status.warning{color:var(--color-warning);background:color-mix(in srgb,var(--color-warning) 16%,transparent)}
 .badge-status.danger{color:var(--color-danger);background:color-mix(in srgb,var(--color-danger) 12%,transparent)}
 .badge-status.focus{color:var(--color-accent);background:var(--color-accent-soft)}
-html[data-theme="dark"] .badge-status.warning{color:#ffcd8a}
+html[data-theme="night"] .badge-status.warning{color:#ffcd8a}
 
 /* ═══ 9. Modal ═══
    Pattern only — existing overlay markup/behavior unchanged. */
@@ -134,23 +134,36 @@ html[data-theme="dark"] .badge-status.warning{color:#ffcd8a}
   font-family:var(--font-ui);font-size:13px;font-weight:500;
   padding:10px 12px;padding-inline-end:12px;border-radius:var(--radius-md);
   box-shadow:var(--shadow-2);overflow:hidden;max-width:calc(100vw - 32px)}
-html[data-theme="dark"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
+html[data-theme="night"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
 .toast[hidden]{display:none}
 .toast.show{animation:toastIn var(--duration-base) var(--ease-spring)}
 @keyframes toastIn{from{opacity:0;transform:translateX(50%) translateY(16px)}}
 .toast-btn{border:none;background:transparent;color:var(--color-accent);font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:2px 4px;flex-shrink:0}
-html[data-theme="dark"] .toast-btn{color:var(--color-accent)}
+html[data-theme="night"] .toast-btn{color:var(--color-accent)}
 .toast-bar{position:absolute;bottom:0;inset-inline-start:0;height:3px;width:100%;
   background:var(--color-accent);transform-origin:right;animation:toastBar 5s linear forwards}
 .toast-bar[dir="ltr"],[dir="ltr"] .toast-bar{transform-origin:left}
 @keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
 /* Sticky variant: no auto-dismiss bar, stays until the user acts.
-   Used by the update prompt — the action must never time out. */
-.toast-sticky{font-size:14px;padding:14px 16px;gap:var(--space-4)}
-.toast-sticky .toast-btn{padding:8px 10px;min-height:44px;display:inline-flex;align-items:center}
-@media (prefers-reduced-motion: reduce){.toast-sticky,.toast-sticky .toast-btn{transition:none}}
+   Used by the update prompt — the action must never time out.
+   What it asks for is the point of the toast, so the action is a surface of its
+   own rather than a text link: one filled pill, the same language the primary
+   buttons speak. It keeps a 44px touch height either way. */
+.toast-sticky{font-size:14px;padding:12px 14px;gap:var(--space-3)}
+.toast-sticky .toast-btn{padding:10px 16px;min-height:44px;display:inline-flex;align-items:center;
+  border-radius:var(--radius-pill);background:var(--color-accent);color:#fff;
+  transition:transform var(--duration-fast) var(--ease-out)}
+html[data-theme="night"] .toast-sticky .toast-btn{color:#fff}
+@media (hover:hover){
+  .toast-sticky .toast-btn:hover{transform:translateY(-1px)}
+  .toast-sticky .toast-btn:active{transform:translateY(1px)}
+}
+@media (prefers-reduced-motion: reduce){
+  .toast-sticky,.toast-sticky .toast-btn{transition:none}
+  .toast-sticky .toast-btn:hover,.toast-sticky .toast-btn:active{transform:none}
+}
 
 /* ═══ 12. Empty State ═══
    Context + Character + Next Step. Never generic text. */
@@ -179,6 +192,26 @@ html[data-theme="dark"] .toast-btn{color:var(--color-accent)}
 }
 
 /* ═══ Responsive ═══ */
+/* ═══ 15. Picker Row ═══
+   One row of small choices, one tab stop, arrow keys — the control behind the
+   theme picker in settings and the share card's template picker
+   (js/chipgroup.js builds both). A chip can wear a palette (data-palette) and
+   shows it in its dot: base.css fills --pick-dot-* from the palette table, and
+   without one the dot falls back to the interface's own colours — which is what
+   the card's «follow the app» chip is meant to show. */
+.pick-field{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pick-label{flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--color-text-muted)}
+.pick-row{display:flex;flex:1;flex-wrap:wrap;gap:6px;min-width:0}
+.pick-chip{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:7px 11px;
+  border:1.5px solid var(--color-border);border-radius:var(--radius-pill);background:transparent;
+  color:var(--color-text-muted);font-family:var(--font-ui);font-size:12px;font-weight:600;cursor:pointer;
+  transition:color var(--duration-base),border-color var(--duration-base),background var(--duration-base)}
+.pick-chip.sel{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-soft)}
+.pick-chip:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.pick-dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;
+  background:var(--pick-dot-bg,var(--color-bg));box-shadow:inset 0 0 0 3px var(--pick-dot-ring,var(--color-accent))}
+@media (prefers-reduced-motion:reduce){.pick-chip{transition:none}}
+
 @media (max-width:480px){
   .btn{min-height:44px;padding:9px var(--space-3)}
   .toast{bottom:calc(var(--nav-height) + env(safe-area-inset-bottom,0) + 12px)}

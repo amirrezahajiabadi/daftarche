@@ -34,23 +34,26 @@
    Warm / Organic / Quiet / Expressive / Precise */
 
 :root{
-  /* ── Semantic Colors (Light) ── */
-  --color-bg:#f6efe3;
-  --color-surface:#fffcf5;
-  --color-surface-elevated:#ffffff;
-  --color-text-primary:#2e2921;
-  --color-text-secondary:#5d5548;
-  --color-text-muted:#a79c8a;
+  /* ── Semantic Colors (Light) ──
+     The default theme, and the same values the palette table holds as «روشن» —
+     these point at them, so the interface and anything showing that palette
+     (the theme picker's dot) can never disagree about what light is. */
+  --color-bg:var(--pal-light-bg);
+  --color-surface:var(--pal-light-surface);
+  --color-surface-elevated:var(--pal-light-elev);
+  --color-text-primary:var(--pal-light-text);
+  --color-text-secondary:var(--pal-light-text2);
+  --color-text-muted:var(--pal-light-muted);
   --color-text-on-accent:#ffffff;
-  --color-border:rgba(80,60,30,.1);
-  --color-border-strong:rgba(80,60,30,.22);
-  --color-accent:#f4703a;
-  --color-accent-soft:rgba(244,112,58,.13);
-  --color-accent-strong:#d95c28;
-  --color-success:#7fb069;
-  --color-warning:#ffb45c;
-  --color-danger:#e4584f;
-  --color-focus:#f4703a;
+  --color-border:var(--pal-light-border);
+  --color-border-strong:var(--pal-light-border-strong);
+  --color-accent:var(--pal-light-accent);
+  --color-accent-soft:var(--pal-light-accent-soft);
+  --color-accent-strong:var(--pal-light-accent-strong);
+  --color-success:var(--pal-light-success);
+  --color-warning:var(--pal-light-warning);
+  --color-danger:var(--pal-light-danger);
+  --color-focus:var(--pal-light-accent);
 
   /* ── Legacy aliases (existing styles keep working; new styles use semantic tokens) ── */
   --bg:var(--color-bg);
@@ -65,8 +68,8 @@
   --border:var(--color-border);
 
   /* ── Organic identity layers (not global character palettes) ── */
-  --tape:rgba(255,196,120,.5);
-  --glass-hover:rgba(255,255,255,.35);
+  --tape:var(--pal-light-tape);
+  --glass-hover:var(--pal-light-glass);
 
   /* ── Spacing Scale: 4 / 8 / 12 / 16 / 24 / 32 / 48 ── */
   --space-1:4px;
@@ -115,28 +118,234 @@
   --shadow-sm:var(--shadow-1);
 }
 
-html[data-theme="dark"]{
-  /* ── Semantic Colors (Dark) ── */
-  --color-bg:#171310;
-  --color-surface:#221d17;
-  --color-surface-elevated:#2b241d;
-  --color-text-primary:#f4ecdd;
-  --color-text-secondary:#c9bda6;
-  --color-text-muted:#8f8574;
-  --color-text-on-accent:#ffffff;
-  --color-border:rgba(255,220,180,.09);
-  --color-border-strong:rgba(255,220,180,.2);
-  --color-accent:#ff8a50;
-  --color-accent-soft:rgba(255,138,80,.15);
-  --color-accent-strong:#ffa06e;
-  --color-success:#8dc277;
-  --color-warning:#ffbe6e;
-  --color-danger:#ef6d64;
-  --color-focus:#ff8a50;
+/* ═══ Palettes ═══
+   Colour with a name, and two consumers: an app theme (html[data-theme=...],
+   further down) maps a palette onto the interface tokens, and a share card
+   template ([data-palette=...], right below) maps the same palette onto the
+   card's own --card-* words and onto the dot a picker paints. Neither consumer
+   ever names a colour itself, so a palette is written down exactly once and a
+   card can never drift from the app it came from — a reader who prints a «شب»
+   card while the app is in «کاغذ» gets the night the app would have drawn, and
+   the card's «برنامه» template follows whatever theme is on screen.
+
+   «روشن» is in the table like every other palette; the :root token block above
+   simply points at it, so it stays the default for anyone who has not chosen
+   otherwise — and the picker can show it as a colour rather than a promise. */
+:root{
+  /* light — the colours this design was drawn in, written down here like the
+     rest of the table instead of living only in the token block, so a picker
+     can show this palette exactly the way it shows the others */
+  --pal-light-bg:#f6efe3;
+  --pal-light-surface:#fffcf5;
+  --pal-light-elev:#ffffff;
+  --pal-light-text:#2e2921;
+  --pal-light-text2:#5d5548;
+  --pal-light-muted:#a79c8a;
+  --pal-light-border:rgba(80,60,30,.1);
+  --pal-light-border-strong:rgba(80,60,30,.22);
+  --pal-light-accent:#f4703a;
+  --pal-light-accent-strong:#d95c28;
+  --pal-light-accent-soft:rgba(244,112,58,.13);
+  --pal-light-success:#7fb069;
+  --pal-light-warning:#ffb45c;
+  --pal-light-danger:#e4584f;
+  --pal-light-tape:rgba(255,196,120,.5);
+  --pal-light-glass:rgba(255,255,255,.35);
+
+  /* paper — warm and a little grey, a notebook left in the sun */
+  --pal-paper-bg:#ece1cd;
+  --pal-paper-surface:#fffdf6;
+  --pal-paper-elev:#fffefb;
+  --pal-paper-text:#33291d;
+  --pal-paper-text2:#6b5b45;
+  --pal-paper-muted:#93826c;
+  --pal-paper-border:rgba(92,66,36,.13);
+  --pal-paper-border-strong:rgba(92,66,36,.26);
+  --pal-paper-accent:#dd6535;
+  --pal-paper-accent-strong:#bd4f22;
+  --pal-paper-accent-soft:rgba(221,101,53,.16);
+  --pal-paper-success:#6f9a56;
+  --pal-paper-warning:#d99a35;
+  --pal-paper-danger:#cc4b30;
+  --pal-paper-tape:rgba(255,196,120,.55);
+  --pal-paper-glass:rgba(255,255,255,.4);
+
+  /* forest — a soft, cool green; the accent is the green itself */
+  --pal-forest-bg:#dfe9d8;
+  --pal-forest-surface:#f8fbf5;
+  --pal-forest-elev:#ffffff;
+  --pal-forest-text:#24301e;
+  --pal-forest-text2:#4e5b45;
+  --pal-forest-muted:#7d8e74;
+  --pal-forest-border:rgba(40,70,45,.12);
+  --pal-forest-border-strong:rgba(40,70,45,.24);
+  --pal-forest-accent:#3f7d4e;
+  --pal-forest-accent-strong:#2f6640;
+  --pal-forest-accent-soft:rgba(63,125,78,.15);
+  --pal-forest-success:#4a8a56;
+  --pal-forest-warning:#c99a3f;
+  --pal-forest-danger:#b8564a;
+  --pal-forest-tape:rgba(240,214,150,.5);
+  --pal-forest-glass:rgba(255,255,255,.4);
+
+  /* night — the dark the app already wore when the lights went out */
+  --pal-night-bg:#100e0c;
+  --pal-night-surface:#1e1a15;
+  --pal-night-elev:#2a231c;
+  --pal-night-text:#f6efe2;
+  --pal-night-text2:#cec3b0;
+  --pal-night-muted:#9d9280;
+  --pal-night-border:rgba(255,220,180,.1);
+  --pal-night-border-strong:rgba(255,220,180,.22);
+  --pal-night-accent:#ff9c60;
+  --pal-night-accent-strong:#ffb585;
+  --pal-night-accent-soft:rgba(255,156,96,.16);
+  --pal-night-success:#8dc277;
+  --pal-night-warning:#ffc06e;
+  --pal-night-danger:#ef6d64;
+  --pal-night-tape:rgba(255,190,110,.22);
+  --pal-night-glass:rgba(255,255,255,.06);
+}
+
+/* ── From palette to the card's vocabulary ──
+   A chip that wears data-palette="…" is showing the palette it would print
+   with: the dot is the palette's paper, ringed in its accent. */
+[data-palette="light"]{
+  --card-bg:var(--pal-light-bg);
+  --card-surface:var(--pal-light-surface);
+  --card-text:var(--pal-light-text);
+  --card-muted:var(--pal-light-muted);
+  --card-accent:var(--pal-light-accent);
+  --card-accent-soft:var(--pal-light-accent-soft);
+  --card-border:var(--pal-light-border-strong);
+  --card-grid:var(--pal-light-border);
+  --card-tape:var(--pal-light-tape);
+  --pick-dot-bg:var(--pal-light-bg);
+  --pick-dot-ring:var(--pal-light-accent);
+}
+[data-palette="paper"]{
+  --card-bg:var(--pal-paper-bg);
+  --card-surface:var(--pal-paper-surface);
+  --card-text:var(--pal-paper-text);
+  --card-muted:var(--pal-paper-muted);
+  --card-accent:var(--pal-paper-accent);
+  --card-accent-soft:var(--pal-paper-accent-soft);
+  --card-border:var(--pal-paper-border-strong);
+  --card-grid:var(--pal-paper-border);
+  --card-tape:var(--pal-paper-tape);
+  --pick-dot-bg:var(--pal-paper-bg);
+  --pick-dot-ring:var(--pal-paper-accent);
+}
+[data-palette="forest"]{
+  --card-bg:var(--pal-forest-bg);
+  --card-surface:var(--pal-forest-surface);
+  --card-text:var(--pal-forest-text);
+  --card-muted:var(--pal-forest-muted);
+  --card-accent:var(--pal-forest-accent);
+  --card-accent-soft:var(--pal-forest-accent-soft);
+  --card-border:var(--pal-forest-border-strong);
+  --card-grid:var(--pal-forest-border);
+  --card-tape:var(--pal-forest-tape);
+  --pick-dot-bg:var(--pal-forest-bg);
+  --pick-dot-ring:var(--pal-forest-accent);
+}
+[data-palette="night"]{
+  --card-bg:var(--pal-night-bg);
+  --card-surface:var(--pal-night-surface);
+  --card-text:var(--pal-night-text);
+  --card-muted:var(--pal-night-muted);
+  --card-accent:var(--pal-night-accent);
+  --card-accent-soft:var(--pal-night-accent-soft);
+  --card-border:var(--pal-night-border-strong);
+  --card-grid:var(--pal-night-border);
+  --card-tape:var(--pal-night-tape);
+  --pick-dot-bg:var(--pal-night-bg);
+  --pick-dot-ring:var(--pal-night-accent);
+}
+
+/* ═══ Themes ═══
+   The interface's colours, one block per theme, every value a palette above or
+   the :root defaults. color-scheme is declared per theme so the browser's own
+   furniture — scrollbars, form controls, the canvas behind a scroll — matches
+   the theme the reader actually chose rather than the system preference. */
+html[data-theme="light"]{color-scheme:light}
+
+html[data-theme="paper"]{
+  color-scheme:light;
+  --color-bg:var(--pal-paper-bg);
+  --color-surface:var(--pal-paper-surface);
+  --color-surface-elevated:var(--pal-paper-elev);
+  --color-text-primary:var(--pal-paper-text);
+  --color-text-secondary:var(--pal-paper-text2);
+  --color-text-muted:var(--pal-paper-muted);
+  --color-border:var(--pal-paper-border);
+  --color-border-strong:var(--pal-paper-border-strong);
+  --color-accent:var(--pal-paper-accent);
+  --color-accent-strong:var(--pal-paper-accent-strong);
+  --color-accent-soft:var(--pal-paper-accent-soft);
+  --color-success:var(--pal-paper-success);
+  --color-warning:var(--pal-paper-warning);
+  --color-danger:var(--pal-paper-danger);
+  --color-focus:var(--pal-paper-accent);
+  --tape:var(--pal-paper-tape);
+  --glass-hover:var(--pal-paper-glass);
+
+  --shadow-1:0 4px 14px -6px rgba(104,74,40,.2);
+  --shadow-2:0 24px 50px -24px rgba(104,74,40,.38);
+  --shadow-accent:0 4px 0 0 rgba(140,60,25,.35);
+}
+
+html[data-theme="forest"]{
+  color-scheme:light;
+  --color-bg:var(--pal-forest-bg);
+  --color-surface:var(--pal-forest-surface);
+  --color-surface-elevated:var(--pal-forest-elev);
+  --color-text-primary:var(--pal-forest-text);
+  --color-text-secondary:var(--pal-forest-text2);
+  --color-text-muted:var(--pal-forest-muted);
+  --color-border:var(--pal-forest-border);
+  --color-border-strong:var(--pal-forest-border-strong);
+  --color-accent:var(--pal-forest-accent);
+  --color-accent-strong:var(--pal-forest-accent-strong);
+  --color-accent-soft:var(--pal-forest-accent-soft);
+  --color-success:var(--pal-forest-success);
+  --color-warning:var(--pal-forest-warning);
+  --color-danger:var(--pal-forest-danger);
+  --color-focus:var(--pal-forest-accent);
+  --tape:var(--pal-forest-tape);
+  --glass-hover:var(--pal-forest-glass);
+
+  --shadow-1:0 4px 14px -6px rgba(46,74,50,.18);
+  --shadow-2:0 24px 50px -24px rgba(46,74,50,.34);
+  --shadow-accent:0 4px 0 0 rgba(30,66,40,.4);
+}
+
+html[data-theme="night"]{
+  color-scheme:dark;
+  /* ── Semantic Colors (Night) ── */
+  --color-bg:var(--pal-night-bg);
+  --color-surface:var(--pal-night-surface);
+  --color-surface-elevated:var(--pal-night-elev);
+  --color-text-primary:var(--pal-night-text);
+  --color-text-secondary:var(--pal-night-text2);
+  --color-text-muted:var(--pal-night-muted);
+  /* The night accent is a light orange: white on it reads at 2:1 and would be a
+     step back from the old dark accent, ink on it reads at 8.4:1. Every other
+     theme keeps white, because their accents are dark enough to carry it. */
+  --color-text-on-accent:#241a12;
+  --color-border:var(--pal-night-border);
+  --color-border-strong:var(--pal-night-border-strong);
+  --color-accent:var(--pal-night-accent);
+  --color-accent-soft:var(--pal-night-accent-soft);
+  --color-accent-strong:var(--pal-night-accent-strong);
+  --color-success:var(--pal-night-success);
+  --color-warning:var(--pal-night-warning);
+  --color-danger:var(--pal-night-danger);
+  --color-focus:var(--pal-night-accent);
 
   /* ── Organic identity layers (dark) ── */
-  --tape:rgba(255,190,110,.22);
-  --glass-hover:rgba(255,255,255,.06);
+  --tape:var(--pal-night-tape);
+  --glass-hover:var(--pal-night-glass);
 
   /* ── Shadows (dark) ── */
   --shadow-1:0 4px 14px -6px rgba(0,0,0,.5);
@@ -144,7 +353,14 @@ html[data-theme="dark"]{
   --shadow-accent:0 4px 0 0 rgba(60,26,8,.55);
 }
 
-html{scroll-behavior:smooth}
+/* Scroll behavior is decided per call, not globally.
+   A global `scroll-behavior:smooth` turned every programmatic jump into a
+   long animated scroll — switching tabs from far down the task list meant the
+   viewport glided a thousand pixels while the incoming page was also animating
+   in, which reads as sluggishness rather than smoothness. Page switches and
+   list jumps now ask for what they want in JS ({behavior:'smooth'} stays for
+   the in-list jumps that are meant to be followed by the eye), so the two never
+   animate at the same time. */
 body{font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden;transition:background var(--duration-slow),color var(--duration-slow);-webkit-tap-highlight-color:transparent;line-height:1.6}
 button{touch-action:manipulation;font-family:inherit}
 
@@ -192,6 +408,20 @@ body::after{content:'';position:fixed;inset:0;z-index:97;pointer-events:none;opa
 .page.active{display:block}
 @keyframes pageIn{from{opacity:0;transform:translateY(8px)}}
 
+/* The way back — one step of the trail, shown only while there is one. It sits
+   above the header so it never fights the title for the top corner, and hugs
+   the start edge (the right, in this app's reading direction). */
+.page-back{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;padding:8px 14px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-pill);
+  font-family:var(--font-ui);font-size:13px;font-weight:600;line-height:1;cursor:pointer;box-shadow:var(--shadow-sm);
+  transition:transform var(--duration-fast),border-color var(--duration-fast),color var(--duration-fast)}
+.page-back[hidden]{display:none}
+.page-back svg{width:16px;height:16px;flex:0 0 auto}
+@media (hover:hover){.page-back:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent)}}
+.page-back:active{transform:translateY(1px)}
+.page-back:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.page-back{transition:none}.page-back:hover,.page-back:active{transform:none}}
+
 .app{width:100%;max-width:480px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:16px}
 
 header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
@@ -204,20 +434,27 @@ h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw var
 /* hover state lives in the @media(hover:hover) block above */
 .theme-btn svg{position:absolute;transition:transform var(--duration-slow) var(--ease-out),opacity var(--duration-base)}
 .theme-btn .sun{transform:translateY(-150%) rotate(-90deg);opacity:0}
-html[data-theme="dark"] .theme-btn .sun{transform:none;opacity:1}
-html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg);opacity:0}
+html[data-theme="night"] .theme-btn .sun{transform:none;opacity:1}
+html[data-theme="night"] .theme-btn .moon{transform:translateY(150%) rotate(90deg);opacity:0}
 
 /* ═══ Floating Glass Dock (Navigation) ═══ */
 .bottom-nav{
   position:fixed;
   bottom:calc(10px + env(safe-area-inset-bottom,0));
-  left:50%;transform:translateX(-50%);
+  left:50%;transform:translateX(-50%) translateZ(0);
   z-index:98;
   display:flex;align-items:stretch;gap:2px;
   padding:6px;border-radius:var(--radius-xl);
-  background:linear-gradient(135deg, rgba(255,252,245,.62), rgba(255,252,245,.38));
-  backdrop-filter:blur(24px) saturate(1.7);
-  -webkit-backdrop-filter:blur(24px) saturate(1.7);
+  background:linear-gradient(135deg, rgba(255,252,245,.68), rgba(255,252,245,.44));
+  /* Glass, at a radius the compositor can afford every frame.
+     This bar floats over the whole scrolling page for the entire session, and
+     the backdrop blur is re-sampled on every scroll frame — the blur radius is
+     the per-frame cost. 16px still reads as frosted glass over the paper (the
+     gradient, border and inner highlights carry most of the look) and costs
+     roughly a third less than the previous 24px. The element is also promoted
+     to its own layer so the page scrolling underneath never repaints it. */
+  backdrop-filter:blur(16px) saturate(1.5);
+  -webkit-backdrop-filter:blur(16px) saturate(1.5);
   border:1px solid rgba(255,255,255,.6);
   box-shadow:
     0 18px 44px -18px rgba(122,80,35,.32),
@@ -227,7 +464,7 @@ html[data-theme="dark"] .theme-btn .moon{transform:translateY(150%) rotate(90deg
   max-width:calc(100vw - 20px);
   transition:background var(--duration-slow),border-color var(--duration-slow),box-shadow var(--duration-slow);
 }
-html[data-theme="dark"] .bottom-nav{
+html[data-theme="night"] .bottom-nav{
   background:linear-gradient(135deg, rgba(34,29,23,.66), rgba(34,29,23,.44));
   border-color:rgba(255,220,180,.14);
   box-shadow:
@@ -239,6 +476,10 @@ html[data-theme="dark"] .bottom-nav{
 
 .nav-glider{
   position:absolute;top:6px;bottom:6px;left:0;
+  /* The capsule glides on transform/width inside the blurred dock. Keeping it
+     on its own layer means a glide never drags the dock's backdrop through a
+     re-blur, so the movement stays on the compositor end to end. */
+  will-change:transform,width;
   border-radius:var(--radius-lg);
   background:linear-gradient(135deg,
     color-mix(in srgb,var(--accent) 24%,transparent),
@@ -248,7 +489,7 @@ html[data-theme="dark"] .bottom-nav{
   transition:transform var(--duration-base) var(--ease-out),width var(--duration-base) var(--ease-out),opacity var(--duration-fast) ease;
   pointer-events:none;
 }
-html[data-theme="dark"] .nav-glider{
+html[data-theme="night"] .nav-glider{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
 }
 
@@ -371,6 +612,45 @@ html[data-theme="dark"] .nav-glider{
 @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes popIn{from{transform:scale(0)}}
 
+/* ═══ Calm Motion & Compositing Budget ═══
+   Two rules keep the interface soft rather than merely busy: loops stop when
+   nobody is looking, and glass the user asked to have flattened stays flat.
+   Nothing here changes a single resting pixel — only what happens over time. */
+
+/* While the app is hidden (background tab, covered window, screen off) every
+   ambient loop is paused: the page doodles, the companion characters, the
+   Focus scenes' rain and waves, and the soft pulse on important tasks. The
+   device stops painting frames nobody can see — battery and thermals stay
+   calm — and coming back resumes each loop where it was instead of restarting
+   it, so the return never looks like a flicker. */
+html.tab-hidden .doodle,
+html.tab-hidden .frog-emoji,
+html.tab-hidden .frog-ico svg,
+html.tab-hidden .frog-hero::before,
+html.tab-hidden .empty .art,
+html.tab-hidden .spark,
+html.tab-hidden .streak.hot svg,
+html.tab-hidden .ring-wrap.complete::after,
+html.tab-hidden .task[data-p="high"] .pri-dot::before,
+html.tab-hidden .rain-drops i,
+html.tab-hidden .waves svg,
+html.tab-hidden .flies i,
+html.tab-hidden .focus-pill.running::after,
+html.tab-hidden .reader-timer.on{animation-play-state:paused!important}
+
+/* Flattened glass, for readers who ask the system for less transparency.
+   The dock, the modal scrim and the reader bar fall back to the same surface
+   and border tokens as their opaque form, so the interface keeps its paper
+   identity without any per-frame backdrop sampling. */
+@media (prefers-reduced-transparency:reduce){
+  .bottom-nav,.reader-top,.overlay,.book-pct-badge{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .bottom-nav{background:var(--color-surface);border-color:var(--color-border-strong)}
+  html[data-theme="night"] .bottom-nav{background:var(--color-surface)}
+  .overlay{background:rgba(46,41,33,.55)}
+  .reader-top{background:var(--surface)}
+  .book-pct-badge{background:rgba(0,0,0,.72)}
+}
+
 /* ═══ Accessibility Foundation ═══ */
 :focus-visible{outline:2px solid var(--color-focus);outline-offset:2px;border-radius:var(--radius-xs)}
 button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
@@ -384,7 +664,8 @@ button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
   html{scroll-behavior:auto!important}
   /* Decorative elements and ambient loops are frozen, not just accelerated */
   .doodle,.frog-emoji,.frog-ico svg,.empty .art,.spark,.frog-hero::before,.frog-hero::after,
-  .rain-drops i,.flies i,.waves svg,.ring-wrap.complete,.streak.hot svg,.task[data-p="high"] .pri-dot,
+  .rain-drops i,.flies i,.waves svg,.ring-wrap.complete,.ring-wrap.complete::after,.streak.hot svg,
+  .task[data-p="high"] .pri-dot,.task[data-p="high"] .pri-dot::before,
   .focus-pill.running::after,.reader-timer.on{animation:none!important}
   /* Decorative transforms off; state/feedback transforms still apply instantly */
   .task:hover,.frog:hover,.lastread:hover,.book-card:hover,.progress-card:hover,.header-avatar:hover,

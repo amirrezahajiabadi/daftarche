@@ -11,6 +11,40 @@ export const STORAGE_KEYS = {
   focusHistory: 'daftarche-focus-history',
   frogDismissed: 'daftarche-frog-dismissed',
   penWidth: 'daftarche-pen-width',
+  statsRange: 'daftarche-stats-range',
+  cardStyle: 'daftarche-card-style',
+};
+
+/* ═══ Themes ═══
+   The colour the whole interface is painted in, chosen by the reader in its
+   settings. `palette` names the block of raw colours in css/base.css, the same
+   table the share card's templates are cut from. «روشن» is the first entry in
+   that table and the :root tokens point at it, so the default theme is a palette
+   like the rest — while the card's «برنامه» template is the other idea: follow
+   whichever theme is on screen, name it nothing.
+
+   The keys are written into html[data-theme] and into the card panel, so they
+   must match the blocks in css/base.css in name and in order. */
+export const THEMES = [
+  { key: 'light',  label: 'روشن', palette: 'light' },
+  { key: 'paper',  label: 'کاغذ', palette: 'paper' },
+  { key: 'night',  label: 'شب',   palette: 'night' },
+  { key: 'forest', label: 'جنگل', palette: 'forest' },
+];
+
+export const THEME_KEYS = THEMES.map(t => t.key);
+export const DEFAULT_THEME = 'light';
+/* The dark end of the table: what the one-tap switch in the header flips to. */
+export const NIGHT_THEME = 'night';
+/* A key an older build wrote down. «dark» was the theme before the palettes
+   became the themes; whoever chose it keeps the dark they chose. */
+const THEME_ALIASES = { dark: 'night' };
+
+/* A stored or shared value, made safe: an unknown key comes back empty so the
+   caller can fall back to the default instead of painting nothing. */
+export const normalizeTheme = key => {
+  const k = THEME_ALIASES[key] || key;
+  return THEME_KEYS.includes(k) ? k : '';
 };
 
 export const P_CYCLE = { low: 'mid', mid: 'high', high: 'low' };

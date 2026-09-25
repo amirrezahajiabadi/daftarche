@@ -4,7 +4,48 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
+<!-- The browser paints its own chrome (page canvas, scrollbars, form controls)
+     from color-scheme. Declaring both keeps the dark theme from flashing a
+     white canvas before the first stylesheet lands. -->
+<meta name="color-scheme" content="light dark">
 <title>دَفتَرچه — لیست کارهای خودمون</title>
+<script>
+/* Theme, applied before the first paint.
+   The saved choice (or the system preference) is written on the root while the
+   document is still parsing, so a dark-theme reader never sees the light paper
+   flash and then re-paint. app.js keeps the same attribute in sync afterwards;
+   it only reads the theme, never decides it first. Kept tiny and inline on
+   purpose: a separate file would arrive after the paint it is meant to prevent. */
+(function () {
+  try {
+    /* The theme keys, written out again rather than imported: this runs before
+       any module has been fetched, and a theme that arrives one frame late is a
+       flash of the wrong colour. They must match js/constants.js. */
+    var KEYS = ['light', 'paper', 'night', 'forest'];
+    var saved = localStorage.getItem('theme');
+    if (saved === 'dark') saved = 'night';   /* the key older builds wrote down */
+    if (KEYS.indexOf(saved) < 0) saved = '';
+    document.documentElement.dataset.theme = saved ||
+      (matchMedia('(prefers-color-scheme:dark)').matches ? 'night' : 'light');
+  } catch (e) { /* private mode / storage disabled: the light default stands */ }
+})();
+</script>
+<!-- Both faces are fetched in parallel with the stylesheets instead of being
+     discovered inside base.css once it has parsed, so the first text paints in
+     Estedad rather than swapping to it a moment later. The href must match the
+     CSS url() exactly, brackets and all — the browser does not treat %5B as the
+     same URL, and an unmatched preload is a wasted download. The interface face
+     comes first because the body text needs it before the headings do. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/Estedad[wght].woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/Estedad-Mad.woff2">
+<!-- Start the module graph during head parsing. The entry script tag sits at
+     the end of the body, and without this the browser would only begin
+     fetching the app after the whole document has been parsed. -->
+<link rel="modulepreload" href="js/app.js">
+<link rel="modulepreload" href="js/tasks.js">
+<link rel="modulepreload" href="js/today.js">
+<link rel="modulepreload" href="js/focus.js">
+<link rel="modulepreload" href="js/library.js">
 <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -20,6 +61,7 @@
 <link rel="stylesheet" href="css/overlays.css">
 <link rel="stylesheet" href="css/library.css">
 <link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/stats.css">
 <link rel="stylesheet" href="css/today.css">
 <link rel="stylesheet" href="css/qorqori.css">
 <link rel="stylesheet" href="css/rizolo.css">
@@ -37,7 +79,10 @@
 <canvas id="confetti"></canvas>
 
 <div class="overlay" id="nameOverlay" hidden>
-  <div class="name-card" id="nameCard">
+  <!-- Every modal in the app declares the same contract: role=dialog, modal,
+       labelled by its own visible heading. js/modal.js keeps focus inside it
+       and freezes the page behind it while it is open. -->
+  <div class="name-card" id="nameCard" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
     <span class="badge">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
     </span>
@@ -52,8 +97,8 @@
 </div>
 
 <div class="overlay" id="rollOverlay" hidden>
-  <div class="roll-card">
-    <p class="roll-title">کار بعدیت چیه؟</p>
+  <div class="roll-card" role="dialog" aria-modal="true" aria-labelledby="rollTitle">
+    <p class="roll-title" id="rollTitle">کار بعدیت چیه؟</p>
     <div class="roll-box" id="rollBox"><span id="rollText"></span></div>
     <div class="roll-actions" id="rollActions" hidden>
       <button class="go" id="rollGo">بریم سراغش</button>
@@ -233,9 +278,16 @@
         <h1>آمار من
           <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
         </h1>
-        <p class="subtitle">نگاهی به عملکردت</p>
+        <p class="subtitle" id="statsSub">نگاهی به عملکردت</p>
       </div>
     </header>
+
+    <div class="stat-range" id="statsRange" role="radiogroup" aria-label="بازهٔ آمار"></div>
+
+    <button class="stats-share" id="shareStatsBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+      <span>کارت آمار</span>
+    </button>
 
     <div class="progress-card">
       <div class="ring-wrap" id="ringWrap" style="--pct: 0">
@@ -247,19 +299,56 @@
       </div>
       <div class="progress-info">
         <strong><span id="greetText"></span></strong>
+        <p id="statsDelta" hidden></p>
         <span id="stats">در حال محاسبه...</span>
       </div>
     </div>
 
     <div class="week-card">
       <div class="week-head">
-        <strong>هفتهٔ من</strong>
+        <strong>روند کارها</strong>
         <span class="streak" id="streakChip" title="روزهای پیاپی که حداقل یک کار تمام شده">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/></svg>
           <span id="streakVal"></span>
         </span>
+        <span class="stat-meta" id="statsChartMeta"></span>
       </div>
-      <div class="chart" id="chart"></div>
+      <div class="chart stat-chart" id="statsChart"></div>
+    </div>
+
+    <div class="stat-head" id="statsHead"></div>
+
+    <div class="insights-empty" id="statsEmpty" hidden>
+      <span class="insights-empty-char" aria-hidden="true"></span>
+      <strong>این بازه هنوز کاری نداشته.</strong>
+      <p>یه کار تیک بزن یا یه تمرکز شروع کن تا این صفحه پر بشه.</p>
+    </div>
+
+    <div id="statsBody" hidden>
+      <div class="stat-section" id="statsInsightsSection" hidden>
+        <div class="stat-sec-head"><strong>چیزهایی که دیدیم</strong><span>۷ روز گذشته</span></div>
+        <div class="stats-row" id="insightsSummary"></div>
+        <div class="insights-list" id="insightsList"></div>
+        <div class="insight-suggestion" id="insightsSuggestion" hidden>
+          <div class="vibe-head"><strong>برای دفعه بعد</strong></div>
+          <p id="insightsSuggestionText"></p>
+        </div>
+      </div>
+
+      <div class="stat-section" id="statsFocus" hidden></div>
+      <div class="stat-section" id="statsCats" hidden></div>
+      <div class="stat-section" id="statsRead" hidden></div>
+      <div class="stat-section" id="statsMood" hidden></div>
+      <div class="stat-section" id="statsBest" hidden></div>
+
+      <div class="stat-section" id="statsHistory" hidden>
+        <div class="stat-sec-head">
+          <strong>سابقهٔ تمرکز</strong>
+          <span id="statsHistoryCount"></span>
+        </div>
+        <div class="stat-sessions" id="statsHistoryList"></div>
+        <button type="button" class="stat-more" id="statsHistoryMore" hidden></button>
+      </div>
     </div>
   </main>
 </div>
@@ -409,9 +498,9 @@
       </div>
     </div>
 
-    <div class="sheet" id="notesSheet" hidden>
+    <div class="sheet" id="notesSheet" role="dialog" aria-modal="true" aria-labelledby="notesTitle" hidden>
       <div class="sheet-head">
-        <strong>یادداشت‌ها و هایلایت‌ها</strong>
+        <strong id="notesTitle">یادداشت‌ها و هایلایت‌ها</strong>
         <div>
           <button class="b-ghost" id="notesExport">خروجی Markdown</button>
           <button class="r-icon" id="notesClose">✕</button>
@@ -420,9 +509,9 @@
       <div class="notes-list" id="notesList"></div>
     </div>
 
-    <div class="sheet" id="settingsSheet" hidden>
+    <div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
       <div class="sheet-head">
-        <strong>تنظیمات مطالعه</strong>
+        <strong id="settingsTitle">تنظیمات مطالعه</strong>
         <button class="r-icon" id="settingsClose" aria-label="بستن">✕</button>
       </div>
       <div class="settings-body">
@@ -452,8 +541,8 @@
     </div>
 
     <div class="overlay" id="goalOverlay" hidden>
-      <div class="name-card">
-        <h2>هدف مطالعه</h2>
+      <div class="name-card" role="dialog" aria-modal="true" aria-labelledby="goalTitle">
+        <h2 id="goalTitle">هدف مطالعه</h2>
         <p>می‌خوای با خوندن این کتاب به چی برسی؟</p>
         <div class="goal-choices">
           <button type="button" class="goal-choice" data-gtype="full">مطالعهٔ کامل کتاب</button>
@@ -548,47 +637,39 @@
       </div>
     </header>
 
+    <!-- Two identities, side by side and never merged:
+         the circle is the person (their own photo, optional and local only),
+         the card below is the companion they picked. -->
     <div class="profile-card">
-      <button class="avatar-big" id="avatarBig" aria-label="تغییر آواتار"></button>
+      <button class="avatar-big empty" id="avatarBig" type="button" aria-label="افزودن عکس پروفایل"></button>
+      <!-- The picker is opened by the circle; the input itself is out of the
+           tab order so the control is announced once, as a button. -->
+      <input type="file" id="photoInput" accept="image/*" hidden>
       <div class="profile-name-row">
         <strong id="profileName">—</strong>
         <button class="settings-btn" id="profileEditName">تغییر اسم</button>
       </div>
       <p class="profile-sub" id="profileSub"></p>
+      <button class="photo-remove" id="photoRemove" type="button" hidden>حذف عکس</button>
+      <p class="photo-hint" id="photoHint" role="status" aria-live="polite" hidden></p>
     </div>
 
     <div class="vibe-card char-card">
-      <div class="vibe-head"><strong>شخصیت من</strong></div>
-      <div class="char-identity">
+      <div class="vibe-head"><strong>کاراکتر من</strong></div>
+      <button class="char-identity" id="charIdentity" type="button" aria-haspopup="dialog">
         <span class="char-thumb" id="charThumb" aria-hidden="true"></span>
-        <div class="char-id-text">
+        <span class="char-id-text">
           <b id="charName">قورقوری</b>
           <span id="charSub">همدم دَفتَرچه</span>
-        </div>
-      </div>
+        </span>
+        <span class="char-change" aria-hidden="true">تغییر</span>
+      </button>
     </div>
 
-    <div class="stats-row" id="profileStats"></div>
-
-    <div class="vibe-card">
-      <div class="vibe-head"><strong>آمار و هفتهٔ من</strong>
-        <button class="settings-btn" id="openStatsBtn">مشاهده</button>
-      </div>
-    </div>
-
-    <div class="vibe-card">
-      <div class="vibe-head"><strong>آمار و بینش‌های من</strong>
-        <button class="settings-btn" id="openInsightsBtn">مشاهده</button>
-      </div>
-      <p class="settings-hint">این چند روز چطور گذشت؟</p>
-    </div>
-
-    <div class="vibe-card">
-      <div class="vibe-head"><strong>سابقه تمرکز</strong>
-        <button class="settings-btn" id="openFocusHistoryBtn">مشاهده</button>
-      </div>
-      <p class="settings-hint">چند جلسه‌ای که با دَفتَرچه گذروندی.</p>
-    </div>
+    <button class="vibe-card stats-entry" id="openStatsBtn" type="button">
+      <span class="vibe-head"><strong>آمار من</strong><span class="stats-entry-go" aria-hidden="true">مشاهده</span></span>
+      <span class="stats-entry-hint">نگاهی به هفت روز، ماه، سه‌ماهه، شش‌ماهه و یک‌سال گذشته — با کارت قابل اشتراک‌گذاری.</span>
+    </button>
 
     <div class="vibe-card">
       <div class="vibe-head"><strong>نشان‌ها</strong></div>
@@ -597,23 +678,20 @@
 
     <div class="vibe-card">
       <div class="vibe-head"><strong>تنظیمات</strong></div>
+      <!-- The theme picker: one row of the palettes in js/constants.js, built
+           and kept marked by js/chipgroup.js. A chip shows its own colour in
+           its dot, so the choice is visible before it is made. -->
       <div class="settings-row">
         <span class="settings-label">تم</span>
-        <div class="settings-value">
-          <span id="profTheme">روشن</span>
-          <button class="settings-btn" id="profThemeBtn">تغییر</button>
-        </div>
+        <div class="pick-row" id="profThemeChips" role="radiogroup" aria-label="تم"></div>
       </div>
       <div class="settings-row">
         <span class="settings-label">پیش‌فرض تمرکز</span>
         <div class="settings-value"><span id="profPomo"></span></div>
       </div>
       <div class="settings-row">
-        <span class="settings-label">تغییرات نسخه</span>
-        <div class="settings-value">
-          <span id="profVersion"></span>
-          <button class="settings-btn" id="profChangelog">بخونم</button>
-        </div>
+        <span class="settings-label">نسخه</span>
+        <div class="settings-value"><span id="profVersion"></span></div>
       </div>
       <div class="settings-divider"></div>
       <div class="settings-row danger">
@@ -622,73 +700,6 @@
       </div>
     </div>
     <p class="settings-about">دَفتَرچه — ساخته‌شده با 🧡 برای خودمون و رفقا</p>
-  </main>
-</div>
-
-<!-- ═══ Page 7: Insights (opens from Profile) ═══ -->
-<div class="page" id="page-insights">
-  <main class="app">
-    <header>
-      <div>
-        <h1>آمار و بینش‌های من
-          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-        </h1>
-        <p class="subtitle">این چند روز چطور گذشت؟</p>
-      </div>
-    </header>
-
-    <!-- Empty state: not enough data yet -->
-    <div class="insights-empty" id="insightsEmpty" hidden>
-      <span class="insights-empty-char" aria-hidden="true"></span>
-      <strong>هنوز داده کافی نداریم.</strong>
-      <p>چند روز با دَفتَرچه کار کن تا کم‌کم الگوهای خودت را پیدا کنیم.</p>
-    </div>
-
-    <div id="insightsBody" hidden>
-      <div class="vibe-card">
-        <div class="vibe-head"><strong>خلاصهٔ این هفته</strong></div>
-        <div class="stats-row" id="insightsSummary"></div>
-      </div>
-
-      <div class="vibe-card">
-        <div class="vibe-head" id="insightsListHead"><strong>چیزهایی که دیدیم</strong></div>
-        <div class="insights-list" id="insightsList"></div>
-      </div>
-
-      <div class="vibe-card insight-suggestion" id="insightsSuggestion" hidden>
-        <div class="vibe-head"><strong>برای دفعه بعد</strong></div>
-        <p id="insightsSuggestionText"></p>
-      </div>
-
-      <button class="insights-back-btn" id="insightsBackBtn">رفتن به امروز</button>
-    </div>
-  </main>
-</div>
-
-<!-- ═══ Page 8: Focus History (opens from Profile) ═══ -->
-<div class="page" id="page-focushistory">
-  <main class="app">
-    <header>
-      <div>
-        <h1>سابقه تمرکز من
-          <svg class="underline" viewBox="0 0 120 12" fill="none"><path d="M2 8 Q 20 2 40 7 T 80 7 T 118 5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-        </h1>
-        <p class="subtitle">چند جلسه‌ای که با دَفتَرچه گذروندی.</p>
-      </div>
-    </header>
-
-    <!-- Empty state: no completed sessions yet -->
-    <div class="insights-empty" id="fhEmpty" hidden>
-      <span class="insights-empty-char" aria-hidden="true"></span>
-      <strong>هنوز جلسه‌ای ثبت نشده.</strong>
-      <p>وقتی یک Focus را کامل کنی، سابقه‌اش اینجا می‌مونه.</p>
-    </div>
-
-    <div id="fhBody" hidden>
-      <div class="fh-list" id="fhList"></div>
-    </div>
-
-    <button class="insights-back-btn" id="fhBackBtn">بازگشت به پروفایل</button>
   </main>
 </div>
 
@@ -702,12 +713,13 @@
   </div>
 </div>
 
-<!-- ═══ Avatar Picker ═══ -->
+<!-- ═══ Character Picker (the companion, not the profile photo) ═══ -->
 <div class="overlay" id="avatarOverlay" hidden>
-  <div class="name-card avatar-card">
-    <h2>آواتارت رو انتخاب کن</h2>
-    <p>کارکترهای اختصاصی دَفتَرچه</p>
-    <div class="avatar-grid" id="avatarGrid"></div>
+  <div class="name-card avatar-card" role="dialog" aria-modal="true" aria-labelledby="avatarTitle">
+    <h2 id="avatarTitle">کاراکترت رو انتخاب کن</h2>
+    <p>کاراکترهای اختصاصی دَفتَرچه — همدمِ روزهای تو</p>
+    <div class="avatar-grid" id="avatarGrid" role="radiogroup" aria-labelledby="avatarTitle"></div>
+    <button class="go" id="avatarApply" disabled>انتخاب</button>
     <button class="skip" id="avatarClose">بستن</button>
   </div>
 </div>
@@ -744,14 +756,58 @@
   <span class="toast-bar"></span>
 </div>
 
-<div class="toast toast-sticky" id="updateToast" hidden>
-  <span class="toast-text">نسخهٔ جدید آمادهه 🎉</span>
-  <button class="toast-btn" id="updateBtn">به‌روزرسانی</button>
+<div class="toast toast-sticky" id="updateToast" role="status" aria-live="polite" hidden>
+  <span class="toast-text">نسخهٔ جدید اومده!</span>
+  <button class="toast-btn" id="updateBtn">دریافتش کن</button>
 </div>
 
 <!-- Release identity: the one file that names the current release and the
      offline build. The service worker reads the same file, so the two can
      never disagree. Loaded before the module entry. -->
+<!-- ═══ Share Card (opens from Stats) ═══
+     A centred overlay, like the name card, so the app's own scrim sits between
+     the reader and the page: the background dims (and blurs, where the browser
+     can) and the card is read against a quiet page instead of landing on the tab
+     bar. It inherits the shared modal containment (js/modal.js) without
+     declaring anything of its own. The image is a real <img> of the rendered
+     card, so the reader sees exactly what leaves the app — and a long-press can
+     save it where sharing is unavailable. -->
+<div class="overlay" id="shareSheet" hidden>
+  <div class="share-panel" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="sheet-head">
+      <strong id="shareTitle">کارت آمار</strong>
+      <button class="r-icon" id="shareClose" aria-label="بستن">✕</button>
+    </div>
+    <div class="share-body">
+      <div class="share-preview" id="sharePreview">
+        <img id="shareImg" alt="کارت آمار دَفتَرچه" hidden>
+        <span class="share-spinner" id="shareSpinner" aria-hidden="true" hidden></span>
+      </div>
+      <!-- The card's template: a colour row and a shape row, both built by
+           js/sharecard.js from the same two lists the painter reads — so the
+           chips on screen are exactly the cards that can be drawn. A colour chip
+           wears its palette as data-palette, which is what paints its dot and what
+           the canvas reads its colours from — the palette table itself is in
+           css/base.css, and the interface's own themes are cut from it too. -->
+      <div class="share-style">
+        <div class="pick-field">
+          <span class="pick-label" id="shareThemeLabel">رنگ</span>
+          <div class="pick-row" id="shareThemeChips" role="radiogroup" aria-labelledby="shareThemeLabel"></div>
+        </div>
+        <div class="pick-field">
+          <span class="pick-label" id="shareLayoutLabel">چیدمان</span>
+          <div class="pick-row" id="shareLayoutChips" role="radiogroup" aria-labelledby="shareLayoutLabel"></div>
+        </div>
+      </div>
+      <p class="share-note" id="shareNote" role="status"></p>
+      <div class="share-actions">
+        <button type="button" class="share-go" id="shareGo">اشتراک‌گذاری</button>
+        <button type="button" class="share-ghost" id="shareDownload">ذخیرهٔ عکس</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="js/version.js"></script>
 <script type="module" src="js/app.js"></script>
 <!-- Changelog is built and injected by js/changelog.js (keeps the release

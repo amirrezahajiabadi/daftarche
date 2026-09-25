@@ -1,7 +1,15 @@
+/* ═══ Today's mood — and the day marker that keeps the streak honest ═══
+   The week chart and the streak chip that used to live here are on the stats
+   page now (js/stats.js). They were never really about *this* week: they are
+   the same two numbers seen through a window, so they are drawn by the module
+   that owns windows, and they answer for whichever range the reader has chosen
+   instead of always for the last seven days. What is left here belongs to today
+   and to nothing else. */
+
 import { state } from './state.js';
 import { saveHistory, saveMoods } from './store.js';
-import { $, faNum, dayKey } from './utils.js';
-import { MOODS, FACES, WEEKDAY_LETTERS } from './constants.js';
+import { $, dayKey } from './utils.js';
+import { MOODS, FACES } from './constants.js';
 import { subscribe } from './bus.js';
 
 export function recordDay() {
@@ -10,21 +18,6 @@ export function recordDay() {
     state.history.push(k);
     saveHistory(state.history);
   }
-}
-
-function calcStreak() {
-  const set = new Set(state.history);
-  let s = 0;
-  const d = new Date();
-  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
-  while (set.has(dayKey(d))) { s++; d.setDate(d.getDate() - 1); }
-  return s;
-}
-
-function updateStreakUI() {
-  const s = calcStreak();
-  $('#streakChip').classList.toggle('hot', s > 0);
-  $('#streakVal').textContent = s > 0 ? `${faNum(s)} روز پیاپی` : 'اولین تیک رو بزن';
 }
 
 /* ── Mood: read stored values defensively ──
@@ -36,64 +29,6 @@ const readMood = value => {
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= MOODS.length ? n : 0;
 };
-
-/* ── Week chart: animate only the first render, then update smoothly ── */
-let chartInitialized = false;
-
-function renderChart() {
-  const chart = $('#chart');
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const k = dayKey(d);
-    days.push({
-      k, letter: WEEKDAY_LETTERS[d.getDay()], today: i === 0,
-      n: state.tasks.filter(t => t.done && t.doneAt && dayKey(new Date(t.doneAt)) === k).length,
-      mood: readMood(state.moods[k]),
-    });
-  }
-  const max = Math.max(...days.map(x => x.n), 1);
-
-  // First render: build the columns
-  if (!chartInitialized) {
-    chart.innerHTML = '';
-    days.forEach((c, i) => {
-      const col = document.createElement('div');
-      col.className = 'col' + (c.today ? ' today' : '');
-      col.title = `${faNum(c.n)} کار انجام‌شده${c.mood ? ' · حال: ' + MOODS[c.mood - 1].label : ''}`;
-      const bar = document.createElement('div');
-      bar.className = 'bar' + (c.n ? '' : ' zero');
-      bar.style.height = '6%';
-      const lbl = document.createElement('span');
-      lbl.textContent = c.letter;
-      const md = document.createElement('i');
-      md.className = 'mdot';
-      md.style.background = c.mood ? MOODS[c.mood - 1].color : 'transparent';
-      col.appendChild(bar); col.appendChild(lbl); col.appendChild(md);
-      chart.appendChild(col);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        bar.style.transitionDelay = (i * 55) + 'ms';
-        bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
-      }));
-    });
-    chartInitialized = true;
-    return;
-  }
-
-  // Later renders: smooth update without rebuilding
-  const cols = chart.querySelectorAll('.col');
-  days.forEach((c, i) => {
-    const col = cols[i];
-    if (!col) return;
-    const bar = col.querySelector('.bar');
-    const md = col.querySelector('.mdot');
-    col.title = `${faNum(c.n)} کار انجام‌شده${c.mood ? ' · حال: ' + MOODS[c.mood - 1].label : ''}`;
-    bar.className = 'bar' + (c.n ? '' : ' zero');
-    bar.style.transitionDelay = '0ms';
-    bar.style.height = c.n ? (20 + (c.n / max) * 80) + '%' : '6%';
-    md.style.background = c.mood ? MOODS[c.mood - 1].color : 'transparent';
-  });
-}
 
 function buildMoods() {
   const wrap = $('#moods');
@@ -108,7 +43,6 @@ function buildMoods() {
       state.moods[dayKey(new Date())] = i + 1;
       saveMoods(state.moods);
       renderMoods();
-      renderChart();
     };
     wrap.appendChild(b);
   });
@@ -134,5 +68,7 @@ function renderMoods() {
 export function initWeek() {
   buildMoods();
   renderMoods();
-  subscribe(() => { updateStreakUI(); renderChart(); });
+  /* The chosen mood is read by the stats page too, so a change repaints
+     whatever is on screen that shows it. */
+  subscribe(() => renderMoods());
 }

@@ -9,9 +9,13 @@
 .ring-inner{position:relative;width:72px;height:72px;background:var(--surface);border-radius:50%;display:grid;place-items:center;z-index:2;box-shadow:inset 0 2px 6px rgba(0,0,0,.04);transition:background var(--duration-slow)}
 .ring-text{font-family:var(--font-personality);font-weight:700;font-size:26px;color:var(--text);line-height:1;display:flex;align-items:baseline;gap:2px;z-index:3}
 .ring-text small{font-size:12px;opacity:.6;font-weight:700}
-.ring-wrap.complete{animation:breathe 2.5s ease-in-out infinite}
+/* The completion breath: a halo that leaves the ring rather than a shadow that
+   grows out of it. Same slow exhale, but it only touches transform and opacity,
+   so the progress ring stays on the compositor — a box-shadow loop would repaint
+   the whole card on every frame while the ring sat at 100%. */
+.ring-wrap.complete::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2.5px solid var(--accent);opacity:0;pointer-events:none;animation:breathe 2.6s ease-in-out infinite}
 .ring-wrap.complete .ring-inner::after{content:'✓';position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;background:var(--green);color:#fff;border-radius:50%;font-size:13px;display:grid;place-items:center;border:3px solid var(--surface);animation:popIn var(--duration-base) cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(127,176,105,.4)}
-@keyframes breathe{0%,100%{box-shadow:0 0 0 0 var(--accent-soft)}50%{box-shadow:0 0 0 8px rgba(244,112,58,0)}}
+@keyframes breathe{0%{transform:scale(.96);opacity:.5}65%{transform:scale(1.14);opacity:0}100%{transform:scale(1.14);opacity:0}}
 @property --pct{syntax:'<number>';initial-value:0;inherits:false}
 
 .progress-info{min-width:0}
@@ -24,7 +28,7 @@
 .week-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 .streak{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;color:var(--muted);background:var(--bg);padding:5px 12px;border-radius:var(--radius-pill);transition:all var(--duration-base);white-space:nowrap}
 .streak.hot{color:#d84a4a;background:rgba(255,93,93,.12)}
-html[data-theme="dark"] .streak.hot{color:#ff8f8f}
+html[data-theme="night"] .streak.hot{color:#ff8f8f}
 .streak.hot svg{animation:flicker 3s ease-in-out infinite}
 @keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
@@ -85,9 +89,9 @@ html[data-theme="dark"] .streak.hot{color:#ff8f8f}
 .pri-row button.sel.high{border-color:#ff5d5d;color:#c93a3a;background:rgba(255,93,93,.08);font-weight:600}
 .pri-row button.sel.high::before{background:rgba(255,93,93,.25);transform:translateY(-50%) scale(1);opacity:1}
 .pri-row button.sel.high .ic{stroke:#ff5d5d;transform:scale(1.1)}
-html[data-theme="dark"] .pri-row button.sel.low{color:#9ccc86}
-html[data-theme="dark"] .pri-row button.sel.mid{color:#ffcd8a}
-html[data-theme="dark"] .pri-row button.sel.high{color:#ff8f8f}
+html[data-theme="night"] .pri-row button.sel.low{color:#9ccc86}
+html[data-theme="night"] .pri-row button.sel.mid{color:#ffcd8a}
+html[data-theme="night"] .pri-row button.sel.high{color:#ff8f8f}
 
 /* ── Category & Due Date ── */
 .cat-row,.due-row,.dur-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}

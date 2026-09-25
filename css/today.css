@@ -44,7 +44,7 @@
 .frog-emoji{font-size:58px;line-height:1;transform-origin:bottom center;filter:drop-shadow(0 10px 14px rgba(0,0,0,.14));animation:drift 6s ease-in-out infinite}
 @keyframes frogFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
 .frog-kicker{display:inline-flex;align-items:center;gap:7px;background:color-mix(in srgb,var(--green) 14%,transparent);color:#5f8f4d;font-family:var(--font-ui);font-size:12px;font-weight:700;padding:5px 15px;border-radius:var(--radius-pill)}
-html[data-theme="dark"] .frog-kicker{color:#9ccc86}
+html[data-theme="night"] .frog-kicker{color:#9ccc86}
 .frog-name{font-family:var(--font-personality);font-size:24px;font-weight:700;line-height:1.55;word-break:break-word;max-width:100%}
 .frog-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
 .frog-chip{--fc:#5f8f4d;font-size:11px;font-weight:600;color:var(--fc);background:color-mix(in srgb,var(--fc) 12%,transparent);border:1px solid color-mix(in srgb,var(--fc) 28%,transparent);padding:3px 12px;border-radius:var(--radius-pill);animation:popIn var(--duration-base) var(--ease-out)}
@@ -62,7 +62,7 @@ html[data-theme="dark"] .frog-kicker{color:#9ccc86}
 .frog-empty-title{font-family:var(--font-personality);font-size:18px;font-weight:700;line-height:1.7;color:var(--text);margin-top:2px}
 .frog-empty-done .frog-emoji{filter:none}
 .frog-empty-done .frog-empty-title{color:var(--green)}
-html[data-theme="dark"] .frog-empty-done .frog-empty-title{color:#9ccc86}
+html[data-theme="night"] .frog-empty-done .frog-empty-title{color:#9ccc86}
 .frog-add{border:1.5px dashed color-mix(in srgb,var(--accent) 45%,transparent);background:transparent;color:var(--accent);font-family:var(--font-ui);font-size:13px;font-weight:600;padding:10px 22px;border-radius:var(--radius-pill);cursor:pointer;transition:all var(--duration-fast);margin-top:4px}
 .frog-add:hover{background:var(--accent-soft);border-style:solid}
 
@@ -71,7 +71,10 @@ html[data-theme="dark"] .frog-empty-done .frog-empty-title{color:#9ccc86}
 
 /* ── Today's task rows (visually quieter than the Decision Hero) ── */
 .today-list{list-style:none;display:flex;flex-direction:column;gap:7px}
-.t-row{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;transition:transform var(--duration-fast),box-shadow var(--duration-fast),opacity var(--duration-base);animation:taskIn .45s var(--ease-out) backwards}
+/* contain:layout style keeps a row's own content from reflowing the short
+   today list — the list is reconciled in place, so a row must be able to
+   change (title, chips, done) without moving its neighbours. */
+.t-row{position:relative;contain:layout style;display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;transition:transform var(--duration-fast),box-shadow var(--duration-fast),opacity var(--duration-base);animation:taskIn .45s var(--ease-out) backwards}
 .t-row:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .t-check{width:25px;height:25px;flex-shrink:0;border-radius:var(--radius-xs);border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;color:transparent;transition:background var(--duration-fast) var(--ease-out),border-color var(--duration-fast),box-shadow var(--duration-base) var(--ease-out),transform var(--duration-fast) var(--ease-out)}
 .t-check:active{transform:scale(.9)}
@@ -85,10 +88,14 @@ html[data-theme="dark"] .frog-empty-done .frog-empty-title{color:#9ccc86}
 .t-due{flex-shrink:0;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:var(--radius-pill)}
 .t-due.today{color:var(--accent);background:var(--accent-soft)}
 .t-due.late{color:#d84a4a;background:rgba(255,93,93,.12)}
-html[data-theme="dark"] .t-due.late{color:#ff8f8f}
+html[data-theme="night"] .t-due.late{color:#ff8f8f}
 .t-due.soon{color:var(--muted);background:var(--bg)}
+/* A finished task never reads as due: the deadline chip is hidden, not removed.
+   The row is updated in place when it is checked off, so the chip has to be
+   able to appear and disappear without the row being rebuilt. */
+.t-row.done .t-due{display:none}
 .t-dur{flex-shrink:0;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:var(--radius-pill);color:#7b6fd8;background:rgba(123,111,216,.12)}
-html[data-theme="dark"] .t-dur{color:#a79bf5}
+html[data-theme="night"] .t-dur{color:#a79bf5}
 .t-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:var(--radius-xs);cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:0;transform:scale(.8);transition:all var(--duration-fast)}
 .t-row:hover .t-del,.t-del:focus-visible{opacity:1;transform:none}
 .t-del:hover{color:var(--danger);background:rgba(228,88,79,.12);transform:scale(1.12)!important}

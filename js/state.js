@@ -34,8 +34,13 @@ function normalizeTask(t) {
   return task;
 }
 
+/* The first-run seed goes through the same normalizer as stored tasks: it used
+   to be handed over as written, which made the three starter tasks the only
+   tasks in the app without a `created` stamp — invisible until the stats page
+   asked when they were written down, and then it read as a list where nothing
+   had ever been added. */
 const normalizeTasks = list =>
-  Array.isArray(list) ? list.map(normalizeTask).filter(Boolean) : defaultTasks();
+  Array.isArray(list) ? list.map(normalizeTask).filter(Boolean) : defaultTasks().map(normalizeTask).filter(Boolean);
 
 export const state = {
   tasks: normalizeTasks(loadTasks()),

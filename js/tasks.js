@@ -113,9 +113,20 @@ function createTaskEl(task, delay = 0) {
 }
 
 /* ── Render + Empty State ── */
+/* The entrance cascade only welcomes the first few rows.
+   At 45ms each, a list of thirty tasks kept animating for 1.35s after the page
+   had already been painted — the list read as slow rather than staged. Capping
+   the delay keeps the cascade legible and the list settled in a quarter second.
+   The rows are built into one fragment and inserted in a single call, so a long
+   list no longer interleaves layout work with every append. */
+const STAGGER_MS = 45;
+const STAGGER_CAP = 6;
+
 export function renderList() {
-  listEl.innerHTML = '';
-  visible().forEach((t, i) => listEl.appendChild(createTaskEl(t, i * 45)));
+  const rows = visible();
+  const frag = document.createDocumentFragment();
+  rows.forEach((t, i) => frag.appendChild(createTaskEl(t, Math.min(i, STAGGER_CAP) * STAGGER_MS)));
+  listEl.replaceChildren(frag);
   updateEmpty();
 }
 
@@ -220,6 +231,10 @@ function performUndo() {
 
 /* Shared exit animation for removing an item from the list (visual only, no state change) */
 function animateOut(el, onDone) {
+  /* Marked before the first frame so a reconcile on another page (the Today
+     list) can tell "leaving on purpose" from "no longer in this view" and
+     leave the exit animation alone. */
+  el.dataset.exiting = '1';
   el.style.height = el.offsetHeight + 'px'; el.style.overflow = 'hidden'; el.style.transition = 'all .32s ease';
   requestAnimationFrame(() => {
     el.classList.add('removing');

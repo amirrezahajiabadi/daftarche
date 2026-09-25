@@ -1,7 +1,10 @@
 /* ═══ Insights V1: a calm 7-day reflection page ═══
    Pipeline: normalize → filter 7 days → metrics → sample-size gate →
    patterns → suggestion. The compute half is DOM-independent and exported
-   for tests; renderInsights() is the only part that touches the page. */
+   for tests; renderInsights() is the only part that touches the DOM — and what it paints is a section of the stats page
+   («چیزهایی که دیدیم»), not a page of its own. Its window stays seven days on
+   purpose and says so in its own heading: a pattern needs a handful of
+   comparable days, not a whole year. */
 
 import { state } from './state.js';
 import { $, faNum, dayKey, parseDurationMin } from './utils.js';
@@ -256,22 +259,17 @@ function makeSuggestion(insights) {
 /* ═══ Render (thin DOM layer) ═══ */
 
 export function renderInsights() {
-  const page = $('#page-insights');
-  if (!page) return;
+  const sec = $('#statsInsightsSection');
+  if (!sec) return;
 
   const { summary, insights, suggestion } = computeInsights();
 
-  /* Empty state: nothing meaningful happened in 7 days */
-  const empty = $('#insightsEmpty');
-  const body = $('#insightsBody');
+  /* Nothing meaningful in the last seven days: the section says nothing at all
+     rather than apologising. A window with no data at all is answered by the
+     page's own empty state — this one is only about the pattern-finding, so it
+     hides the moment there is no pattern to look for. */
   const hasAnything = summary.createdCount > 0 || summary.doneCount > 0 || summary.focusCount > 0;
-  if (empty) {
-    empty.hidden = hasAnything;
-    /* Qorqori with a calm expression keeps the empty state warm, not alarming */
-    const slot = empty.querySelector('.insights-empty-char');
-    if (slot && !slot.innerHTML) slot.innerHTML = qorqoriMarkup('default');
-  }
-  if (body) body.hidden = !hasAnything;
+  sec.hidden = !hasAnything;
   if (!hasAnything) return;
 
   /* Summary chips — only show what the data actually supports */
@@ -301,9 +299,6 @@ export function renderInsights() {
       return `<div class="insight-card">${char ? `<span class="insight-char" aria-hidden="true">${char}</span>` : ''}<p>${i.text}</p></div>`;
     }).join('');
   }
-  const listHead = $('#insightsListHead');
-  if (listHead) listHead.hidden = insights.length === 0;
-
   /* Suggestion */
   const sugCard = $('#insightsSuggestion');
   const sugText = $('#insightsSuggestionText');
@@ -311,13 +306,10 @@ export function renderInsights() {
   if (sugText && suggestion) sugText.textContent = suggestion;
 }
 
+/* The insights are a section of the stats page now, so they repaint on the same
+   beat as the numbers around them — and only while that page is on screen. */
 export function initInsights() {
-  $('#openInsightsBtn')?.addEventListener('click', () =>
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'insights' })));
-  $('#insightsBackBtn')?.addEventListener('click', () =>
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'today' })));
-  /* Re-render whenever data changes while the page is open */
   import('./bus.js').then(({ subscribe }) => subscribe(() => {
-    if ($('#page-insights')?.classList.contains('active')) renderInsights();
+    if ($('#page-stats')?.classList.contains('active')) renderInsights();
   }));
 }

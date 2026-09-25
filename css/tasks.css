@@ -4,7 +4,7 @@
 .frog-ico svg{animation:drift 4s ease-in-out infinite}
 .frog-txt{flex:1;min-width:0}
 .frog-txt strong{display:block;font-family:var(--font-personality);font-size:14px;font-weight:700;color:#5f8f4d;line-height:1.5}
-html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
+html[data-theme="night"] .frog-txt strong{color:#9ccc86}
 .frog-txt span{display:block;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .frog-go{border:none;background:var(--green);color:#fff;font-family:var(--font-ui);font-size:13px;font-weight:600;padding:8px 14px;border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 3px 0 0 rgba(90,130,75,.5);transition:transform var(--duration-fast);flex-shrink:0}
 .frog-go:active{transform:translateY(2px);box-shadow:none}
@@ -21,7 +21,10 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .task{order:1}
 .task.done{order:2}
 
-.task{position:relative;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow-1);transition:transform var(--duration-fast) var(--ease-out),box-shadow var(--duration-base),opacity var(--duration-base),background var(--duration-slow);animation:taskIn var(--duration-slow) var(--ease-out) backwards}
+/* contain:layout style: a row's internals (wrapped chips, long titles) can
+   never reflow the list around it, so adding, completing or removing one task
+   only costs the row. Long lists stay smooth to scroll and to edit. */
+.task{position:relative;contain:layout style;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow-1);transition:transform var(--duration-fast) var(--ease-out),box-shadow var(--duration-base),opacity var(--duration-base),background var(--duration-slow);animation:taskIn var(--duration-slow) var(--ease-out) backwards}
 .task:last-child{margin-bottom:0}
 .task:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
 .task::after{display:none}
@@ -41,8 +44,15 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .pri-dot{width:11px;height:11px;border-radius:50%;background:var(--pr);border:none;cursor:pointer;flex-shrink:0;position:relative;transition:transform var(--duration-fast),background var(--duration-base)}
 .pri-dot::after{content:'';position:absolute;inset:-10px;border-radius:50%;display:block}
 .pri-dot:hover{transform:scale(1.35)}
-.task[data-p="high"] .pri-dot{animation:pulse 2.4s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--pr) 28%,transparent)}}
+/* The "this one matters" halo on high-priority dots.
+   It used to animate box-shadow, which is a paint-only property: every
+   high-priority row in the list repainted on every frame, for as long as the
+   app stayed open. A ring on its own layer that only scales and fades gives
+   the same slow breath at no per-frame paint cost. The hold at the end of the
+   cycle (70%→100%) is what makes it read as a calm exhale rather than a
+   repeating blink. */
+.task[data-p="high"] .pri-dot::before{content:'';position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--pr);opacity:0;pointer-events:none;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%{transform:scale(.85);opacity:.55}70%{transform:scale(2.2);opacity:0}100%{transform:scale(2.2);opacity:0}}
 /* Priority change confirms itself with the expanding ring alone — the previous
    scale bounce was the only spring overshoot left in the product. */
 .pri-dot.changed{animation:priPulse var(--duration-slow) ease}
@@ -79,11 +89,11 @@ html[data-theme="dark"] .frog-txt strong{color:#9ccc86}
 .due-chip.today{color:var(--color-accent-strong);background:var(--accent-soft);border-color:color-mix(in srgb,var(--color-accent) 30%,transparent);font-weight:600}
 .due-chip.soon,.due-chip.far{color:var(--color-text-secondary);background:var(--bg);border-color:var(--border)}
 .due-chip.late{color:var(--color-danger);background:color-mix(in srgb,var(--color-danger) 10%,transparent);border-color:color-mix(in srgb,var(--color-danger) 32%,transparent);font-weight:600}
-html[data-theme="dark"] .due-chip.late{color:#ff8f8f}
+html[data-theme="night"] .due-chip.late{color:#ff8f8f}
 .due-chip.flipped{animation:chipFlip var(--duration-base) ease}
 
 .dur-chip{flex-shrink:0;font-family:var(--font-ui);font-size:11px;font-weight:600;line-height:1.4;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid transparent;cursor:pointer;transition:transform var(--duration-fast);color:#7b6fd8;background:color-mix(in srgb,#7b6fd8 10%,transparent);border-color:color-mix(in srgb,#7b6fd8 28%,transparent)}
-html[data-theme="dark"] .dur-chip{color:#a79bf5}
+html[data-theme="night"] .dur-chip{color:#a79bf5}
 .dur-chip:hover{transform:scale(1.04)}
 .dur-chip.flipped{animation:chipFlip var(--duration-base) ease}
 .dur-chip.none{border:1px dashed var(--border);opacity:.65;background:transparent;color:var(--muted)}

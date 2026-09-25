@@ -7,7 +7,7 @@
 /* The warm brown scrim only dims a light page. Over the dark background it would
    composite to a lighter value than the page itself, so the panel would stop
    reading as elevated — dark mode needs a scrim that actually darkens. */
-html[data-theme="dark"] .overlay{background:rgba(0,0,0,.5)}
+html[data-theme="night"] .overlay{background:rgba(0,0,0,.5)}
 .overlay[hidden]{display:none}
 @keyframes fadeIn{from{opacity:0}}
 /* Modal entrance: smooth and short — no springy scale jump (Priority 8.3) */
@@ -176,8 +176,15 @@ html[data-theme="dark"] .overlay{background:rgba(0,0,0,.5)}
 @media (max-width:400px){
   .changelog-card{padding:22px 16px calc(16px + var(--sab));max-width:100%}
 }
-/* Body scroll lock while the dialog is open */
+/* Background scroll lock while a dialog is open — set by js/modal.js for every
+   .overlay and .sheet, however it was opened. Applied to the body so it
+   propagates to the viewport: the page behind a dialog cannot be dragged, and
+   it keeps its scroll position, so closing the dialog leaves the reader exactly
+   where they were instead of back at the top. */
 body.no-scroll{overflow:hidden}
+/* A sheet scrolls its own content; a drag past the end of that content must not
+   chain into the page underneath it. */
+.sheet{overscroll-behavior:contain}
 @media (prefers-reduced-motion:reduce){
   .changelog-overlay,.changelog-card{animation:none}
 }

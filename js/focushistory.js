@@ -2,12 +2,16 @@
    A light, trustworthy archive of completed focus sessions.
    Flow: append → validate → dedupe by id → newest first → trim to 100 → persist.
    Records are self-contained (taskTitle snapshot), so a deleted or renamed
-   task never breaks history. */
+   task never breaks history.
+
+   This module is the archive, not a page. The list it holds is shown inside the
+   stats page now, under the window the reader picked there, so the display
+   helpers below (a rating's face and its words, a day's friendly label) are
+   exported for that page rather than painted onto a page of their own. */
 
 import { loadFocusHistory, saveFocusHistory } from './store.js';
-import { $, faNum, startOfToday } from './utils.js';
+import { startOfToday } from './utils.js';
 import { formatJalaliDate } from './jalali.js';
-import { qorqoriMarkup } from './qorqori.js';
 
 export const HISTORY_CAP = 100;
 
@@ -92,56 +96,17 @@ export function getHistory() {
     .map(normalizeHistoryRecord).filter(Boolean);
 }
 
-/* ═══ History Page (thin DOM layer) ═══ */
+/* ═══ Display helpers (shared with the stats page) ═══ */
 
-const RATING_LABEL = { good: 'خوب بود', okay: 'معمولی بود', hard: 'سخت بود' };
-const RATING_FACE = { good: '😊', okay: '😐', hard: '😵' };
+export const RATING_LABEL = { good: 'خوب بود', okay: 'معمولی بود', hard: 'سخت بود' };
+export const RATING_FACE = { good: '😊', okay: '😐', hard: '😵' };
 
-function dayLabel(ts) {
+/* A day as the reader remembers it: امروز / دیروز, then the Jalali date. */
+export function historyDayLabel(ts) {
   const d = new Date(ts);
   const today = startOfToday();
   const diff = Math.round((today - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
   if (diff === 0) return 'امروز';
   if (diff === 1) return 'دیروز';
   return formatJalaliDate(d);
-}
-
-export function renderFocusHistory() {
-  const page = $('#page-focushistory');
-  if (!page) return;
-
-  const records = getHistory();
-
-  const empty = $('#fhEmpty');
-  const body = $('#fhBody');
-  if (empty) {
-    empty.hidden = records.length > 0;
-    const slot = empty.querySelector('.insights-empty-char');
-    if (slot && !slot.innerHTML) slot.innerHTML = qorqoriMarkup('default');
-  }
-  if (body) body.hidden = records.length === 0;
-
-  const list = $('#fhList');
-  if (!list) return;
-  list.innerHTML = records.map(r => {
-    const title = r.taskTitle || 'کار حذف‌شده';
-    return `
-      <div class="fh-record">
-        <div class="fh-record-head">
-          <strong class="fh-title">${title}</strong>
-          <span class="fh-when">${dayLabel(r.endedAt)} · ${faNum(r.actualDurationMin)} دقیقه</span>
-        </div>
-        <div class="fh-record-meta">
-          <span class="fh-status">${r.taskCompleted ? '✅ انجام شد' : '😐 ادامه دارد'}</span>
-          <span class="fh-rating">${RATING_FACE[r.rating]} ${RATING_LABEL[r.rating]}</span>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-export function initFocusHistory() {
-  $('#openFocusHistoryBtn')?.addEventListener('click', () =>
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'focushistory' })));
-  $('#fhBackBtn')?.addEventListener('click', () =>
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'profile' })));
 }

@@ -206,7 +206,7 @@
 /* Highlights overlay */
 #highlightLayer{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply}
 #highlightLayer i{position:absolute;border-radius:2px}
-html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
+html[data-theme="night"] #highlightLayer{mix-blend-mode:screen}
 
 /* Freehand pen — the optional draw surface. It sits between the text layer and
    the highlight layer; when the pen is off it is pointer-transparent so
@@ -310,7 +310,7 @@ html[data-theme="dark"] #highlightLayer{mix-blend-mode:screen}
 /* A hidden dock must not keep an invisible tab stop below the viewport. */
 .reader-dock.zen .dock-pill{pointer-events:none}
 .dock-pill{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:var(--radius-pill);background:linear-gradient(135deg,rgba(255,252,245,.72),rgba(255,252,245,.46));backdrop-filter:blur(22px) saturate(1.7);-webkit-backdrop-filter:blur(22px) saturate(1.7);border:1px solid rgba(255,255,255,.6);box-shadow:0 16px 38px -16px rgba(122,80,35,.34),inset 0 1px 0 rgba(255,255,255,.65)}
-html[data-theme="dark"] .dock-pill{background:linear-gradient(135deg,rgba(34,29,23,.7),rgba(34,29,23,.48));border-color:rgba(255,220,180,.14);box-shadow:0 16px 38px -16px rgba(0,0,0,.74),inset 0 1px 0 rgba(255,255,255,.1)}
+html[data-theme="night"] .dock-pill{background:linear-gradient(135deg,rgba(34,29,23,.7),rgba(34,29,23,.48));border-color:rgba(255,220,180,.14);box-shadow:0 16px 38px -16px rgba(0,0,0,.74),inset 0 1px 0 rgba(255,255,255,.1)}
 /* 42px visual + 3px hit-area ring keeps every dock control above the 44px
    touch minimum. */
 .dock-btn{border:none;background:transparent;color:var(--muted);width:42px;height:42px;border-radius:var(--radius-pill);cursor:pointer;display:grid;place-items:center;font-size:19px;font-family:var(--font-ui);font-weight:700;line-height:1;position:relative;transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
