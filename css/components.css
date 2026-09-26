@@ -19,7 +19,7 @@
 @property --pct{syntax:'<number>';initial-value:0;inherits:false}
 
 .progress-info{min-width:0}
-.progress-info strong{display:block;font-family:var(--font-personality);font-size:18px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px}
+.progress-info strong{display:block;font-family:var(--font-personality);font-size:18px;font-weight:700;margin-bottom:4px}
 .progress-info span{color:var(--muted);font-size:13px;line-height:1.6;font-weight:400}
 
 /* ═══ My Week ═══ */
@@ -28,7 +28,7 @@
 .week-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
 .streak{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:12px;font-weight:500;color:var(--muted);background:var(--bg);padding:5px 12px;border-radius:var(--radius-pill);transition:all var(--duration-base);white-space:nowrap}
 .streak.hot{color:#d84a4a;background:rgba(255,93,93,.12)}
-html[data-theme="night"] .streak.hot{color:#ff8f8f}
+html[data-mode="dark"] .streak.hot{color:#ff8f8f}
 .streak.hot svg{animation:flicker 3s ease-in-out infinite}
 @keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 
@@ -37,7 +37,11 @@ html[data-theme="night"] .streak.hot{color:#ff8f8f}
 .col .bar{width:100%;max-width:26px;margin-top:auto;background:var(--accent-soft);border-radius:7px 7px 4px 4px;height:6%;transition:height var(--duration-slow) cubic-bezier(.22,1,.36,1)}
 .col .bar.zero{background:var(--border)}
 .col.today .bar{background:var(--accent)}
-.col span{font-size:11px;color:var(--muted);font-weight:500}
+/* The label sits in a row of its own, and that row is held open for every
+   column whether or not it carries a name: an empty span would otherwise
+   collapse and drop its bar by the height of the text line, so two columns with
+   the same number of tasks would sit at two different heights. */
+.col span{font-size:11px;color:var(--muted);font-weight:500;line-height:17px;height:17px;white-space:nowrap}
 .col.today span{color:var(--accent);font-weight:600}
 .col .mdot{width:7px;height:7px;border-radius:50%}
 
@@ -89,9 +93,9 @@ html[data-theme="night"] .streak.hot{color:#ff8f8f}
 .pri-row button.sel.high{border-color:#ff5d5d;color:#c93a3a;background:rgba(255,93,93,.08);font-weight:600}
 .pri-row button.sel.high::before{background:rgba(255,93,93,.25);transform:translateY(-50%) scale(1);opacity:1}
 .pri-row button.sel.high .ic{stroke:#ff5d5d;transform:scale(1.1)}
-html[data-theme="night"] .pri-row button.sel.low{color:#9ccc86}
-html[data-theme="night"] .pri-row button.sel.mid{color:#ffcd8a}
-html[data-theme="night"] .pri-row button.sel.high{color:#ff8f8f}
+html[data-mode="dark"] .pri-row button.sel.low{color:#9ccc86}
+html[data-mode="dark"] .pri-row button.sel.mid{color:#ffcd8a}
+html[data-mode="dark"] .pri-row button.sel.high{color:#ff8f8f}
 
 /* ── Category & Due Date ── */
 .cat-row,.due-row,.dur-row{display:flex;align-items:center;gap:7px;padding:2px 8px 4px;flex-wrap:wrap}
@@ -145,6 +149,23 @@ html[data-theme="night"] .pri-row button.sel.high{color:#ff8f8f}
 .vibe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);transition:background var(--duration-slow)}
 .vibe-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
 .vibe-head strong{font-family:var(--font-ui);font-size:15px;font-weight:600}
+
+/* ── Entry card — a door to another page ──
+   Two of these stand on the profile (Stats, Settings): the card everything else
+   on the page is made of, made tappable, with the way in named at the end of its
+   heading and one line under it saying what is behind the door. The shape is
+   written once and worn twice, so the two doors cannot drift apart — and the
+   risen-on-hover / pressed-on-tap movement is the one the app already uses for
+   a card that leads somewhere. */
+.entry-card{display:block;width:100%;text-align:start;font-family:var(--font-ui);color:var(--text);cursor:pointer;
+  transition:transform var(--duration-fast) var(--ease-out)}
+@media (hover:hover){.entry-card:hover{transform:translateY(-1px)}}
+.entry-card:active{transform:translateY(1px)}
+.entry-card:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.entry-card .vibe-head{margin-bottom:6px}
+.entry-go{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--accent);border:1.5px solid var(--border);
+  border-radius:var(--radius-pill);padding:5px 14px}
+.entry-hint{display:block;font-size:12px;line-height:1.9;color:var(--muted)}
 
 /* Ambient sound control */
 .amb-control{display:flex;align-items:center;gap:8px}

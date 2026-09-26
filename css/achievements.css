@@ -1,0 +1,255 @@
+/* ═══ Achievements — نشان‌ها ═══
+   Three surfaces in one file: the summary card on the profile, the page, and
+   the sheet that celebrates a badge.
+
+   Two rules run through all of it.
+
+   First, **an earned badge is a solid accent medal and an unearned one is
+   quiet outline** — the difference is carried by fill, not by opacity, so a
+   locked badge is still perfectly readable instead of being a grey ghost, and
+   the page never looks half-finished.
+
+   Second, **no colour is invented here**. Every value comes from the palette
+   table in css/base.css, so all four themes (روشن، کاغذ، شب، جنگل) are painted
+   by the same rules. The one place where a filled chip needs text on top of it
+   uses --color-text-on-accent, which the night theme overrides to ink because
+   white on #ff9c60 is only 2:1. */
+
+/* ═══ Summary card (Profile) ═══ */
+
+.achv-sum-head{display:flex;align-items:center;gap:14px;margin-top:12px}
+.achv-sum-head .ring-wrap.achv-ring{width:62px;height:62px}
+.achv-sum-head .ring-wrap .ring-inner{width:50px;height:50px}
+.achv-sum-head .ring-wrap .ring-text{font-size:19px}
+.achv-sum-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.achv-sum-text strong{font-family:var(--font-personality);font-size:17px;font-weight:700}
+.achv-sum-text>span{color:var(--color-text-secondary);font-size:12px;font-weight:500}
+.achv-sum-score{color:var(--text) !important;font-size:12.5px !important}
+.achv-sum-score b{font-family:var(--font-personality);font-size:15px}
+
+.achv-minis{list-style:none;display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.achv-mini{display:flex;flex-direction:column;gap:5px}
+.achv-mini-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.achv-mini-top b{font-size:12.5px;font-weight:600}
+.achv-mini-top small{color:var(--color-text-secondary);font-size:11px;font-weight:500;white-space:nowrap}
+
+/* The action of the card, so its label is ink rather than accent: a 13.5px
+   label in the accent colour is 2.5:1 on the light theme's paper. The accent
+   stays in the border, where it costs no legibility. */
+.achv-more{width:100%;min-height:44px;margin-top:14px;
+  border:1.5px solid color-mix(in srgb,var(--accent) 45%,var(--border));
+  background:var(--bg);color:var(--text);border-radius:var(--radius-sm);
+  font-family:var(--font-ui);font-size:13.5px;font-weight:600;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),border-color var(--duration-fast),box-shadow var(--duration-fast)}
+.achv-more[hidden]{display:none}
+
+/* ═══ Shared pieces ═══ */
+
+/* ── The medal ──
+   An earned badge is a tinted disc with an accent ring and ink inside it; a
+   locked one is a bare disc with a plain border. Fill-and-ring rather than
+   fill-with-text-on-top, because white on the light theme's accent is 2.9:1 —
+   and this is the pattern the share card's pickers already settled on (see
+   css/components2.css). The icon inside is decorative: the title beside it
+   carries the meaning, so the row is still readable with no colour at all. */
+.achv-medal{width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--text);border:1.5px solid var(--accent)}
+.achv-medal svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.achv-medal.sm{width:32px;height:32px;flex-basis:32px}
+.achv-medal.sm svg{width:17px;height:17px}
+
+.achv-track{display:block;width:100%;height:6px;border-radius:var(--radius-pill);overflow:hidden;
+  background:color-mix(in srgb,var(--text) 12%,transparent)}
+.achv-track.tall{height:8px;margin-top:10px}
+.achv-fill{display:block;height:100%;border-radius:var(--radius-pill);background:var(--accent);
+  transition:width var(--duration-base) var(--ease-out)}
+
+.achv-pips{display:inline-flex;gap:3px;flex:0 0 auto}
+.achv-pip{width:7px;height:7px;border-radius:50%;background:transparent;
+  box-shadow:inset 0 0 0 1.5px var(--color-border-strong,var(--border))}
+.achv-pip.on{background:var(--accent);box-shadow:none}
+
+/* ═══ The page ═══ */
+
+#page-achv .app{gap:16px}
+
+.achv-rank{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:16px;box-shadow:var(--shadow-sm)}
+.achv-rank-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.achv-rank-top strong{font-family:var(--font-personality);font-size:19px;font-weight:700}
+.achv-rank-top span{color:var(--muted);font-size:12px;font-weight:500}
+.achv-rank-top span b{font-family:var(--font-personality);font-size:15px;color:var(--text)}
+.achv-rank-next{margin-top:8px;color:var(--muted);font-size:12px;font-weight:500}
+
+.achv-how-score{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+.achv-how-score summary{color:var(--accent);font-size:12px;font-weight:600;cursor:pointer}
+.achv-how-score summary:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px;border-radius:var(--radius-xs)}
+.achv-how-score ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.achv-how-score li{display:grid;grid-template-columns:1fr auto auto auto;align-items:baseline;gap:8px;font-size:12px}
+.achv-how-score li span{color:var(--text);font-weight:500}
+.achv-how-score li b{font-weight:600}
+.achv-how-score li i{color:var(--muted);font-size:11px;font-style:normal}
+.achv-how-score li em{font-family:var(--font-personality);font-style:normal;font-weight:700;min-width:2.5em;text-align:end}
+
+.achv-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+.achv-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:4px;
+  border:none;background:transparent;font-family:var(--font-ui);font-size:12px;font-weight:600;
+  color:var(--text);padding:10px 2px;min-height:42px;border-radius:var(--radius-xs);cursor:pointer;
+  transition:color var(--duration-base),background var(--duration-base)}
+.achv-tab small{color:var(--muted);font-size:10px;font-weight:600}
+.achv-tab.sel{background:var(--accent-soft);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.achv-tab.sel small{color:var(--text);opacity:.7}
+.achv-tab:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+.achv-near{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.achv-near-card{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 8px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);cursor:pointer;font-family:var(--font-ui);text-align:center;
+  transition:transform var(--duration-fast) var(--ease-out),border-color var(--duration-fast)}
+.achv-near-card b{font-size:11.5px;font-weight:600;color:var(--text);line-height:1.4}
+.achv-near-card small{color:var(--color-text-secondary);font-size:10.5px;font-weight:500}
+
+.achv-list{display:flex;flex-direction:column;gap:8px}
+.achv-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;text-align:start;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);cursor:pointer;font-family:var(--font-ui);min-height:64px;
+  transition:transform var(--duration-fast) var(--ease-out),border-color var(--duration-fast),background var(--duration-base)}
+.achv-item.locked{background:var(--bg)}
+.achv-item.locked .achv-medal{background:var(--bg);color:var(--muted);border-color:var(--border)}
+.achv-item.locked .achv-fill{background:color-mix(in srgb,var(--text) 35%,transparent)}
+.achv-item.complete .achv-medal{border-color:var(--green)}
+.achv-item-main{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.achv-item-top{display:flex;align-items:baseline;gap:8px}
+.achv-item-top b{font-size:13.5px;font-weight:600;color:var(--text)}
+.achv-kind{font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);color:var(--text);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.achv-kind.k-legend{border-color:color-mix(in srgb,var(--green) 45%,transparent)}
+.achv-how{color:var(--muted);font-size:11.5px;font-weight:500;line-height:1.7}
+.achv-item-foot{display:flex;align-items:center;gap:10px}
+.achv-item-foot .achv-track{flex:1}
+/* The distance to the next rung is the one small number a reader acts on, so it
+   is written in the readable secondary colour rather than the faint one — the
+   bar beside it says the same thing, but only this line says how much. */
+.achv-item-foot small{color:var(--color-text-secondary);font-size:11px;font-weight:500;white-space:nowrap;flex:0 0 auto}
+
+/* The records and the weekly board sit inside a .stat-section, which is already
+   a card — so these rows carry no card of their own, only a separator. A card
+   inside a card is two borders around one idea. */
+.achv-records{display:flex;flex-direction:column;gap:0}
+.achv-record{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'medal main val' 'prev prev prev';
+  align-items:center;gap:6px 10px;padding:12px 10px;border-bottom:1px solid var(--border)}
+.achv-record:last-child{border-bottom:none}
+.achv-record .achv-medal{grid-area:medal}
+.achv-record-main{grid-area:main;display:flex;flex-direction:column;gap:2px;min-width:0}
+.achv-record-main b{font-size:13px;font-weight:600}
+.achv-record-main small{color:var(--muted);font-size:11px;font-weight:500}
+.achv-record-val{grid-area:val;display:flex;align-items:baseline;gap:4px}
+.achv-record-val b{font-family:var(--font-personality);font-size:21px;font-weight:700}
+.achv-record-val small{color:var(--muted);font-size:11px;font-weight:500}
+.achv-record-prev{grid-area:prev;color:var(--muted);font-size:11px;font-weight:500}
+.achv-record.fresh{background:var(--accent-soft);border-radius:var(--radius-sm)}
+
+.achv-vs{display:flex;flex-direction:column;padding:10px 4px 4px}
+.achv-vs-score{display:flex;align-items:baseline;justify-content:center;gap:8px;text-align:center;flex-wrap:wrap}
+.achv-vs-score b{font-family:var(--font-personality);font-size:30px;font-weight:700}
+.achv-vs-score b.past{font-size:21px;color:var(--muted)}
+.achv-vs-score span{color:var(--muted);font-size:11px;font-weight:500}
+.achv-vs-lines{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:2px}
+.achv-vs-lines li{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.achv-vs-lines li:last-child{border-bottom:none}
+.achv-vs-lines span{color:var(--text);font-weight:500}
+.achv-vs-lines b{font-weight:700;font-family:var(--font-personality);font-size:15px;min-width:2em;text-align:end}
+.achv-vs-lines b.past{color:var(--muted);font-weight:600}
+.achv-dir{font-style:normal;font-size:10px;color:var(--muted)}
+.achv-dir.up{color:var(--green)}
+.achv-dir.down{color:var(--color-danger,var(--danger))}
+.achv-season{margin-top:12px;color:var(--muted);font-size:11.5px;font-weight:500;line-height:1.9}
+.achv-season b{color:var(--text);font-family:var(--font-personality)}
+
+.achv-section[hidden]{display:none}
+
+/* ═══ Badge detail ═══ */
+
+.achv-detail{max-width:380px;text-align:center}
+.achv-detail-medal{width:64px;height:64px;border-radius:50%;display:inline-grid;place-items:center;margin:0 auto;
+  background:var(--accent);color:var(--color-text-on-accent);border:1.5px solid var(--accent)}
+.achv-detail-medal svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.achv-detail-kind{color:var(--muted);font-size:12px;font-weight:500;margin-top:4px}
+.achv-ladder{list-style:none;margin:16px 0 0;display:flex;flex-direction:column;gap:2px;text-align:start}
+.achv-rung{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
+  padding:10px 2px;border-bottom:1px solid var(--border);font-size:12.5px}
+.achv-rung:last-child{border-bottom:none}
+.achv-rung span{color:var(--muted);font-weight:500}
+.achv-rung b{font-weight:600;color:var(--muted)}
+.achv-rung.on span,.achv-rung.on b{color:var(--text)}
+.achv-detail-how{margin-top:14px;color:var(--text);font-size:12.5px;font-weight:500;line-height:1.9}
+.achv-detail-done{margin-top:14px;color:var(--accent);font-size:12.5px;font-weight:600}
+.achv-detail-at{margin-top:6px;color:var(--muted);font-size:11.5px;font-weight:500}
+.achv-detail-char{display:block;width:96px;height:96px;margin:12px auto 0}
+.achv-detail-char svg{width:100%;height:100%}
+.achv-detail .ghost{margin-top:16px;width:100%;min-height:44px;border:1.5px solid var(--border);
+  background:transparent;color:var(--text);border-radius:var(--radius-sm);font-family:var(--font-ui);
+  font-size:14px;font-weight:600;cursor:pointer;transition:background var(--duration-fast),border-color var(--duration-fast)}
+.achv-detail .ghost:hover{background:var(--bg);border-color:var(--color-border-strong,var(--border))}
+
+/* ═══ The celebration ═══ */
+
+.achv-unlock{max-width:360px}
+.achv-unlock-char{display:block;width:110px;height:110px;margin:0 auto -8px}
+.achv-unlock-char svg{width:100%;height:100%}
+.achv-unlock-medal{width:58px;height:58px;border-radius:50%;display:inline-grid;place-items:center;
+  background:var(--accent);color:var(--color-text-on-accent);border:2px solid var(--surface);
+  box-shadow:var(--shadow-2,var(--shadow-1));animation:popIn var(--duration-base) var(--ease-spring,var(--ease-out))}
+.achv-unlock-medal svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.achv-unlock h2{margin-top:12px}
+.achv-unlock-tier{font-style:normal;font-size:0.62em;font-weight:700;margin-inline-start:6px;
+  padding:2px 8px;border-radius:var(--radius-pill);background:var(--accent-soft);color:var(--text);
+  border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);vertical-align:middle}
+.achv-unlock p{color:var(--text);font-size:13.5px;font-weight:500;line-height:2;margin:8px 0 0}
+.achv-unlock .ghost.sm{margin-top:8px;width:100%;min-height:42px;border:none;background:transparent;
+  color:var(--muted);font-family:var(--font-ui);font-size:12.5px;font-weight:600;cursor:pointer}
+.achv-unlock .ghost.sm:hover{color:var(--accent)}
+
+.achv-toast{z-index:98}
+
+/* ═══ The freeze switch (Profile settings) ═══
+   The toggle itself is the app's own .switch (css/components.css) rather than a
+   second one invented here: a 44×24 pill with a knob, and an .on state. What is
+   added is the finger room — the pill is 24px tall, so its hit area is grown to
+   44px without moving anything on screen — and the words beside it in the
+   settings row, because a switch whose consequence is a streak should say what
+   it is currently doing and not only where it is pointing. */
+.settings-value .switch::before{content:'';position:absolute;inset:-10px;border-radius:var(--radius-pill)}
+
+/* ═══ Hover, narrow screens, reduced motion ═══ */
+
+@media (hover:hover){
+  .achv-item:hover,.achv-near-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+  .achv-more:hover{transform:translateY(-2px);border-color:var(--accent)}
+}
+.achv-item:active,.achv-near-card:active,.achv-more:active{transform:scale(.99)}
+
+@media (max-width:400px){
+  .achv-sum-head .ring-wrap.achv-ring{width:56px;height:56px}
+  .achv-sum-head .ring-wrap .ring-inner{width:45px;height:45px}
+  .achv-sum-head .ring-wrap .ring-text{font-size:17px}
+  .achv-sum-text strong{font-size:15.5px}
+  .achv-near{grid-template-columns:repeat(2,1fr)}
+  .achv-near-card:nth-child(3){display:none}
+  .achv-item{padding:11px 12px;gap:10px}
+  .achv-item-top b{font-size:12.5px}
+  .achv-item-foot small{font-size:10.5px}
+  .achv-kind{font-size:9.5px;padding:2px 6px}
+  .achv-tab{font-size:11.5px}
+  .achv-vs-score b{font-size:26px}
+  .achv-record-val b{font-size:19px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .achv-item,.achv-near-card,.achv-more,.achv-fill,.achv-tab{transition:none}
+  .achv-item:hover,.achv-near-card:hover,.achv-more:hover,.achv-item:active,.achv-near-card:active,.achv-more:active{transform:none}
+  .achv-unlock-medal{animation:none}
+}

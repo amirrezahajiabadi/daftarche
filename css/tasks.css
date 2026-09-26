@@ -4,7 +4,7 @@
 .frog-ico svg{animation:drift 4s ease-in-out infinite}
 .frog-txt{flex:1;min-width:0}
 .frog-txt strong{display:block;font-family:var(--font-personality);font-size:14px;font-weight:700;color:#5f8f4d;line-height:1.5}
-html[data-theme="night"] .frog-txt strong{color:#9ccc86}
+html[data-mode="dark"] .frog-txt strong{color:#9ccc86}
 .frog-txt span{display:block;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .frog-go{border:none;background:var(--green);color:#fff;font-family:var(--font-ui);font-size:13px;font-weight:600;padding:8px 14px;border-radius:var(--radius-pill);cursor:pointer;box-shadow:0 3px 0 0 rgba(90,130,75,.5);transition:transform var(--duration-fast);flex-shrink:0}
 .frog-go:active{transform:translateY(2px);box-shadow:none}
@@ -89,11 +89,11 @@ html[data-theme="night"] .frog-txt strong{color:#9ccc86}
 .due-chip.today{color:var(--color-accent-strong);background:var(--accent-soft);border-color:color-mix(in srgb,var(--color-accent) 30%,transparent);font-weight:600}
 .due-chip.soon,.due-chip.far{color:var(--color-text-secondary);background:var(--bg);border-color:var(--border)}
 .due-chip.late{color:var(--color-danger);background:color-mix(in srgb,var(--color-danger) 10%,transparent);border-color:color-mix(in srgb,var(--color-danger) 32%,transparent);font-weight:600}
-html[data-theme="night"] .due-chip.late{color:#ff8f8f}
+html[data-mode="dark"] .due-chip.late{color:#ff8f8f}
 .due-chip.flipped{animation:chipFlip var(--duration-base) ease}
 
 .dur-chip{flex-shrink:0;font-family:var(--font-ui);font-size:11px;font-weight:600;line-height:1.4;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid transparent;cursor:pointer;transition:transform var(--duration-fast);color:#7b6fd8;background:color-mix(in srgb,#7b6fd8 10%,transparent);border-color:color-mix(in srgb,#7b6fd8 28%,transparent)}
-html[data-theme="night"] .dur-chip{color:#a79bf5}
+html[data-mode="dark"] .dur-chip{color:#a79bf5}
 .dur-chip:hover{transform:scale(1.04)}
 .dur-chip.flipped{animation:chipFlip var(--duration-base) ease}
 .dur-chip.none{border:1px dashed var(--border);opacity:.65;background:transparent;color:var(--muted)}

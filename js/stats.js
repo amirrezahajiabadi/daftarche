@@ -30,6 +30,7 @@ import { dateToJalali, JALALI_MONTHS } from './jalali.js';
 import { subscribe } from './bus.js';
 import { qorqoriMarkup } from './qorqori.js';
 import { loadStatsRange, saveStatsRange } from './store.js';
+import { streakToday } from './ledger.js';
 
 /* ── The five windows ──
    `bucket` decides how the window is drawn: a bar per day for the two short
@@ -95,16 +96,12 @@ export function normalizeSession(s, now = Date.now()) {
 }
 
 /* ── Streak ──
-   The one streak definition in the app: consecutive days, up to today (or up to
-   yesterday while today is still unmarked), that carry at least one tick. */
-export function calcStreak(history = state.history) {
-  const set = new Set(Array.isArray(history) ? history : []);
-  let s = 0;
-  const d = new Date();
-  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
-  while (set.has(dayKey(d))) { s++; d.setDate(d.getDate() - 1); }
-  return s;
-}
+   There is still exactly one definition of a streak in the app, but it no
+   longer lives here: a streak is a property of the days themselves, and since
+   the day book was added (js/ledger.js) that is where days are kept — together
+   with the freezes that can repair a single missed one. This page asks for it
+   by name instead of keeping a second, slightly different copy. */
+export const calcStreak = () => streakToday().current;
 
 /* ── Calendar helpers (day-aligned, DST-proof) ── */
 
@@ -203,6 +200,10 @@ function fillDays(days) {
 function bucketize(days, kind, nowTs) {
   const groups = new Map();
   const todayKey = dayKey(new Date(nowTs));
+  /* Where each day sits in the window. The tick rows are counted from the end of
+     the window rather than from a date's own number, so the labels stay evenly
+     spaced however the window happens to fall. */
+  const pos = new Map(days.map((d, i) => [d.key, i]));
 
   for (const d of days) {
     let gkey, glabel = '';
@@ -218,10 +219,13 @@ function bucketize(days, kind, nowTs) {
       glabel = JALALI_MONTHS[d.jm - 1];
     } else {
       gkey = d.key;
-      /* Seven days get their weekday letter; thirty get a date every fifth bar. */
+      /* Seven days get their weekday letter; thirty get a date every fifth bar,
+         counted back from today: the ticks keep an even rhythm, and the day the
+         reader is living in always carries its number instead of only when its
+         date happens to land on the fifth step. */
       glabel = days.length <= 7
         ? WEEKDAY_LETTERS[d.weekday]
-        : (d.jd % 5 === 1 || d.key === todayKey ? faNum(d.jd) : '');
+        : ((days.length - 1 - pos.get(d.key)) % 5 === 0 ? faNum(d.jd) : '');
     }
 
     let g = groups.get(gkey);
@@ -391,6 +395,11 @@ function buildStats(rangeKey = DEFAULT_RANGE, now = Date.now()) {
 
   const hasAny = done > 0 || sessions.length > 0 || created > 0 || reading.minutes > 0 || reading.marks > 0 || mood.days > 0;
 
+  /* The streak and its freezes, read once. `frozen` rides along with the model
+     because the chart marks those days: a repaired day is shown as repaired,
+     never quietly counted as a day the reader showed up for. */
+  const streak = streakToday();
+
   return {
     range,
     window: { from, to: today, days: days.length, sub: range.sub },
@@ -400,8 +409,10 @@ function buildStats(rangeKey = DEFAULT_RANGE, now = Date.now()) {
       rate: rate(done, windowTasks.length),
       activeDays, activeDaysPrev: prevActiveDays, days: days.length,
       focusMinutes, focusMinutesPrev: prevFocusMinutes,
-      streak: calcStreak(), bestStreak,
+      streak: streak.current, bestStreak,
+      streakFreezes: streak.used, streakFreezesLeft: streak.available,
     },
+    frozen: [...streak.frozen],
     buckets,
     focus: {
       count: sessions.length,
@@ -487,12 +498,45 @@ export function setRange(key) {
   renderStats();
 }
 
-const barTitle = b => `${faNum(b.done)} کار${b.focusMin ? ` · ${faNum(b.focusMin)} دقیقه تمرکز` : ''}${b.mood ? ` · حال: ${MOODS[Math.round(b.mood) - 1].label}` : ''}`;
+/* Which days were repaired by a freeze. Set once per paint, read by the tooltip
+   and by the two branches below that build and update the columns. */
+let frozenKeys = new Set();
+
+const barTitle = b => `${faNum(b.done)} کار${b.focusMin ? ` · ${faNum(b.focusMin)} دقیقه تمرکز` : ''}${b.mood ? ` · حال: ${MOODS[Math.round(b.mood) - 1].label}` : ''}${frozenKeys.has(b.key) ? ' · با مرخصی پیوستگی' : ''}`;
+
+/* ── Ticks that fit ──
+   A column is about thirty pixels wide and «اردیبهشت» is half as wide again as
+   that, so a label on every column prints the names on top of one another. The
+   names are laid out first and then thinned to every n-th tick — n measured, not
+   guessed, from the room the widest name needs against the distance between two
+   ticks, both of which move with the window, the range and the width of the
+   card. Thinning starts at the newest column, so today always keeps its label.
+   The full name stays on the span's data, which is what lets a rotation re-fit
+   the row instead of leaving it thinner than the new width could carry. */
+const TICK_GAP = 8;
+
+function fitTicks(chart) {
+  const spans = [...chart.querySelectorAll('.col > span')].filter(s => s.dataset.t);
+  if (spans.length < 2) return;
+  spans.forEach(s => { s.textContent = s.dataset.t; });
+  const rects = spans.map(s => s.getBoundingClientRect());
+  const pitch = Math.abs(rects[0].left - rects[rects.length - 1].left) / (spans.length - 1);
+  /* Zero while the page is hidden: nothing has been laid out, so there is no
+     width to fit against and the row is left for the next visible paint. */
+  if (pitch < 2) return;
+  const widest = Math.max(...rects.map(r => r.width));
+  const step = Math.max(1, Math.ceil((widest + TICK_GAP) / pitch));
+  if (step < 2) return;
+  spans.forEach((s, i) => {
+    if ((spans.length - 1 - i) % step) s.textContent = '';
+  });
+}
 
 function paintChart(model) {
   const chart = $('#statsChart');
   if (!chart) return;
   const buckets = model.buckets;
+  frozenKeys = new Set(model.frozen || []);
   const max = Math.max(...buckets.map(b => b.done), 1);
   const meta = $('#statsChartMeta');
   if (meta) meta.textContent = max > 1 ? `بیشترین: ${faNum(max)} کار` : '';
@@ -508,11 +552,12 @@ function paintChart(model) {
     const stagger = buckets.length > 20 ? 10 : buckets.length > 10 ? 22 : 34;
     buckets.forEach((b, i) => {
       const col = document.createElement('div');
-      col.className = 'col' + (b.today ? ' today' : '');
+      col.className = 'col' + (b.today ? ' today' : '') + (frozenKeys.has(b.key) ? ' frozen' : '');
       const bar = document.createElement('div');
       bar.className = 'bar' + (b.done ? '' : ' zero') + ' grow';
       const lbl = document.createElement('span');
       lbl.textContent = b.label;
+      lbl.dataset.t = b.label;
       const md = document.createElement('i');
       md.className = 'mdot';
       md.style.background = b.mood ? MOODS[Math.round(b.mood) - 1].color : 'transparent';
@@ -522,6 +567,7 @@ function paintChart(model) {
       bar.style.height = (b.done ? 20 + (b.done / max) * 80 : 6) + '%';
       bar.style.setProperty('--d', `${Math.min(i * stagger, 360)}ms`);
     });
+    fitTicks(chart);
     return;
   }
 
@@ -531,11 +577,14 @@ function paintChart(model) {
     const bar = col.querySelector('.bar');
     const md = col.querySelector('.mdot');
     col.classList.toggle('today', !!b.today);
+    col.classList.toggle('frozen', frozenKeys.has(b.key));
     bar.className = 'bar' + (b.done ? '' : ' zero');
     bar.style.height = (b.done ? 20 + (b.done / max) * 80 : 6) + '%';
     md.style.background = b.mood ? MOODS[Math.round(b.mood) - 1].color : 'transparent';
     col.title = barTitle(b);
   });
+  /* Every repaint re-fits the row: the window may have been rotated under it. */
+  fitTicks(chart);
 }
 
 const line = (label, value, hint) =>
@@ -637,7 +686,11 @@ export function renderStats(force = false) {
     const streakWrap = $('#streakChip');
     const streakVal = $('#streakVal');
     if (streakWrap) streakWrap.classList.toggle('hot', !!streakChip);
-    if (streakVal) streakVal.textContent = streakChip ? `${streakChip.v} ${streakChip.l}` : 'اولین تیک رو بزن';
+    if (streakVal) {
+      streakVal.textContent = streakChip
+        ? `${streakChip.v} ${streakChip.l}${h.streakFreezes ? ` · با ${faNum(h.streakFreezes)} مرخصی` : ''}`
+        : 'اولین تیک رو بزن';
+    }
   }
 
   paintChart(model);

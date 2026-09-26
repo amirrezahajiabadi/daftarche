@@ -49,7 +49,7 @@
    bars, and labels only where they can be read. ── */
 .stat-chart.busy{gap:3px}
 .stat-chart.busy .col .bar{max-width:14px;border-radius:4px 4px 2px 2px}
-.stat-chart.busy .col span{font-size:9px;letter-spacing:-.02em}
+.stat-chart.busy .col span{font-size:9px}
 .stat-meta{font-size:11px;color:var(--muted);font-weight:500}
 
 /* Bars rise once, on a keyframe, and land at their written height — the height
@@ -57,6 +57,15 @@
    instead of an empty stub. Scoped to this page's chart. */
 .stat-chart .col .bar.grow{animation:barUp var(--duration-slow) var(--ease-out) both;animation-delay:var(--d,0ms)}
 @keyframes barUp{from{height:0}}
+
+/* ── A repaired day ──
+   The bar of a day that carries no tick of its own but still holds the streak
+   together (js/ledger.js). Hatched in the accent colour and lifted to a visible
+   sliver: the reader sees that the day counted *and* that it was not worked,
+   without a second legend to learn. min-height rather than height, because the
+   real height is written inline by the painter. */
+.stat-chart .col.frozen .bar{background:repeating-linear-gradient(135deg,var(--accent) 0 2.5px,transparent 2.5px 6px);
+  border-radius:3px;min-height:9px;opacity:.75}
 
 /* ── Sections ── */
 .stat-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
@@ -131,16 +140,6 @@
 .stat-section .insight-suggestion .vibe-head{margin-bottom:0}
 .stat-section .insights-list{margin-top:10px}
 
-/* ── The profile's one door into all of this ── */
-.stats-entry{display:block;width:100%;text-align:start;font-family:var(--font-ui);color:var(--text);cursor:pointer;
-  transition:transform var(--duration-fast) var(--ease-out)}
-@media (hover:hover){.stats-entry:hover{transform:translateY(-1px)}}
-.stats-entry:active{transform:translateY(1px)}
-.stats-entry:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
-.stats-entry .vibe-head{margin-bottom:6px}
-.stats-entry-go{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--accent);border:1.5px solid var(--border);
-  border-radius:var(--radius-pill);padding:5px 14px}
-.stats-entry-hint{display:block;font-size:12px;line-height:1.9;color:var(--muted)}
 
 /* ── Card templates ──
    A template is a palette, written as the card's own tokens so one set of names
@@ -158,15 +157,30 @@
    buttons. As a full-width sheet it used to fill the viewport and make a square
    card read as a page; bounded and centred, the card is what the eye lands on. */
 .share-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
-  width:100%;max-width:380px;max-height:min(84dvh,660px);display:flex;flex-direction:column;overflow:hidden;
+  width:100%;max-width:390px;max-height:min(86dvh,700px);display:flex;flex-direction:column;overflow:hidden;
   box-shadow:var(--shadow-2);animation:popCard var(--duration-base) var(--ease-out)}
 .share-panel .sheet-head{padding:12px 14px}
-.share-body{overflow:auto;padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
-.share-preview{position:relative;display:grid;place-items:center;min-height:0;padding:8px;background:var(--bg);
-  border:1px solid var(--border);border-radius:var(--radius-sm)}
-.share-preview img{display:block;width:auto;height:auto;max-width:min(100%,270px);
-  max-height:min(32dvh,270px);border-radius:10px;box-shadow:var(--shadow-1);
+.share-body{overflow:auto;padding:12px 14px 0;display:flex;flex-direction:column;gap:10px;overscroll-behavior-y:contain}
+/* The preview never gives up room: it is the card, and a card squeezed under a
+   row of settings would spill over it. The body scrolls instead. */
+/* The card keeps the top of the panel while its settings are scrolled under
+   it: every choice can then be judged against the card it changes rather than
+   against a memory of it, which is the whole point of a live preview. */
+.share-preview{position:sticky;top:0;z-index:2;display:grid;place-items:center;flex:0 0 auto;padding:10px;background:var(--bg);
+  border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 12px 14px -12px rgba(0,0,0,.45)}
+.share-preview img{display:block;width:auto;height:auto;max-width:min(100%,300px);
+  max-height:min(34dvh,300px);border-radius:10px;box-shadow:var(--shadow-1);
   transition:opacity var(--duration-fast)}
+/* The card's shape is the choice, so the preview wears it: a square card gets a
+   square preview, a story gets the tall one it will be posted as. The height cap
+   is what does it — the width follows the ratio from there. */
+.share-panel[data-card-layout="hero"] .share-preview img{max-width:min(100%,280px);max-height:min(32dvh,280px)}
+.share-panel[data-card-layout="dense"] .share-preview img{max-width:min(100%,210px);max-height:min(42dvh,400px)}
+/* A new card rises into place. The picture is replaced, not cross-faded — two
+   bitmaps of the same card would blend into a third card that was never drawn —
+   so the motion is on the frame it lands in. */
+.share-preview img.is-new{animation:cardIn var(--duration-base) var(--ease-out)}
+@keyframes cardIn{from{opacity:.35;transform:scale(.985)}}
 .share-preview img[hidden],.share-spinner[hidden]{display:none}
 /* While the next template is being painted the card that is still on screen
    dims: the preview says «not final» without taking away what the reader chose. */
@@ -174,10 +188,16 @@
 .share-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--border);
   border-top-color:var(--accent);animation:shareSpin 1s linear infinite}
 @keyframes shareSpin{to{transform:rotate(360deg)}}
+/* The two deliveries never scroll away: the panel is taller than the phone it
+   opens on, and «send it» should not have to be chased to the bottom of a form.
+   Its own padding is the panel's bottom inset, so the sticky edge lands flush. */
+.share-footer{position:sticky;bottom:0;z-index:2;display:flex;flex-direction:column;gap:8px;
+  padding:10px 0 14px;background:var(--surface);box-shadow:0 -12px 14px -12px rgba(0,0,0,.4)}
+.share-footer:has(.share-note:empty){gap:0}
 .share-note{margin:0;font-size:11.5px;line-height:1.8;color:var(--muted)}
 .share-note:empty{display:none}
 .share-actions{display:flex;gap:8px}
-.share-actions button{flex:1;min-height:42px;border-radius:var(--radius-sm);font-family:var(--font-ui);
+.share-actions button{flex:1;min-height:46px;border-radius:var(--radius-sm);font-family:var(--font-ui);
   font-size:13.5px;font-weight:600;cursor:pointer;transition:transform var(--duration-fast)}
 .share-actions button:active{transform:translateY(1px)}
 .share-go{border:none;background:var(--accent);color:#fff;box-shadow:var(--shadow-accent)}
@@ -186,21 +206,82 @@
 .share-go:focus-visible,.share-ghost:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 
 /* ── The template picker ──
-   The two rows themselves are the shared picker (components2.css, js/chipgroup.js);
-   the dialog only stacks them. */
-.share-style{display:flex;flex-direction:column;gap:8px}
+   The rows themselves are the shared picker (components2.css, js/chipgroup.js);
+   the dialog only stacks them. Each field is a label over a grid, and the
+   numbers field carries a count and one line of explanation — a row that takes
+   several answers has to say how many it holds before the reader finds out by
+   tapping.
+
+   The label goes over its row, not beside it. A label column costs width that
+   the chips then pay for by wrapping a two-word choice onto two lines, which is
+   what turned this panel into a ragged column of half-empty pills; given the
+   whole width, every choice is one line and every row lines up with the one
+   above it. The column count is per field (data-cols), because the answers are
+   read as a set: a shape has three, a palette four, an accent three, and the
+   numbers two — the numbers being the only long labels of the four. */
+.share-style{display:flex;flex-direction:column;gap:14px}
+.share-style .pick-field{display:block}
+.share-style .pick-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.share-style .pick-label{font-size:12px;font-weight:700;color:var(--text)}
+.share-style .pick-row{display:grid;gap:6px;grid-template-columns:repeat(2,1fr)}
+.share-style .pick-field[data-cols="3"] .pick-row{grid-template-columns:repeat(3,1fr)}
+.share-style .pick-field[data-cols="4"] .pick-row{grid-template-columns:repeat(4,1fr)}
+/* One line per chip, always: a choice that wraps reads as two choices. Overflow
+   is clipped rather than shown over the neighbour if a label is ever longer
+   than its track. */
+.share-style .pick-chip{justify-content:center;width:100%;min-width:0;min-height:42px;padding:0 8px;
+  gap:6px;font-size:12px;white-space:nowrap;overflow:hidden}
+.share-style .pick-dot{width:12px;height:12px}
+/* A chosen chip carries the accent in its ring and its tint, and the label in the
+   reader's own ink. The shared chip paints its label with the accent itself, and
+   on the light palettes that lands at 2.5:1 against the very tint it sits on —
+   under AA for a 12px label, and worse on the filled control below. The card
+   engine already answers this per palette by measuring the paper; the panel
+   answers it by not putting the accent in the text at all. */
+.share-style .pick-chip.sel{color:var(--text);background:var(--accent-soft);border-color:var(--color-accent)}
+
+/* The shape row is a segmented control rather than three pills: the answers are
+   exclusive, adjacent, and one of them is always on — a track with a filled
+   segment says exactly that and needs no dot to say which one. */
+.share-style .pick-field.is-seg .pick-row{gap:2px;padding:3px;border:1.5px solid var(--color-border);
+  border-radius:var(--radius-pill);background:var(--color-bg)}
+.share-style .pick-field.is-seg .pick-chip{min-height:36px;border:none;background:transparent}
+.share-style .pick-field.is-seg .pick-chip .pick-dot{display:none}
+.share-style .pick-field.is-seg .pick-chip.sel{background:var(--accent-soft);color:var(--text);
+  box-shadow:inset 0 0 0 1.5px var(--color-accent)}
+.share-style .pick-field.is-seg .pick-chip:focus-visible{outline-offset:-2px}
+
+.share-style .pick-hint{margin:8px 0 0}
+.pick-hint{font-size:11px;line-height:1.9;color:var(--muted)}
+
+/* Four palettes across is right on the panel's own width and wrong on a small
+   phone: measured at its narrowest the row still fits at 375px but with no room
+   left for a label a pixel longer, so the line breaks in two below 380px — one
+   extra row, every name whole. */
+@media (max-width:380px){
+  .share-style .pick-field[data-cols="4"] .pick-row{grid-template-columns:repeat(2,1fr)}
+}
+
+/* The narrowest phones fit every row already, but only just: the longest label
+   sits flush against its chip's padding. A smaller face and a thinner pad buy
+   back the difference, so a label that grows — a translation, a wider font, a
+   reader with larger text — still has somewhere to go. */
+@media (max-width:360px){
+  .share-style .pick-chip{padding:0 6px;gap:5px;font-size:11.5px}
+  .share-style .pick-box{width:17px;height:17px;border-radius:5px}
+}
 
 @media (max-width:400px){
   .stat-range-btn{font-size:11.5px;padding:8px 1px}
   .stat-head .stat-chip b{font-size:18px}
-  .share-actions{flex-direction:column}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .stats-share,.stat-range-btn,.stat-barrow-track i,.stat-mood-bar i,.stat-chip,.stats-entry,
+  .stats-share,.stat-range-btn,.stat-barrow-track i,.stat-mood-bar i,.stat-chip,.entry-card,
   .share-actions button,.share-preview img,.stat-more{transition:none}
+  .share-preview img.is-new{animation:none}
   .stat-barrow-track i,.stat-mood-bar i,.stat-chart .col .bar.grow{animation:none}
-  .stats-share:hover,.stats-share:active,.stats-entry:hover,.stats-entry:active{transform:none}
+  .stats-share:hover,.stats-share:active,.entry-card:hover,.entry-card:active{transform:none}
   /* The opening rise is movement for its own sake; the panel can simply be
      there. The spinner keeps turning though — a frozen ring would read as a
      broken loading indicator. */

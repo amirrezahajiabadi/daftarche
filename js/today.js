@@ -5,7 +5,7 @@ import { state, getTask } from './state.js';
 import { $, faNum, dayKey, startOfToday, formatDuration } from './utils.js';
 import { P_LABEL, ICONS } from './constants.js';
 import { subscribe } from './bus.js';
-import { addTask, dueLabel, collapse, setTaskDone } from './tasks.js';
+import { addTask, dueLabel, collapse, setTaskDone, timeRangeLabel } from './tasks.js';
 import { frogScore } from './progress.js';
 import { openFocus } from './focus.js';
 import { qorqoriMarkup } from './qorqori.js';
@@ -209,10 +209,13 @@ function todayRow(t) {
   }
   const durLabel = formatDuration(t.durationMin);
   const durChip = durLabel ? `<span class="t-dur">${durLabel}</span>` : '';
+  const spanLabel = timeRangeLabel(t);
+  const spanChip = spanLabel ? `<span class="t-span">${spanLabel}</span>` : '';
   li.innerHTML = `
     <button class="t-check" type="button" aria-label="تغییر وضعیت تکمیل">${ICONS.check}</button>
     <span class="t-dot" style="--pr:${PRI_COLORS[t.p || 'mid']}"></span>
     <span class="t-title"></span>
+    ${spanChip}
     ${dueChip}
     ${durChip}
     <button class="t-del" type="button" aria-label="حذف">${ICONS.trash}</button>`;
@@ -228,7 +231,7 @@ function todayRow(t) {
    only genuinely new rows animate in. Order changes reuse the same elements, so
    nothing flickers when a finished task moves down a group. */
 const liveRows = new Map(); // taskId → { el, sig }
-const rowSig = t => [t.text, t.p || 'mid', t.dueDate || '', t.durationMin || ''].join('|');
+const rowSig = t => [t.text, t.p || 'mid', t.dueDate || '', t.durationMin || '', t.timeFrom || '', t.timeTo || ''].join('|');
 
 function renderTodayList() {
   const list = $('#todayList');
@@ -267,14 +270,23 @@ function renderTodayList() {
 
     // Reuse the row, or build a fresh element for changed/new/vanished markup
     if (!entry || !entry.el.isConnected || entry.sig !== sig) {
+      /* The element being replaced is kept: a swap stays in the row's own place,
+         so a cursor already standing on the old element is standing in front of
+         the new one. Comparing the cursor against `entry.el` *after* the swap
+         would miss that — it is the new element now — and hand insertBefore a
+         node that has just left the list, which is what changing a due date (or
+         a title, or a priority) on an important task used to do. */
+      const old = entry ? entry.el : null;
       const el = todayRow(t);
-      if (entry && entry.el.isConnected) entry.el.replaceWith(el);
+      if (old && old.isConnected) old.replaceWith(el);
       entry = { el, sig };
       liveRows.set(t.id, entry);
-    } else {
-      entry.el.classList.toggle('done', !!t.done);
+      if (next === old) next = el.nextElementSibling;
+      else list.insertBefore(el, next);
+      return;
     }
 
+    entry.el.classList.toggle('done', !!t.done);
     if (next === entry.el) next = entry.el.nextElementSibling;
     else list.insertBefore(entry.el, next);
   });

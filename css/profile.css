@@ -96,7 +96,6 @@
 }
 
 /* ═══ Insights (opens from Profile) ═══ */
-.settings-hint{color:var(--muted);font-size:12px;margin-top:2px}
 
 .insights-empty{text-align:center;padding:34px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .insights-empty[hidden]{display:none}

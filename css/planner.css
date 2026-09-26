@@ -1,0 +1,192 @@
+/* ═══ Weekly planner ═══
+   A week laid out in seven columns and the day you picked under it. Everything
+   here is built out of the tokens the rest of the app uses: no colour, radius or
+   shadow of its own, so the planner is another page of the same notebook rather
+   than a plugin that happens to share its storage.
+
+   The strip is the one place with a hard geometric budget: seven cells inside a
+   320px phone leave about forty pixels each, which is what sets the sizes below
+   — a weekday initial, a day number, and a bar. The numbers themselves go to the
+   cell's label instead of onto the cell, because at that width a printed count
+   would be the thing that clipped. */
+
+.wk-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wk-nav{flex:0 0 auto;border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  font-family:var(--font-ui);font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:var(--radius-pill);
+  cursor:pointer;transition:color var(--duration-fast),border-color var(--duration-fast),background var(--duration-fast)}
+@media (hover:hover){.wk-nav:hover{color:var(--accent);border-color:var(--accent)}}
+.wk-nav:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.wk-range{flex:1;min-width:0;text-align:center;font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--text)}
+.wk-today{flex:0 0 auto;border:none;background:transparent;color:var(--accent);font-family:var(--font-ui);
+  font-size:11.5px;font-weight:600;padding:7px 4px;border-radius:var(--radius-pill);cursor:pointer}
+.wk-today[hidden]{display:none}
+.wk-today:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── The week strip ── */
+.wk-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 6px;box-shadow:var(--shadow-sm)}
+.wk-cell{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
+  border:1.5px solid transparent;background:transparent;border-radius:var(--radius-sm);
+  padding:6px 2px 5px;cursor:pointer;font-family:var(--font-ui);
+  transition:background var(--duration-fast),border-color var(--duration-fast),color var(--duration-fast)}
+.wk-dow{font-size:10.5px;font-weight:600;color:var(--muted);line-height:1}
+.wk-num{font-size:15px;font-weight:700;color:var(--text);line-height:1.2}
+.wk-cell.today .wk-num{color:var(--accent)}
+.wk-cell.past .wk-num{color:var(--muted)}
+/* The bar is the day's plan filling up. A day with nothing planned has no bar
+   at all — an empty track would be a promise the day never made. */
+.wk-track{width:100%;height:3px;border-radius:var(--radius-pill);background:transparent;overflow:hidden}
+.wk-track.has{background:color-mix(in srgb,var(--muted) 28%,transparent)}
+.wk-track i{display:block;height:100%;width:0;border-radius:var(--radius-pill);background:var(--accent);
+  transition:width var(--duration-base) var(--ease-out)}
+.wk-cell.sel{border-color:var(--accent);background:var(--accent-soft)}
+.wk-cell.sel .wk-dow,.wk-cell.sel .wk-num{color:var(--accent)}
+.wk-cell:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── The day ── */
+.wk-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:14px}
+.wk-panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wk-panel-head h2{font-family:var(--font-personality);font-size:18px;font-weight:700;margin:0}
+.wk-rel{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:var(--radius-pill);
+  color:var(--muted);background:var(--bg)}
+.wk-rel.today{color:var(--accent);background:var(--accent-soft)}
+.wk-rel.past{color:var(--muted)}
+.wk-rel.future{color:var(--accent)}
+
+/* The quick add is the same pill the Today page already has — same border, same
+   surface-fill, same six pixels of breathing room around a 44px button. Those
+   six pixels are the whole of it: --shadow-accent is a hard 4px drop with no
+   blur, so a pill that hugged its button any tighter would have the round
+   button's shadow crossing the pill's own border and read as two shapes
+   overlapping. */
+.wk-add{display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--radius-pill);padding:6px 6px 6px 18px;box-shadow:none;
+  transition:border-color var(--duration-base),box-shadow var(--duration-base),background var(--duration-slow)}
+/* One ring, and it belongs to the row: the field inside never draws its own, so
+   a focused reader sees a single outline rather than two sharing the same box. */
+.wk-add:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-sm)}
+.wk-add.shake{animation:shake var(--duration-base) ease;border-color:var(--danger)!important}
+/* The field paints nothing at all — no box of its own, no focus ring, no UA
+   field look. The app has a global :focus-visible outline, so a bare input would
+   draw a second rounded box inside the pill the moment it is focused; the row's
+   own border is the only outline the reader should see. */
+.wk-add input{flex:1;min-width:0;border:none;outline:none;box-shadow:none;border-radius:0;
+  appearance:none;-webkit-appearance:none;background:transparent;color:var(--text);
+  font-family:var(--font-ui);font-size:15px;font-weight:400;padding:9px 0}
+.wk-add input::placeholder{color:var(--muted);font-weight:400}
+.wk-go{flex:0 0 auto;width:44px;height:44px;border:none;border-radius:50%;background:var(--accent);
+  color:var(--color-text-on-accent);cursor:pointer;display:grid;place-items:center;
+  box-shadow:var(--shadow-accent);transition:transform var(--duration-fast) var(--ease-spring),box-shadow var(--duration-fast)}
+.wk-add .wk-go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+.wk-go:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+/* ── The optional span ── */
+.wk-span{display:flex;flex-direction:column;gap:8px}
+.wk-span-lab{font-size:11.5px;font-weight:600;color:var(--color-text-muted)}
+.wk-span-out{font-size:11.5px;font-weight:600;color:var(--accent)}
+.wk-span-out:empty{display:none}
+.wk-span .pick-row{align-items:center}
+/* The picked chip is read in the reader's own ink on the accent's soft fill: an
+   accent-on-accent-soft label is the one pairing this app has had to fix more
+   than once, and the choices here are 12px text. */
+.wk-span .pick-chip{min-height:36px;font-size:11.5px;padding:6px 11px}
+.wk-span .pick-chip.sel{color:var(--text);border-color:var(--color-accent);background:var(--accent-soft)}
+.wk-span .pick-chip:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.wk-span-picks{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wk-span-picks[hidden]{display:none}
+.wk-span-picks select{border:1.5px solid var(--border);background:var(--bg);color:var(--text);
+  font-family:var(--font-ui);font-size:12.5px;font-weight:600;padding:7px 8px;border-radius:var(--radius-sm);
+  max-width:46%;cursor:pointer}
+.wk-span-picks select:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.wk-span-to{font-size:11.5px;color:var(--muted)}
+.wk-span-hint{margin:0;font-size:11.5px;font-weight:500;color:var(--danger)}
+.wk-span-hint[hidden]{display:none}
+
+/* ── The day's tasks ── */
+.wk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.wk-row{display:flex;align-items:center;gap:9px;background:var(--color-bg);border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);padding:9px 12px}
+.wk-check{width:25px;height:25px;flex-shrink:0;position:relative;border-radius:var(--radius-xs);
+  border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;
+  color:transparent;transition:background var(--duration-fast) var(--ease-out),border-color var(--duration-fast)}
+/* 44px of finger without 44px of row */
+.wk-check::after{content:'';position:absolute;inset:-9px;border-radius:var(--radius-sm)}
+.wk-check svg{width:13px;height:13px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset var(--duration-base) ease}
+.wk-row.done .wk-check{background:var(--green);border-color:transparent}
+.wk-row.done .wk-check svg{stroke-dashoffset:0}
+.wk-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--color-success)}
+.wk-row[data-p="mid"] .wk-dot{background:var(--color-warning)}
+.wk-row[data-p="high"] .wk-dot{background:var(--color-danger)}
+.wk-row.done .wk-dot{opacity:.25}
+.wk-title{flex:1;min-width:0;font-family:var(--font-ui);font-size:13.5px;font-weight:500;line-height:1.7;word-break:break-word}
+.wk-row.done .wk-title{color:var(--muted);font-weight:400;text-decoration:line-through;
+  text-decoration-color:color-mix(in srgb,var(--muted) 70%,transparent)}
+/* The span: the reason this row is on this day at this hour, so it is set in the
+   accent rather than in a chip grey — it is the planner's own signal. */
+.wk-span-chip{flex-shrink:0;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:var(--radius-pill);
+  color:var(--accent);background:var(--accent-soft);white-space:nowrap}
+.wk-del{border:none;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:var(--radius-xs);
+  cursor:pointer;display:grid;place-items:center;flex-shrink:0;opacity:0;transform:scale(.8);
+  transition:opacity var(--duration-fast),transform var(--duration-fast),color var(--duration-fast),background var(--duration-fast)}
+.wk-row:hover .wk-del,.wk-del:focus-visible{opacity:1;transform:none}
+.wk-del:hover{color:var(--danger);background:rgba(228,88,79,.12)}
+@media (hover:none){.wk-del{opacity:.55;transform:none}}
+.wk-empty{list-style:none;text-align:center;padding:18px 12px;color:var(--muted);font-size:12.5px;
+  line-height:1.9;font-weight:400;background:var(--color-bg);border:1px solid var(--color-border);
+  border-radius:var(--radius-sm)}
+
+/* ── Carrying a row to another day ──
+   The grip is the one thing on a row that drags, and the only thing on the page
+   with `touch-action:none`: the row itself stays exactly as scrollable as it was,
+   so a hand reading further down the day is never ambushed by a lift. The day
+   under the finger is marked in the accent it is about to be dropped into, and
+   the card that follows the finger carries the destination in words, because a
+   thumb covers a card and a day number both. */
+.wk-grip{flex:0 0 auto;display:grid;place-items:center;position:relative;color:var(--muted);
+  opacity:.42;cursor:grab;touch-action:none;-webkit-touch-callout:none;
+  transition:opacity var(--duration-fast)}
+/* A handle the eye barely sees and the finger still finds. */
+.wk-grip::after{content:'';position:absolute;inset:-5px -6px;border-radius:var(--radius-xs)}
+.wk-row:hover .wk-grip{opacity:.7}
+html.wk-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+html.wk-dragging .wk-grip{cursor:grabbing}
+.wk-row.dragging{opacity:.4}
+.wk-cell.drop{border-color:var(--accent);background:var(--accent-soft)}
+.wk-cell.drop .wk-dow,.wk-cell.drop .wk-num{color:var(--accent)}
+.wk-cell.flash{animation:wk-pulse .7s var(--ease-out)}
+@keyframes wk-pulse{0%,55%{background:var(--accent-soft)}100%{background:transparent}}
+.wk-ghost{position:fixed;inset-block-start:0;inset-inline-start:0;z-index:99;pointer-events:none;
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:min(20rem,80vw);
+  background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius-sm);
+  padding:8px 12px;box-shadow:var(--shadow-lg);will-change:transform}
+.wk-ghost-t{font-family:var(--font-ui);font-size:13.5px;font-weight:500;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.wk-ghost-to{flex-basis:100%;font-size:11px;font-weight:600;color:var(--accent)}
+.wk-ghost-to:empty{display:none}
+
+/* ── What the day held ── */
+.wk-sec{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--color-border);padding-top:14px}
+.wk-sec[hidden]{display:none}
+.wk-sec h3{margin:0;font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--muted)}
+.wk-chips{display:flex;flex-wrap:wrap;gap:6px}
+.wk-chips[hidden]{display:none}
+.wk-chip{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:var(--radius-pill);
+  color:var(--text);background:var(--accent-soft)}
+.wk-act-note{margin:0;font-size:12px;line-height:1.9;color:var(--muted)}
+.wk-act-note[hidden]{display:none}
+
+@media (max-width:400px){
+  .wk-panel{padding:14px 14px}
+  .wk-num{font-size:14px}
+  .wk-dow{font-size:10px}
+  .wk-strip{padding:7px 5px}
+  .wk-title{font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  .wk-nav,.wk-cell,.wk-track i,.wk-check,.wk-check svg,.wk-del,.wk-add,.wk-go,.wk-grip{transition:none}
+  .wk-add.shake{animation:none}
+  .wk-go:active{transform:none}
+  .wk-cell.flash{animation:none;background:var(--accent-soft)}
+}

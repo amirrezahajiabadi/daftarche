@@ -7,7 +7,7 @@
 /* The warm brown scrim only dims a light page. Over the dark background it would
    composite to a lighter value than the page itself, so the panel would stop
    reading as elevated — dark mode needs a scrim that actually darkens. */
-html[data-theme="night"] .overlay{background:rgba(0,0,0,.5)}
+html[data-mode="dark"] .overlay{background:rgba(0,0,0,.5)}
 .overlay[hidden]{display:none}
 @keyframes fadeIn{from{opacity:0}}
 /* Modal entrance: smooth and short — no springy scale jump (Priority 8.3) */

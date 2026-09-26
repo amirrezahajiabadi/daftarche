@@ -7,6 +7,7 @@ import { confetti, beep } from './confetti.js';
 import { setTaskDone, dueLabel } from './tasks.js';
 import { notify, subscribe } from './bus.js';
 import { fekrbazMarkup } from './fekrbaz.js';
+import { rememberFocus } from './ledger.js';
 import { qorqoriMarkup } from './qorqori.js';
 import { jingoolMarkup } from './jingool.js';
 import * as audio from './audio.js';
@@ -631,6 +632,9 @@ function renderRating() {
       // Reflection complete → archive the historical record (validated +
       // deduped by id inside the history module)
       addSessionToHistory(session);
+      /* The archive is capped at 100 sessions, so the day book is what makes the
+         reader's total minutes outlive it (js/ledger.js). */
+      rememberFocus();
       persist();
       showSessionSummary();
       updateFocusPill();

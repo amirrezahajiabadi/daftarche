@@ -1,0 +1,21 @@
+/* ═══ Settings page ═══
+   Everything the rows themselves are made of — the label, the value, the pill
+   and the hairline — is in css/base.css, because the settings card started life
+   at the foot of the profile and the rows were written there. What lives here is
+   the one thing that page did not need: a setting that explains itself.
+
+   A row and its explanation are one thing, so they are wrapped as one: the
+   wrapper carries the vertical rhythm the row used to carry alone, and the hint
+   can never drift away from the setting it belongs to or be read as the one
+   below it. Two settings in one card are separated by the hairline, never by a
+   gap wide enough to look like one. */
+
+.set-item{display:flex;flex-direction:column;gap:5px;padding:14px 0}
+.set-item .settings-row{padding:0}
+
+.settings-hint{color:var(--muted);font-size:12px;line-height:1.9;font-weight:400;margin:0}
+
+@media (max-width:480px){
+  .set-item{padding:12px 0}
+  .settings-hint{font-size:11.5px}
+}

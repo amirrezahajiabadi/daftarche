@@ -112,7 +112,7 @@
 .badge-status.warning{color:var(--color-warning);background:color-mix(in srgb,var(--color-warning) 16%,transparent)}
 .badge-status.danger{color:var(--color-danger);background:color-mix(in srgb,var(--color-danger) 12%,transparent)}
 .badge-status.focus{color:var(--color-accent);background:var(--color-accent-soft)}
-html[data-theme="night"] .badge-status.warning{color:#ffcd8a}
+html[data-mode="dark"] .badge-status.warning{color:#ffcd8a}
 
 /* ═══ 9. Modal ═══
    Pattern only — existing overlay markup/behavior unchanged. */
@@ -134,13 +134,13 @@ html[data-theme="night"] .badge-status.warning{color:#ffcd8a}
   font-family:var(--font-ui);font-size:13px;font-weight:500;
   padding:10px 12px;padding-inline-end:12px;border-radius:var(--radius-md);
   box-shadow:var(--shadow-2);overflow:hidden;max-width:calc(100vw - 32px)}
-html[data-theme="night"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
+html[data-mode="dark"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
 .toast[hidden]{display:none}
 .toast.show{animation:toastIn var(--duration-base) var(--ease-spring)}
 @keyframes toastIn{from{opacity:0;transform:translateX(50%) translateY(16px)}}
 .toast-btn{border:none;background:transparent;color:var(--color-accent);font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:2px 4px;flex-shrink:0}
-html[data-theme="night"] .toast-btn{color:var(--color-accent)}
+html[data-mode="dark"] .toast-btn{color:var(--color-accent)}
 .toast-bar{position:absolute;bottom:0;inset-inline-start:0;height:3px;width:100%;
   background:var(--color-accent);transform-origin:right;animation:toastBar 5s linear forwards}
 .toast-bar[dir="ltr"],[dir="ltr"] .toast-bar{transform-origin:left}
@@ -155,7 +155,7 @@ html[data-theme="night"] .toast-btn{color:var(--color-accent)}
 .toast-sticky .toast-btn{padding:10px 16px;min-height:44px;display:inline-flex;align-items:center;
   border-radius:var(--radius-pill);background:var(--color-accent);color:#fff;
   transition:transform var(--duration-fast) var(--ease-out)}
-html[data-theme="night"] .toast-sticky .toast-btn{color:#fff}
+html[data-mode="dark"] .toast-sticky .toast-btn{color:#fff}
 @media (hover:hover){
   .toast-sticky .toast-btn:hover{transform:translateY(-1px)}
   .toast-sticky .toast-btn:active{transform:translateY(1px)}
@@ -210,7 +210,85 @@ html[data-theme="night"] .toast-sticky .toast-btn{color:#fff}
 .pick-chip:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 .pick-dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;
   background:var(--pick-dot-bg,var(--color-bg));box-shadow:inset 0 0 0 3px var(--pick-dot-ring,var(--color-accent))}
+/* The stacked form of a field: the label, and the end of its line for a counter
+   the row itself cannot show — «۳ از ۳» is easier to read there than a fourth
+   disabled chip would be. */
+.pick-head{display:flex;align-items:center;gap:8px}
+.pick-count{font-size:10.5px;font-weight:700;line-height:1.7;padding:1px 8px;border-radius:var(--radius-pill);
+  color:var(--text);background:var(--accent-soft)}
+.pick-count:empty{display:none}
+/* The checkbox of a row that holds several answers. Unpicked it is an empty
+   square; picked it holds the number of the place that answer takes in what the
+   row builds — the one place a picker can show order rather than just state. */
+.pick-box{flex:0 0 auto;display:grid;place-items:center;width:18px;height:18px;border-radius:6px;
+  border:1.5px solid var(--color-border);background:transparent;font-size:10.5px;font-weight:700;line-height:1}
+.pick-chip.sel .pick-box{border-color:var(--color-accent);background:var(--accent-soft);color:var(--text)}
 @media (prefers-reduced-motion:reduce){.pick-chip{transition:none}}
+
+/* ═══ 16. Segmented Control ═══
+   Two exclusive answers, exactly one always on — the mode switch above the
+   theme swatches, and the card layout row in the share panel. A filled track
+   with the chosen half lifted out of it, so the state is read before it is
+   read as a word. */
+.seg{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1.5px solid var(--color-border);
+  border-radius:var(--radius-pill);background:var(--color-bg)}
+.seg-btn{appearance:none;border:none;background:transparent;color:var(--color-text-muted);
+  font-family:var(--font-ui);font-size:12.5px;font-weight:600;line-height:1;cursor:pointer;
+  padding:0 15px;min-height:38px;border-radius:var(--radius-pill);
+  transition:color var(--duration-base),background var(--duration-base),box-shadow var(--duration-base)}
+.seg-btn.sel{background:var(--color-accent-soft);color:var(--color-text-primary);
+  box-shadow:inset 0 0 0 1.5px var(--color-accent)}
+.seg-btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+/* A finger deserves the full target even though the control reads small. */
+@media (pointer:coarse){.seg-btn{min-height:44px}}
+
+/* ═══ 17. Swatch Row ═══
+   The theme picker's second half: the themes of one half of the table, each a
+   miniature of the interface it would paint. The three bands come from the
+   palette the chip wears (data-palette), never from a colour written here — so a
+   swatch is a promise the CSS keeps, not a picture that can drift from it.
+
+   Two columns, not four: with four themes in a half, four columns on a 320px
+   phone would squeeze each swatch to 63px and the name inside it to nothing. A
+   2×2 grid keeps every swatch wide enough to read its own preview at a glance.
+
+   All eight themes are in the DOM; the four of the other half are hidden by the
+   rule at the bottom, keyed on the host's data-mode. */
+.swatch-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+.swatch{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;padding:8px;
+  border:1.5px solid var(--color-border);border-radius:var(--radius-md);background:transparent;
+  font-family:var(--font-ui);cursor:pointer;
+  transition:border-color var(--duration-base),background var(--duration-base),transform var(--duration-fast)}
+.swatch.sel{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.swatch.sel .swatch-name{color:var(--color-text-primary)}
+.swatch:active{transform:scale(.98)}
+.swatch:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.swatch-preview{display:grid;grid-template-columns:1.5fr 1fr .8fr;height:34px;border-radius:var(--radius-xs);
+  overflow:hidden;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--color-text-primary) 14%,transparent)}
+.swatch-preview i{display:block}
+.swatch-preview i:nth-child(1){background:var(--card-bg,var(--color-bg))}
+.swatch-preview i:nth-child(2){background:var(--card-surface,var(--color-surface))}
+.swatch-preview i:nth-child(3){background:var(--card-accent,var(--color-accent))}
+.swatch-name{font-size:11.5px;font-weight:600;line-height:1.5;text-align:center;color:var(--color-text-secondary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* One half at a time: the host says which, the CSS hides the rest. */
+.swatch-row[data-mode="light"] .swatch[data-mode="dark"],
+.swatch-row[data-mode="dark"] .swatch[data-mode="light"]{display:none}
+/* The same rule for a plain chip row that wears modes — the share card offers
+   the palettes of the half the app is in. A chip with no mode (its «برنامه»)
+   belongs to neither half and is never hidden by this. */
+.pick-row[data-mode="light"] .pick-chip[data-mode="dark"],
+.pick-row[data-mode="dark"] .pick-chip[data-mode="light"]{display:none}
+@media (prefers-reduced-motion:reduce){
+  .seg-btn,.swatch{transition:none}
+  .swatch:active{transform:none}
+}
+@media (max-width:360px){
+  .swatch{padding:6px;gap:5px}
+  .swatch-preview{height:30px}
+  .swatch-name{font-size:11px}
+  .seg-btn{padding:0 11px}
+}
 
 @media (max-width:480px){
   .btn{min-height:44px;padding:9px var(--space-3)}

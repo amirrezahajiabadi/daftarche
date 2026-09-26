@@ -1,12 +1,12 @@
 /* ═══ Shared App State (Singleton) ═══ */
 
 import { loadTasks, loadName, loadHistory, loadMoods, loadPomo, loadSession } from './store.js';
-import { dayKey, dueKeyFromOffset, parseDurationMin } from './utils.js';
+import { dayKey, dueKeyFromOffset, parseDurationMin, parseTimeRange } from './utils.js';
 
 const defaultTasks = () => [
   { id: 'a1', text: 'نسخهٔ جدید دَفتَرچه را بازبینی کن', done: false, p: 'high', cat: 'project', dueDate: dayKey(new Date()), durationMin: null },
   { id: 'a2', text: 'چای تازه دم کن', done: true, p: 'low', cat: 'home', doneAt: Date.now(), durationMin: null },
-  { id: 'a3', text: 'برای امتحان هفتهٔ بعد برنامه بریز', done: false, p: 'mid', cat: 'study', dueDate: dueKeyFromOffset(1), durationMin: null },
+  { id: 'a3', text: 'برای امتحان هفتهٔ بعد برنامه بریز', done: false, p: 'mid', cat: 'study', dueDate: dueKeyFromOffset(1), durationMin: null, timeFrom: 16 * 60, timeTo: 18 * 60 },
 ];
 
 /* ═══ Migration: make every task safe with the extended model ═══
@@ -23,6 +23,13 @@ function normalizeTask(t) {
   if (!task.dueDate && task.due) task.dueDate = task.due;
   delete task.due;
   task.dueDate = task.dueDate && DAY_KEY_RE.test(task.dueDate) ? task.dueDate : null;
+  /* The optional span of the day this task is planned for («۱۴:۰۰ تا ۱۶:۰۰»).
+     It is a plan, not an alarm: nothing schedules itself from it. Kept as two
+     minutes-past-midnight numbers, validated as a pair — an old task, or a
+     half-written one, comes back with no span rather than with half of one. */
+  const span = parseTimeRange(task.timeFrom, task.timeTo);
+  task.timeFrom = span ? span.from : null;
+  task.timeTo = span ? span.to : null;
   if (!task.created) task.created = Date.now();
   task.doneAt = task.done ? (task.doneAt || Date.now()) : null;
   /* Notification fields (optional, safe defaults for old data):

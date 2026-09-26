@@ -11,10 +11,13 @@ import { initRoll } from './roll.js';
 import { initLibrary } from './library.js';
 import { initReader } from './reader.js';
 import { initProfile, renderProfile } from './profile.js';
+import { initSettings, renderSettings } from './settings.js';
 import { initInsights } from './insights.js';
 import { initStats } from './stats.js';
 import { initShareCard } from './sharecard.js';
+import { initAchievements, renderAchievements } from './achievementsview.js';
 import { initToday } from './today.js';
+import { initPlanner, renderPlanner } from './planner.js';
 import { initNotifications, notificationsSupported } from './notifications.js';
 import { initDuePicker } from './duepicker.js';
 import { initChangelogCheck } from './changelog.js';
@@ -28,7 +31,7 @@ const safe = (name, fn) => {
 };
 
 /* ═══ Navigation + Glass Glider ═══
-   Primary tabs: Today, Tasks, Focus, Library.
+   Primary tabs: Today, Tasks, Focus, Library, Week.
    Profile & Stats stay as regular pages: Profile opens from the header avatar,
    Stats opens from the Profile page.
 
@@ -88,6 +91,9 @@ function initNavigation() {
     if (page === 'tasks') renderList(); // Keep the imperative list in sync with state
     if (page === 'focus') syncFocusPage();
     if (page === 'profile') renderProfile();
+    if (page === 'achv') renderAchievements();
+    if (page === 'settings') renderSettings();
+    if (page === 'week') renderPlanner();
     /* The way back exists exactly while there is a step behind. */
     backBtns.forEach(b => { b.hidden = trail.length < 2; });
   };
@@ -173,9 +179,9 @@ function initNavigation() {
   moveGlider();
 }
 
-/* The four homes the bottom bar already moves between. A page in here needs no
+/* The five homes the bottom bar already moves between. A page in here needs no
    back control of its own: the bar is its way in and out. */
-const TAB_PAGES = new Set(['today', 'tasks', 'focus', 'library']);
+const TAB_PAGES = new Set(['today', 'tasks', 'focus', 'library', 'week']);
 
 /* The page named by the URL hash, if it names a real one; otherwise the first
    tab. Used both at boot and when a history entry carries no state at all. */
@@ -450,10 +456,15 @@ safe('کیبورد', initKeyboard);
 safe('کتابخانه', initLibrary);
 safe('ریدر', initReader);
 safe('پروفایل', initProfile);
+safe('تنظیمات', initSettings);
 safe('آمار', initStats);
 safe('بینش‌ها', initInsights);
 safe('کارت آمار', initShareCard);
+/* After the profile, because the card this page is entered from is the one it
+   paints (js/profile.js calls the same refresh). */
+safe('نشان‌ها', initAchievements);
 safe('امروز', initToday);
+safe('برنامه‌ریزی هفتگی', initPlanner);
 safe('مهلت', initDuePicker);
 /* Due-date watcher: silently no-ops until the user grants notification
    permission from a task card. */
@@ -463,6 +474,9 @@ const dl = $('#dateLine');
 if (dl) dl.textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 
 safe('نام', applyName);
+/* Painted at boot as well as on entry, because the page can be the one the URL
+   hash names — and then neither of the two events above has happened yet. */
+safe('رندر تنظیمات', renderSettings);
 safe('رندر اولیه', () => { renderList(); notify(); });
 safe('پوستهٔ آفلاین', initPWA);
 

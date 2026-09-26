@@ -48,5 +48,24 @@ export const saveStatsRange = key   => localStorage.setItem(STORAGE_KEYS.statsRa
 export const loadCardStyle = ()    => read(STORAGE_KEYS.cardStyle, null);
 export const saveCardStyle = style => localStorage.setItem(STORAGE_KEYS.cardStyle, JSON.stringify(style));
 
+/* Streak freeze — «مرخصی پیوستگی». On unless it was deliberately turned off,
+   so the setting only has to be written down once, when the reader changes it,
+   and a missing key (a fresh install, a wiped storage) means the default. */
+export const loadFreeze  = ()    => localStorage.getItem(STORAGE_KEYS.freeze) !== 'off';
+export const saveFreeze  = on    => localStorage.setItem(STORAGE_KEYS.freeze, on ? 'on' : 'off');
+
+/* Unlocked achievements, keyed by id, with the highest tier reached and the day
+   it was reached. Read and sanitized by js/achievements.js, which owns the
+   shape; this is only the shelf it sits on. */
+export const loadAchv    = ()    => read(STORAGE_KEYS.achievements, null);
+export const saveAchv    = v     => localStorage.setItem(STORAGE_KEYS.achievements, JSON.stringify(v));
+
 export const loadTheme   = ()    => localStorage.getItem(STORAGE_KEYS.theme);
 export const saveTheme   = t    => localStorage.setItem(STORAGE_KEYS.theme, t);
+
+/* The last theme used in each half of the table — { light: 'cream', dark: 'ocean' }.
+   It exists so the one-tap switch in the header can return to the dark theme the
+   reader actually chose instead of falling back to a fixed one. A view
+   preference, not data: unreadable means the first theme of that half. */
+export const loadThemeModes = ()    => read(STORAGE_KEYS.themeModes, null);
+export const saveThemeModes = m     => localStorage.setItem(STORAGE_KEYS.themeModes, JSON.stringify(m));

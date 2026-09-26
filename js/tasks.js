@@ -1,6 +1,6 @@
 import { state, getTask } from './state.js';
 import { saveTasks } from './store.js';
-import { $, faNum, startOfToday, dueKeyFromOffset, normalizeFa, parseDurationMin, formatDuration } from './utils.js';
+import { $, faNum, startOfToday, dueKeyFromOffset, normalizeFa, parseDurationMin, formatDuration, formatClock, parseTimeRange } from './utils.js';
 import { P_CYCLE, P_LABEL, CATS, ICONS } from './constants.js';
 import { notify } from './bus.js';
 import { bellHtml, refreshBell, setTaskNotify, notificationsSupported, bindPersistence } from './notifications.js';
@@ -9,6 +9,7 @@ import { recordDay } from './week.js';
 import { openFocus, clearFocus } from './focus.js';
 import { openDuePicker } from './duepicker.js';
 import { formatJalaliDate } from './jalali.js';
+import { rememberDone } from './ledger.js';
 
 const listEl = $('#taskList');
 const save = () => saveTasks(state.tasks);
@@ -80,6 +81,17 @@ function refreshDueChip(li, task) {
   btn.title = `مهلت — ${dl.date} — کلیک برای تغییر`;
 }
 
+/* ── Planned span ──
+   «۱۴:۰۰ تا ۱۶:۰۰» — the part of the day a task is meant for, or null when it
+   has none. One function because three lists show it (the planner, the task
+   list, today): a span that read differently in each would be a bug in two of
+   them. It is a plan, not an alarm — nothing rings from it. */
+export function timeRangeLabel(task) {
+  const from = formatClock(task && task.timeFrom);
+  const to = formatClock(task && task.timeTo);
+  return from && to ? `${from} تا ${to}` : null;
+}
+
 /* ── Build Item ── */
 function createTaskEl(task, delay = 0) {
   const li = document.createElement('li');
@@ -97,12 +109,15 @@ function createTaskEl(task, delay = 0) {
   const durHtml = durLabel
     ? `<button class="dur-chip" title="زمان تقریبی: ${durLabel} — کلیک برای تغییر">${durLabel}</button>`
     : `<button class="dur-chip none" title="افزودن زمان تقریبی">+ زمان</button>`;
+  const spanLabel = timeRangeLabel(task);
+  const spanHtml = spanLabel ? `<span class="span-chip" title="بازهٔ این کار در روز">${spanLabel}</span>` : '';
   li.innerHTML = `
     <span class="grip" aria-hidden="true">${ICONS.grip}</span>
     <button class="pri-dot" title="اولویت: ${P_LABEL[li.dataset.p]} — کلیک برای تغییر" aria-label="تغییر اولویت"></button>
     <button class="check" aria-label="تکمیل">${ICONS.check}</button>
     <span class="title"></span>
     <button class="cat-tag" style="--cc:${cat.color}" title="دسته: ${cat.label} — کلیک برای تغییر">${cat.label}</button>
+    ${spanHtml}
     ${durHtml}
     ${dueHtml}
     ${notificationsSupported() ? bellHtml(task) : ''}
@@ -165,7 +180,13 @@ export function setTaskDone(id, done) {
   const task = getTask(id);
   if (!task || task.done === done) return;
   task.done = done;
-  if (done) { task.doneAt = Date.now(); recordDay(); } else task.doneAt = null;
+  if (done) {
+    task.doneAt = Date.now();
+    recordDay();
+    /* The day book keeps what this day showed, so a task deleted tomorrow cannot
+       take today's tick back out of the achievements (js/ledger.js). */
+    rememberDone();
+  } else task.doneAt = null;
   save(); notify();
   if (done && state.tasks.every(t => t.done)) confetti();
 }
@@ -177,7 +198,7 @@ function toggleTask(li, task) {
 }
 
 /* Shared creation used by the Tasks form and the Today quick add */
-export function addTask(text, p = 'mid', cat = 'misc', dueDate, durationMin = null) {
+export function addTask(text, p = 'mid', cat = 'misc', dueDate, durationMin = null, time = null) {
   const task = {
     id: Date.now() + '' + Math.random().toString(16).slice(2),
     text, done: false, p, cat,
@@ -185,9 +206,32 @@ export function addTask(text, p = 'mid', cat = 'misc', dueDate, durationMin = nu
     durationMin: parseDurationMin(durationMin),
   };
   task.dueDate = dueDate || null;
+  /* The optional span of the day («۲ تا ۴»). Only the planner's quick add asks
+     for one; the other two doors pass nothing and the task has no span. */
+  const span = parseTimeRange(time && time.from, time && time.to);
+  task.timeFrom = span ? span.from : null;
+  task.timeTo = span ? span.to : null;
   state.tasks.unshift(task);
   save(); notify();
   return task;
+}
+
+/* ── Moving a task to another day ──
+   Changing which day a task is for is a due-date change and nothing else, and
+   the due picker already knew how to make one. This is that same change as one
+   shared door, so the planner's drag and its arrow keys cannot drift from the
+   picker: the span is left alone («۲ تا ۴» is which hours of the day, not which
+   day, so a task carried to Thursday is still an afternoon task on Thursday),
+   and a moved deadline re-arms the reminder exactly as the picker does — a task
+   that already rang has to be able to ring again on its new day. */
+export function moveTaskToDay(id, key) {
+  const task = getTask(id);
+  const to = key || null;
+  if (!task || (task.dueDate || null) === to) return false;
+  task.dueDate = to;
+  if (task.notifiedStatus) task.notifiedStatus = 'none';
+  save(); notify();
+  return true;
 }
 
 /* ── Undo Toast ── */

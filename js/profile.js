@@ -3,17 +3,14 @@
    has not changed: every render used to replace the character sprite, the four
    stat chips and the six badges with identical markup, which is visible as a
    blink on a theme flip or a rename. */
-import { $, faNum, dayKey } from './utils.js';
+import { $, dayKey } from './utils.js';
 import { state } from './state.js';
-import { markThemePicker } from './theme.js';
-import { getBooks, clearLibraryData } from './library.js';
-import { clearUserAudioData } from './audio.js';
 import { QORQORI_AVATAR, qorqoriMarkup } from './qorqori.js';
 import { RIZOLO_AVATAR, rizoloMarkup } from './rizolo.js';
 import { KHABALO_AVATAR, khabaloMarkup } from './khabalo.js';
 import { FEKRBAZ_AVATAR, fekrbazMarkup } from './fekrbaz.js';
 import { JINGOOL_AVATAR, jingoolMarkup } from './jingool.js';
-import { APP_VERSION } from './changelog.js';
+import { refreshAchievements } from './achievementsview.js';
 
 const AV_KEY = 'daftarche-avatar';
 const PHOTO_KEY = 'daftarche-photo';
@@ -160,15 +157,6 @@ async function photoFromFile(file) {
    it carries no pen badge in this state. */
 const PHOTO_PLACEHOLDER = '<svg class="ph-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 016.5 6h1.1l1-1.6h6.8l1 1.6h1.1A2.5 2.5 0 0120 8.5v8A2.5 2.5 0 0117.5 19h-11A2.5 2.5 0 014 16.5z"/><circle cx="12" cy="12.6" r="3.2"/></svg><span class="ph-txt">عکس پروفایل</span>';
 
-function calcStreak() {
-  const set = new Set(state.history);
-  let s = 0;
-  const d = new Date();
-  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
-  while (set.has(dayKey(d))) { s++; d.setDate(d.getDate() - 1); }
-  return s;
-}
-
 /* ═══ Identity: painted only when it changes ═══
    The companion sprite and the photo are the two heaviest things on this page,
    and neither changes between renders. Writing them out again on every render
@@ -241,48 +229,17 @@ export function renderProfile() {
     sub.textContent = 'عضو دفترچه از ' + d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' });
   }
 
-  /* The numbers the badges are earned from. The profile itself no longer prints
-     them as four chips: «آمار من» opens the page that tells the whole story. */
-  const done = state.tasks.filter(t => t.done).length;
-  const streak = calcStreak();
-  const books = getBooks();
-  let minutes = 0, notesCount = 0;
-  books.forEach(b => {
-    // Count both old highlights and new per-page notes
-    notesCount += (b.highlights || []).length + (b.notes || []).length;
-    Object.values(b.stats || {}).forEach(s => minutes += s.minutes || 0);
-  });
-  /* Badges */
-  const B = [
-    { label: 'اولین تیک', desc: 'یه کار رو تموم کن', ok: done >= 1, icon: '<path d="M20 6L9 17l-5-5"/>' },
-    { label: 'ده‌تایی', desc: '۱۰ کار انجام‌شده', ok: done >= 10, icon: '<path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>' },
-    { label: 'سه روز پیاپی', desc: '۳ روز پشت‌سرهم', ok: streak >= 3, icon: '<path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 009 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/>' },
-    { label: 'کتاب‌خوان', desc: 'یه کتاب اضافه کن', ok: books.length >= 1, icon: '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>' },
-    { label: 'یادگار', desc: 'اولین یادداشت', ok: notesCount >= 1, icon: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>' },
-    { label: 'اهل تمرکز', desc: '۱۰ دقیقه مطالعه', ok: minutes >= 10, icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
-  ];
-  /* Six SVGs and twelve strings per render, for a board that changes only when
-     one is earned. The signature is the answer to "has anything been unlocked
-     since last time", so an unchanged board is left alone (and its one-time
-     unlock animation is not replayed on every visit). */
-  const bw = $('#badges');
-  const badgeSig = B.map(b => (b.ok ? '1' : '0')).join('');
-  if (bw && bw.dataset.sig !== badgeSig) {
-    bw.dataset.sig = badgeSig;
-    bw.innerHTML = B.map(b =>
-      `<div class="badge ${b.ok ? 'unlocked' : 'locked'}"><svg viewBox="0 0 24 24">${b.icon}</svg><b>${b.label}</b><span>${b.ok ? 'باز شد!' : b.desc}</span></div>`
-    ).join('');
-  }
+  /* The shelf. The six badges this page used to paint itself are gone: they now
+     live in the catalogue (js/achievements.js) as the first rungs of real
+     ladders, and js/achievementsview.js paints the card, the page and the
+     celebration from one evaluation. Called here because this page is where the
+     reader looks at it, and because it is cheap: the evaluation is guarded by a
+     fingerprint, so a re-render costs a string compare. */
+  refreshAchievements();
 
-  /* Settings */
-  markThemePicker();
-  const pm = $('#profPomo'); if (pm) pm.textContent = faNum(state.pomoMin) + ' دقیقه';
-  /* The release number alone — the row it sits in is already labelled «نسخه»
-     (index.html), so the cell must not say the word twice. Persian digits,
-     "2.0.0" → "۲.۰". The number comes from js/version.js; without that file
-     the cell is left empty rather than showing a wrong version. */
-  const pv = $('#profVersion');
-  if (pv && APP_VERSION) pv.textContent = APP_VERSION.split('.').slice(0, 2).join('.').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  /* The settings this page used to end with are not rendered here any more:
+     they live on their own page now (js/settings.js), and this one only offers
+     the door — so a theme flip or a rename has nothing left to repaint here. */
 }
 
 /* ═══ Character grid ═══
@@ -422,6 +379,10 @@ export function initProfile() {
 
   $('#openStatsBtn')?.addEventListener('click', () => window.dispatchEvent(new CustomEvent('navigate', { detail: 'stats' })));
 
+  /* Same door, other room: Settings is a page the bottom bar does not reach, so
+     it is entered from here and left with the shell's own back control. */
+  $('#openSettingsBtn')?.addEventListener('click', () => window.dispatchEvent(new CustomEvent('navigate', { detail: 'settings' })));
+
   /* ═══ Profile photo ═══
      The circle opens the file picker; the input itself stays hidden and out of
      the tab order, so the control is met once and as a button. */
@@ -471,23 +432,4 @@ export function initProfile() {
      returns focus to the identity card once the list is gone. */
   ao?.addEventListener('keydown', e => { if (e.key === 'Escape') closeCharPicker(); });
   $('#profileEditName')?.addEventListener('click', () => window.dispatchEvent(new CustomEvent('edit-name')));
-
-  const cl = $('#profClear');
-  if (cl) cl.onclick = async () => {
-    if (!confirm('همهٔ داده‌ها پاک بشه؟ این کار قابل برگشت نیست.')) return;
-    /* localStorage holds tasks, settings and the book metadata; the PDF files
-       and the uploaded music live in their own databases and are removed
-       explicitly. Both results are awaited before the page leaves, so a wipe
-       that could not finish is reported instead of being reloaded away as a
-       success. */
-    const [booksCleared, audioCleared] = await Promise.all([
-      clearLibraryData(),
-      clearUserAudioData(),
-    ]);
-    localStorage.clear();
-    if (!booksCleared || !audioCleared) {
-      alert('فایل‌های کتاب یا موسیقی پاک نشدن؛ اگه تب دیگه‌ای از دفترچه بازه ببندش و دوباره امتحان کن.');
-    }
-    location.reload();
-  };
 }
