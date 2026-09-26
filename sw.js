@@ -113,6 +113,8 @@ const SHELL = [
   'assets/fonts/Estedad-Mad.woff2',
   'assets/fonts/Estedad[wght].woff2',
   'assets/icons/apple-touch-icon.png',
+  'assets/icons/daftarche-electron.png',
+  'assets/icons/daftarche.ico',
   'assets/icons/favicon.svg',
   'assets/icons/icon-192.png',
   'assets/icons/icon-512.png',

@@ -184,6 +184,38 @@ html.wk-dragging .wk-grip{cursor:grabbing}
   .wk-strip{padding:7px 5px}
   .wk-title{font-size:13px}
 }
+
+/* ── Desktop: the week gets the room it always wanted ──
+   The .app column stays 480px on the other pages — reading, tasks and focus are
+   single-column papers. The planner is a calendar, and a calendar pinned into a
+   phone column on a 1440px screen wastes the whole sheet, so here the column is
+   allowed to widen, and from 1024px the week itself climbs beside the day:
+   RTL means the week sits on the right where the eye enters, and the day's
+   panel takes what is left. 1024 is where a 2/5+3/5 split leaves both halves
+   wider than their phone selves, so nothing crosses 1000px already cramped.
+   This block sits last on purpose: every rule here has to out-cascade the base
+   rules above it, which share its selectors. */
+@media (min-width:1024px){
+  #page-week .app{max-width:1200px}
+  #page-week main.app{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);
+    grid-template-rows:auto auto 1fr;align-items:start;column-gap:20px}
+  /* Every child is placed by hand: in a grid, an unplaced child auto-fills the
+     first free cell and shoves the whole layout a row down. */
+  #page-week main.app>header{grid-column:1/-1;grid-row:1}
+  .wk-bar{grid-column:1;grid-row:2}
+  .wk-strip{grid-column:1;grid-row:3}
+  #wkDay{grid-column:2;grid-row:2/span 2}
+  /* The week stays on screen while the day scrolls, so a drag target is never
+     off-screen: the whole point of the two-column shape. */
+  .wk-strip{position:sticky;top:20px;padding:12px 10px}
+  .wk-cell{padding:10px 2px 8px;gap:4px}
+  .wk-num{font-size:16px}
+  .wk-dow{font-size:11.5px}
+  .wk-panel{padding:20px 22px}
+}
+@media (min-width:641px) and (max-width:1023.9px){
+  #page-week .app{max-width:640px}
+}
 @media (prefers-reduced-motion:reduce){
   .wk-nav,.wk-cell,.wk-track i,.wk-check,.wk-check svg,.wk-del,.wk-add,.wk-go,.wk-grip{transition:none}
   .wk-add.shake{animation:none}
