@@ -1,7 +1,7 @@
 import { state, getTask } from './state.js';
-import { savePomo, loadSession, saveSession, clearSession } from './store.js';
+import { savePomo, loadSession, saveSession, clearSession, safeSet } from './store.js';
 import { addSessionToHistory, getHistory } from './focushistory.js';
-import { $, faNum, faDigits, formatDuration, normalizeFa, startOfToday } from './utils.js';
+import { $, faNum, faDigits, formatDuration, normalizeFa, startOfToday, esc } from './utils.js';
 import { APP_TITLE } from './constants.js';
 import { confetti, beep } from './confetti.js';
 import { setTaskDone, dueLabel } from './tasks.js';
@@ -193,7 +193,7 @@ async function applyMusic() {
   else if (musicSel.startsWith('user:')) {
     const t = userList.find(x => 'user:' + x.id === musicSel);
     if (t) audio.playUserTrack(t);
-    else if (tracksLoaded) { musicSel = 'none'; localStorage.setItem('daftarche-music', musicSel); }
+    else if (tracksLoaded) { musicSel = 'none'; safeSet('daftarche-music', musicSel); }
   }
 }
 
@@ -211,13 +211,13 @@ function renderUserTracks() {
       if (e.target.closest('.rm')) {
         await audio.removeUserTrack(t.id);
         userList = userList.filter(x => x.id !== t.id);
-        if (musicSel === 'user:' + t.id) { musicSel = 'none'; localStorage.setItem('daftarche-music', musicSel); }
+        if (musicSel === 'user:' + t.id) { musicSel = 'none'; safeSet('daftarche-music', musicSel); }
         renderUserTracks();
         applyMusic();
         return;
       }
       musicSel = 'user:' + t.id;
-      localStorage.setItem('daftarche-music', musicSel);
+      safeSet('daftarche-music', musicSel);
       renderUserTracks();
       applyMusic();
     };
@@ -246,14 +246,14 @@ function initVibe() {
     const b = e.target.closest('button[data-scene]');
     if (!b) return;
     scene = b.dataset.scene;
-    localStorage.setItem('daftarche-scene', scene);
+    safeSet('daftarche-scene', scene);
     applyScene();
   });
 
   const sw = $('#ambSwitch');
   if (sw) sw.onclick = () => {
     ambOn = !ambOn;
-    localStorage.setItem('daftarche-ambsound', ambOn ? '1' : '0');
+    safeSet('daftarche-ambsound', ambOn ? '1' : '0');
     applyScene();
   };
 
@@ -261,7 +261,7 @@ function initVibe() {
     const b = e.target.closest('button[data-music]');
     if (!b) return;
     musicSel = b.dataset.music;
-    localStorage.setItem('daftarche-music', musicSel);
+    safeSet('daftarche-music', musicSel);
     renderUserTracks();
     applyMusic();
   });
@@ -273,7 +273,7 @@ function initVibe() {
     await audio.addUserTrack(t);
     userList.push(t);
     musicSel = 'user:' + t.id;
-    localStorage.setItem('daftarche-music', musicSel);
+    safeSet('daftarche-music', musicSel);
     renderUserTracks();
     applyMusic();
     e.target.value = '';
@@ -376,7 +376,6 @@ function syncRunningUI() {
    hand-drawn tick. Choosing stays deliberate — the session still starts only
    from the button, which now waits until something is actually picked. */
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const SEARCH_FROM = 8;   // from this many open tasks the book gets a search line
 

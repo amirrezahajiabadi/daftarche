@@ -3,6 +3,7 @@
    has not changed: every render used to replace the character sprite, the four
    stat chips and the six badges with identical markup, which is visible as a
    blink on a theme flip or a rename. */
+import { safeSet } from './store.js';
 import { $, dayKey } from './utils.js';
 import { state } from './state.js';
 import { QORQORI_AVATAR, qorqoriMarkup } from './qorqori.js';
@@ -69,14 +70,14 @@ export function getAvatar() {
   } else {
     // Stale/unknown stored avatar (removed human avatars, old photos, bad data) → Qorqori.
     charCache = { type: 'char', id: 'qorqori' };
-    try { localStorage.setItem(AV_KEY, JSON.stringify(charCache)); } catch { /* storage unavailable */ }
+    safeSet(AV_KEY, JSON.stringify(charCache));
   }
   return charCache;
 }
 
 function setAvatar(a) {
   charCache = a;
-  try { localStorage.setItem(AV_KEY, JSON.stringify(a)); } catch { /* storage unavailable */ }
+  safeSet(AV_KEY, JSON.stringify(a));
   renderProfile();
 }
 
@@ -222,7 +223,7 @@ export function renderProfile() {
   syncGridSelection();
   const name = $('#profileName'); if (name) name.textContent = state.userName || 'بدون اسم';
 
-  if (!localStorage.getItem(SEEN_KEY)) localStorage.setItem(SEEN_KEY, dayKey(new Date()));
+  if (!localStorage.getItem(SEEN_KEY)) safeSet(SEEN_KEY, dayKey(new Date()));
   const sub = $('#profileSub');
   if (sub) {
     const d = new Date(localStorage.getItem(SEEN_KEY) + 'T00:00:00');

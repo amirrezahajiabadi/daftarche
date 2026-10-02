@@ -20,7 +20,7 @@
    guarded by a fingerprint, so a keystroke elsewhere costs one string compare
    rather than a walk over a year of days. */
 
-import { $, faNum, dayKey } from './utils.js';
+import { $, faNum, dayKey, esc } from './utils.js';
 import { state } from './state.js';
 import { subscribe } from './bus.js';
 import { STORAGE_KEYS } from './constants.js';
@@ -48,7 +48,6 @@ let celebrating = false;
 let flushTimer = 0;
 let toastTimer = 0;
 
-const pe = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 /* ── The fingerprint ──
    Everything that can move a number, and nothing that cannot. A tick of the
@@ -152,7 +151,7 @@ function pips(tier, max) {
 function rowProgress(r) {
   const pct = Math.round(r.pct * 100);
   return `<span class="achv-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"` +
-    ` aria-valuenow="${pct}" aria-label="${pe(r.a.title)}">` +
+    ` aria-valuenow="${pct}" aria-label="${esc(r.a.title)}">` +
     `<i class="achv-fill" style="width:${pct}%"></i></span>`;
 }
 
@@ -176,7 +175,7 @@ function renderSummary() {
 
   const minis = near.map(r => `
     <li class="achv-mini">
-      <span class="achv-mini-top"><b>${pe(r.a.title)}</b><small>${pe(leftText(r))}</small></span>
+      <span class="achv-mini-top"><b>${esc(r.a.title)}</b><small>${esc(leftText(r))}</small></span>
       ${rowProgress(r)}
     </li>`).join('');
 
@@ -186,7 +185,7 @@ function renderSummary() {
         <div class="ring-inner"><div class="ring-text"><span>${faNum(res.earned)}</span></div></div>
       </div>
       <div class="achv-sum-text">
-        <strong>رتبهٔ ${pe(res.rank.name)}</strong>
+        <strong>رتبهٔ ${esc(res.rank.name)}</strong>
         <span>${faNum(res.earned)} از ${faNum(res.total)} نشان</span>
         <span>${faNum(res.steps)} پله از ${faNum(res.totalSteps)} پله</span>
         <span class="achv-sum-score"><b>${faNum(res.score)}</b> امتیاز</span>
@@ -218,11 +217,11 @@ function itemHtml(r) {
   return `<button type="button" class="achv-item${locked ? ' locked' : ''}${r.complete ? ' complete' : ''}" data-id="${a.id}" aria-haspopup="dialog">` +
     `<span class="achv-medal" aria-hidden="true">${iconOf(a.icon)}</span>` +
     `<span class="achv-item-main">` +
-      `<span class="achv-item-top"><b>${pe(a.title)}</b>` +
+      `<span class="achv-item-top"><b>${esc(a.title)}</b>` +
       `<span class="achv-kind k-${a.kind}">${KIND_LABEL[a.kind]}</span></span>` +
-      (locked ? `<span class="achv-how">${pe(a.how)}</span>` : '') +
+      (locked ? `<span class="achv-how">${esc(a.how)}</span>` : '') +
       `<span class="achv-item-foot">${pips(r.tier, a.tiers.length)}${rowProgress(r)}` +
-      `<small>${locked ? `${faNum(r.value)} از ${faNum(r.nextGoal)}` : pe(leftText(r))}</small></span>` +
+      `<small>${locked ? `${faNum(r.value)} از ${faNum(r.nextGoal)}` : esc(leftText(r))}</small></span>` +
     `</span></button>`;
 }
 
@@ -232,10 +231,10 @@ function recordsHtml() {
       <div class="achv-record${r.fresh ? ' fresh' : ''}">
         <span class="achv-medal sm" aria-hidden="true">${iconOf(r.icon)}</span>
         <span class="achv-record-main">
-          <b>${pe(r.label)}</b>
-          <small>${r.at ? (r.key === 'month' ? pe(monthLabel(r.at)) : pe(dayLabel(r.at))) : '—'}</small>
+          <b>${esc(r.label)}</b>
+          <small>${r.at ? (r.key === 'month' ? esc(monthLabel(r.at)) : esc(dayLabel(r.at))) : '—'}</small>
         </span>
-        <span class="achv-record-val"><b>${faNum(r.value)}</b><small>${pe(r.unit)}</small></span>
+        <span class="achv-record-val"><b>${faNum(r.value)}</b><small>${esc(r.unit)}</small></span>
         <span class="achv-record-prev">${r.prev > 0 ? `رکورد قبلی: ${faNum(r.prev)}` : 'اولین رکورد'}</span>
       </div>`).join('') + `</div>`;
 }
@@ -244,8 +243,8 @@ function weekHtml() {
   const w = weekBoard(book);
   const arrow = d => d > 0 ? '<i class="achv-dir up">▲</i>' : d < 0 ? '<i class="achv-dir down">▼</i>' : '<i class="achv-dir same">—</i>';
   const verdict = w.outcome > 0 ? 'این هفته بردی' : w.outcome < 0 ? 'هفتهٔ پیش جلوتر بود' : 'مساوی';
-  const lines = w.lines.map(l => `<li><span>${pe(l.label)}</span><b>${faNum(l.a)}</b>${arrow(l.dir)}<b class="past">${faNum(l.b)}</b></li>`).join('');
-  return `<div class="stat-sec-head"><strong>این هفته در برابر هفتهٔ پیش</strong><span>${pe(verdict)}</span></div>` +
+  const lines = w.lines.map(l => `<li><span>${esc(l.label)}</span><b>${faNum(l.a)}</b>${arrow(l.dir)}<b class="past">${faNum(l.b)}</b></li>`).join('');
+  return `<div class="stat-sec-head"><strong>این هفته در برابر هفتهٔ پیش</strong><span>${esc(verdict)}</span></div>` +
     `<div class="achv-vs">` +
       `<div class="achv-vs-score"><b>${faNum(w.scoreA)}</b><span>امتیاز این هفته</span>` +
       `<b class="past">${faNum(w.scoreB)}</b><span>هفتهٔ پیش</span></div>` +
@@ -277,13 +276,13 @@ export function renderAchievements() {
   if (rank && rank.dataset.sig !== rankSig) {
     rank.dataset.sig = rankSig;
     rank.innerHTML = `
-      <div class="achv-rank-top"><strong>رتبهٔ ${pe(res.rank.name)}</strong><span><b>${faNum(res.score)}</b> امتیاز</span></div>
+      <div class="achv-rank-top"><strong>رتبهٔ ${esc(res.rank.name)}</strong><span><b>${faNum(res.score)}</b> امتیاز</span></div>
       <span class="achv-track tall" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(res.rank.pct * 100)}" aria-label="امتیاز تا رتبهٔ بعد">
         <i class="achv-fill" style="width:${Math.round(res.rank.pct * 100)}%"></i>
       </span>
-      <p class="achv-rank-next">${res.rank.next ? `${faNum(res.rank.left)} امتیاز تا «${pe(res.rank.next.name)}»` : 'بالاترین رتبه را داری'}</p>
+      <p class="achv-rank-next">${res.rank.next ? `${faNum(res.rank.left)} امتیاز تا «${esc(res.rank.next.name)}»` : 'بالاترین رتبه را داری'}</p>
       ${res.rank.next ? `<details class="achv-how-score"><summary>امتیاز از کجا می‌آید؟</summary><ul>` +
-        res.parts.map(p => `<li><span>${pe(p.label)}</span><b>${faNum(p.value)}</b><i>×${faNum(p.weight)}</i><em>${faNum(p.points)}</em></li>`).join('') +
+        res.parts.map(p => `<li><span>${esc(p.label)}</span><b>${faNum(p.value)}</b><i>×${faNum(p.weight)}</i><em>${faNum(p.points)}</em></li>`).join('') +
         `</ul></details>` : ''}`;
   }
 
@@ -298,9 +297,9 @@ export function renderAchievements() {
         `<div class="achv-near">` + near.map(r => `
           <button type="button" class="achv-near-card" data-id="${r.a.id}" aria-haspopup="dialog">
             <span class="achv-medal" aria-hidden="true">${iconOf(r.a.icon)}</span>
-            <b>${pe(r.a.title)}</b>
+            <b>${esc(r.a.title)}</b>
             ${rowProgress(r)}
-            <small>${pe(leftText(r))}</small>
+            <small>${esc(leftText(r))}</small>
           </button>`).join('') + `</div>`
       : '';
   }
@@ -326,17 +325,17 @@ function openDetail(id) {
   const rungs = a.tiers.map((goal, i) => {
     const reached = r.tier > i;
     return `<li class="achv-rung${reached ? ' on' : ''}"><i class="achv-pip${reached ? ' on' : ''}"></i>` +
-      `<span>${TIER_NAMES[i]}</span><b>${faNum(goal)} ${pe(a.unit)}</b></li>`;
+      `<span>${TIER_NAMES[i]}</span><b>${faNum(goal)} ${esc(a.unit)}</b></li>`;
   }).join('');
   const when = r.at ? `باز شد در ${formatJalaliDate(new Date(r.at + 'T00:00:00'))}`
     : r.open ? 'قبل از اینکه این صفحه ساخته شود بازش کرده بودی' : '';
   body.innerHTML = `
     <span class="achv-detail-medal" aria-hidden="true">${iconOf(a.icon)}</span>
-    <h2>${pe(a.title)}</h2>
-    <p class="achv-detail-kind">${pe(family ? family.label : '')} · ${KIND_LABEL[a.kind]}</p>
+    <h2>${esc(a.title)}</h2>
+    <p class="achv-detail-kind">${esc(family ? family.label : '')} · ${KIND_LABEL[a.kind]}</p>
     <ul class="achv-ladder">${rungs}</ul>
-    ${r.nextGoal === null ? '<p class="achv-detail-done">همهٔ پله‌های این نشان بالا رفته.</p>' : `<p class="achv-detail-how">${pe(a.how)} — ${pe(leftText(r))}</p>`}
-    ${when ? `<p class="achv-detail-at">${pe(when)}</p>` : ''}
+    ${r.nextGoal === null ? '<p class="achv-detail-done">همهٔ پله‌های این نشان بالا رفته.</p>' : `<p class="achv-detail-how">${esc(a.how)} — ${esc(leftText(r))}</p>`}
+    ${when ? `<p class="achv-detail-at">${esc(when)}</p>` : ''}
     <span class="achv-detail-char" aria-hidden="true">${qorqoriMarkup(r.tier ? 'proud' : 'thinking')}</span>
     <button class="ghost" type="button" id="achvDetailClose">بستن</button>`;
   overlay.hidden = false;
@@ -386,8 +385,8 @@ function showSheet(item) {
   body.innerHTML = `
     <span class="achv-unlock-char" aria-hidden="true">${qorqoriMarkup('celebrating')}</span>
     <span class="achv-unlock-medal" aria-hidden="true">${iconOf(icon)}</span>
-    <h2>${pe(title)}${tierLine}</h2>
-    <p>${pe(sentence(item))}</p>
+    <h2>${esc(title)}${tierLine}</h2>
+    <p>${esc(sentence(item))}</p>
     <button class="go" type="button" id="achvUnlockOk">دمت گرم!</button>
     <button class="ghost sm" type="button" id="achvUnlockMore">دیدن نشان‌ها</button>`;
   overlay.hidden = false;

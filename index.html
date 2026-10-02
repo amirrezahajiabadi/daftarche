@@ -2,6 +2,18 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
+<!-- Content-Security-Policy.
+     · script-src: our own modules, the one inline theme script (pinned by hash —
+       tests/csp.test.mjs fails if the script changes without the hash) and the
+       pinned pdf.js build on jsDelivr. A dynamic import() cannot carry an
+       integrity attribute, so the host is allowed instead of hashed; the
+       version is pinned in js/reader.js and sw.js.
+     · style-src 'unsafe-inline' stays: the interface sets style attributes and
+       custom properties from script (progress bars, colours, drag position).
+     · blob: is for what the person made on this device: PDF files for the
+       browser viewer, uploaded music, the share-card image.
+     · Not expressible in a <meta>: frame-ancestors / report-uri. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-MWVR8Z/q1Ps8198XlcId07eH1Rz9tEs7aMIncnxY2LI=' https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net; frame-src blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <!-- The browser paints its own chrome (page canvas, scrollbars, form controls)
@@ -808,6 +820,26 @@
       </div>
     </div>
 
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>پشتیبان‌گیری</strong></div>
+      <div class="set-item">
+        <div class="settings-row">
+          <span class="settings-label">گرفتن پشتیبان</span>
+          <button class="settings-btn" id="backupExport" type="button">دانلود</button>
+        </div>
+        <p class="settings-hint">کارها، پیوستگی، نشان‌ها، تنظیمات و پیشرفت کتاب‌ها توی یه فایل ذخیره می‌شن. خودِ فایل PDFها و موسیقی‌ها توش نیستن.</p>
+      </div>
+      <div class="settings-divider"></div>
+      <div class="set-item">
+        <div class="settings-row">
+          <span class="settings-label">بازگردانی از پشتیبان</span>
+          <button class="settings-btn" id="backupImport" type="button">انتخاب فایل</button>
+        </div>
+        <p class="settings-hint" id="backupStatus" role="status" aria-live="polite">داده‌های فعلی با محتوای فایل جایگزین می‌شن.</p>
+        <input type="file" id="backupFile" accept=".json,application/json" hidden>
+      </div>
+    </div>
+
     <!-- The one destructive row stands alone, so it can never be reached by a
          thumb travelling towards a setting it actually wanted. -->
     <div class="vibe-card">
@@ -929,6 +961,11 @@
   <span class="toast-text">پاک شد</span>
   <button class="toast-btn" id="eraseUndoBtn">برگردون</button>
   <span class="toast-bar"></span>
+</div>
+
+<div class="toast toast-sticky" id="storageToast" role="alert" hidden>
+  <span class="toast-text">ذخیره نشد؛ حافظهٔ مرورگر پر یا در دسترس نیست. از تنظیمات یه پشتیبان بگیر.</span>
+  <button class="toast-btn" id="storageToastClose" type="button">باشه</button>
 </div>
 
 <div class="toast toast-sticky" id="updateToast" role="status" aria-live="polite" hidden>

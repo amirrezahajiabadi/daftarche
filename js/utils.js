@@ -6,6 +6,13 @@ export const faNum = n => n.toLocaleString('fa-IR');
 
 export const faDigits = s => String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
+/* The one HTML escaper. Anything a person typed (a task, a book title, a note)
+   that has to pass through innerHTML goes through this first — or, better,
+   is set with textContent and never becomes markup at all. null/undefined
+   become '' rather than the words «null» / «undefined». */
+const HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => HTML_ESC[c]);
+
 export const dayKey = d =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 

@@ -17,6 +17,7 @@ import { markThemePicker } from './theme.js';
 import { APP_VERSION, openReleaseNotes } from './changelog.js';
 import { clearLibraryData } from './library.js';
 import { clearUserAudioData } from './audio.js';
+import { collectBackup, parseBackup, applyBackup, backupFileName, BACKUP_MAX_CHARS } from './backup.js';
 
 /* What the page says about itself, painted on entry. The picker is marked here
    as well as by js/theme.js because the two halves of the table are remembered
@@ -42,6 +43,56 @@ export function initSettings() {
      release; this is the other door — someone who wants to read what they are
      running right now. */
   $('#profNotes')?.addEventListener('click', openReleaseNotes);
+
+  /* ── Backup ──
+     Export writes every daftarche-* key to one JSON file; import validates a
+     file completely before touching anything, asks, and only then replaces the
+     stored data (js/backup.js rolls back if a write fails). The page reloads
+     after a restore so every module boots from the restored data. */
+  const status = $('#backupStatus');
+  const say = msg => { if (status) status.textContent = msg; };
+
+  $('#backupExport')?.addEventListener('click', () => {
+    try {
+      const backup = collectBackup(localStorage, { release: APP_VERSION });
+      const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = backupFileName();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      say('پشتیبان ساخته شد؛ فایل رو یه جای امن نگه دار.');
+    } catch {
+      say('ساختن پشتیبان نشد. دوباره امتحان کن.');
+    }
+  });
+
+  const fileInput = $('#backupFile');
+  $('#backupImport')?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files && fileInput.files[0];
+    fileInput.value = '';   // so choosing the same file twice still fires
+    if (!file) return;
+    if (file.size > BACKUP_MAX_CHARS) { say('این فایل خیلی بزرگه و پشتیبان دفترچه نیست.'); return; }
+
+    let text;
+    try { text = await file.text(); } catch { say('فایل خوانده نشد.'); return; }
+
+    const parsed = parseBackup(text);
+    if (!parsed.ok) { say(parsed.reason); return; }
+
+    const when = parsed.backup.exportedAt ? new Date(parsed.backup.exportedAt) : null;
+    const whenText = when && !isNaN(when) ? ' (' + when.toLocaleDateString('fa-IR') + ')' : '';
+    if (!confirm('داده‌های فعلی با این پشتیبان' + whenText + ' جایگزین بشن؟ این کار قابل برگشت نیست.')) return;
+
+    const res = applyBackup(localStorage, parsed.backup);
+    if (!res.ok) { say(res.reason); return; }
+    say('بازگردانی شد؛ دفترچه دوباره بالا می‌آد…');
+    setTimeout(() => location.reload(), 600);
+  });
 
   /* ── The wipe ──
      localStorage holds tasks, settings and the book metadata; the PDF files and

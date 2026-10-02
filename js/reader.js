@@ -13,7 +13,7 @@
    The renderer itself is fetched on demand (loadPdfJs below), never as part of
    the app's module graph: a CDN that is slow, blocked or down must not keep the
    notebook from opening. */
-import { $, faNum, faDigits, dayKey } from './utils.js';
+import { $, faNum, faDigits, dayKey, esc } from './utils.js';
 import { STORAGE_KEYS } from './constants.js';
 import { getBook, updateBook, getBookBlob, renderShelf, bookDone, bookPct, bookComplete } from './library.js';
 import { recordDay } from './week.js';
@@ -75,7 +75,6 @@ const PDF_ASSETS = {
 
 const HL_COLORS = { yellow: 'rgba(246,196,69,.4)', green: 'rgba(159,206,127,.4)', blue: 'rgba(143,183,217,.4)', pink: 'rgba(231,154,176,.4)' };
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let curBook = null, curPage = 1, zoom = 1, pageScale = 1;
 let pdfDoc = null, renderTask = null, textLayerTask = null;

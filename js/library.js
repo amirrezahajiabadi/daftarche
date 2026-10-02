@@ -1,6 +1,6 @@
 /* ═══ Library: Reading Workspace — Shelf, Reading State, Goal, Storage ═══ */
-import { $, faNum } from './utils.js';
-import { readJSON } from './store.js';
+import { $, faNum, esc } from './utils.js';
+import { readJSON, safeSet } from './store.js';
 
 const META_KEY = 'daftarche-books-meta';
 /* Read through the storage layer's guarded reader: a corrupt value falls back
@@ -9,7 +9,7 @@ const META_KEY = 'daftarche-books-meta';
    but is not a list is treated the same way. */
 const storedBooks = readJSON(META_KEY, null);
 let books = Array.isArray(storedBooks) ? storedBooks : [];
-const saveMeta = () => localStorage.setItem(META_KEY, JSON.stringify(books));
+const saveMeta = () => safeSet(META_KEY, JSON.stringify(books));
 
 export const getBooks = () => books;
 export const getBook = id => books.find(b => b.id === id);
@@ -77,7 +77,6 @@ export function clearLibraryData() {
   });
 }
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const TRASH = `<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6"/></svg>`;
 const BOOK_ICON = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`;
 

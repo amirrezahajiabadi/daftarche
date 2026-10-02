@@ -1,0 +1,12 @@
+# One line-ending rule for the whole repo: LF in the repository AND in the
+# working tree, on every OS. (The Windows checkout used to turn every file into
+# CRLF, which made git status show all files as modified.)
+* text=auto eol=lf
+
+# Binary assets — never touch line endings
+*.png  binary
+*.ico  binary
+*.woff2 binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary

@@ -15,6 +15,8 @@
    service worker loads, so the dialog and the offline build cannot drift. If
    it is unavailable the running release is unknown and the dialog stays shut. */
 
+import { esc } from './utils.js';
+
 export const APP_VERSION = self.DAFTARCHE_RELEASE || '';
 
 export const CHANGELOG = [
@@ -176,14 +178,21 @@ export const CHANGELOG = [
       { icon: '🖥️', text: 'روی مانیتور بزرگ، هفته کنارِ روز باز می‌شه — تقویم چسبیده بالا می‌مونه و روز جای جارو کشیدن داره' },
     ],
   },
+  {
+    version: '2.7.0',
+    date: 'مهر ۱۴۰۵',
+    title: 'دفترچه از داده‌هات بهتر مراقبت می‌کنه',
+    highlights: [
+      { icon: '💾', text: 'از تنظیمات می‌تونی پشتیبان بگیری و هر وقت خواستی برش‌گردونی؛ همه‌چیز توی یه فایل' },
+      { icon: '⚠️', text: 'اگه حافظهٔ مرورگر پر باشه یا ذخیره نشه، دفترچه بهت می‌گه — دیگه بی‌صدا چیزی از دست نمی‌ره' },
+      { icon: '🛡️', text: 'محافظت امنیتی تازه برای صفحه (CSP)؛ ظاهر و کار برنامه همون‌طوره که بود' },
+    ],
+  },
 ];
 
 const SEEN_KEY = 'daftarche-seen-version';
 
 /* ── rendering ─────────────────────────────────────────────────────────── */
-
-const esc = s => String(s).replace(/[&<>"']/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function entryHtml(entry) {
   const items = entry.highlights.map(h =>

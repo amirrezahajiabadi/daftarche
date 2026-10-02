@@ -1,4 +1,5 @@
 /* ═══ Audio Engine: Procedural Music + Ambient Sound + User Tracks (IndexedDB) ═══ */
+import { safeSet } from './store.js';
 
 let ctx = null, musicGain = null, ambGain = null;
 
@@ -24,11 +25,11 @@ export function unlockAudio() { try { ensureCtx(); } catch (e) {} }
 export function setMusicVolume(v) {
   if (musicGain) musicGain.gain.value = v;
   if (userAudio) userAudio.volume = v * .95;
-  localStorage.setItem('daftarche-vol-music', v);
+  safeSet('daftarche-vol-music', v);
 }
 export function setAmbVolume(v) {
   if (ambGain) ambGain.gain.value = v;
-  localStorage.setItem('daftarche-vol-amb', v);
+  safeSet('daftarche-vol-amb', v);
 }
 export function getVolumes() {
   return {

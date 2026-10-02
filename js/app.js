@@ -23,6 +23,7 @@ import { initDuePicker } from './duepicker.js';
 import { initChangelogCheck } from './changelog.js';
 import { initModalContainment } from './modal.js';
 import { isBusy } from './calm.js';
+import { initStorageWarning } from './storagewarn.js';
 
 /* Each section is initialized separately; an error in one section doesn't break the rest of the app */
 const safe = (name, fn) => {
@@ -457,6 +458,7 @@ safe('کتابخانه', initLibrary);
 safe('ریدر', initReader);
 safe('پروفایل', initProfile);
 safe('تنظیمات', initSettings);
+safe('هشدار ذخیره‌سازی', initStorageWarning);
 safe('آمار', initStats);
 safe('بینش‌ها', initInsights);
 safe('کارت آمار', initShareCard);

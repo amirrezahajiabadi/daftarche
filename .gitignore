@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+
+# editor / OS junk
+*.swp
+*.swp?
+.DS_Store
+Thumbs.db
+
+# local QA output (never commit)
+.qa-out*.txt
+
+# server secrets (VAPID keys etc. come from the environment, never files)
+.env
+.env.*

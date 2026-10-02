@@ -27,7 +27,7 @@
 
 import { state } from './state.js';
 import { STORAGE_KEYS, CATS } from './constants.js';
-import { loadFreeze } from './store.js';
+import { loadFreeze, safeSet } from './store.js';
 import { dayKey, shiftKey } from './utils.js';
 import { getBooks, bookComplete } from './library.js';
 import { getHistory } from './focushistory.js';
@@ -84,7 +84,7 @@ export function readLedger() {
 }
 
 function writeLedger(led) {
-  try { localStorage.setItem(STORAGE_KEYS.ledger, JSON.stringify(led)); } catch { /* storage full/unavailable */ }
+  safeSet(STORAGE_KEYS.ledger, JSON.stringify(led)); // failure is reported by the storage layer
 }
 
 /* ── Writing a floor ──

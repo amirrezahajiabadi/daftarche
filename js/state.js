@@ -14,7 +14,7 @@ const defaultTasks = () => [
    only missing optional fields get safe defaults. Nothing is deleted. */
 const DAY_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-function normalizeTask(t) {
+export function normalizeTask(t) {
   if (!t || typeof t !== 'object') return null;
   const task = { ...t };
   if (!task.id) task.id = Date.now() + '' + Math.random().toString(16).slice(2);

@@ -22,7 +22,7 @@
    rather than printed as a zero, and a rate with no denominator is null. */
 
 import { state } from './state.js';
-import { $, faNum, dayKey, parseDurationMin } from './utils.js';
+import { $, faNum, dayKey, parseDurationMin, esc } from './utils.js';
 import { CATS, MOODS, WEEKDAY_LETTERS } from './constants.js';
 import { getBooks } from './library.js';
 import { getHistory, RATING_LABEL, RATING_FACE, historyDayLabel } from './focushistory.js';
@@ -751,9 +751,6 @@ export function renderStats(force = false) {
   if (body) body.hidden = !model.hasAny;
 }
 
-const escapeText = s => String(s).replace(/[&<>"']/g, c =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
 /* ── سابقهٔ تمرکز ──
    The archive now lives here, under the window the reader is looking through:
    filter the page to three months and the sessions listed are the three months'
@@ -771,10 +768,10 @@ function paintHistory(model) {
   const shown = historyExpanded ? sessions : sessions.slice(0, HISTORY_PREVIEW);
   list.innerHTML = shown.map(s => {
     const face = RATING_FACE[s.rating] || '•';
-    const title = s.taskTitle ? escapeText(s.taskTitle) : 'بدون کار مشخص';
+    const title = s.taskTitle ? esc(s.taskTitle) : 'بدون کار مشخص';
     const label = RATING_LABEL[s.rating] || '';
     return `<div class="stat-session">
-      <span class="stat-session-face" title="${escapeText(label)}" aria-hidden="true">${face}</span>
+      <span class="stat-session-face" title="${esc(label)}" aria-hidden="true">${face}</span>
       <span class="stat-session-title">${title}</span>
       ${s.taskCompleted ? '<span class="stat-session-done" title="به کار واقعی رسید">✓</span>' : ''}
       <span class="stat-session-when">${historyDayLabel(s.startedAt)}</span>
