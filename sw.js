@@ -129,6 +129,10 @@ const SHELL = [
   'assets/characters/rizolo/rizolo.svg',
 ];
 
+const ICON_PATHS = new Set(
+  SHELL.filter(path => path.startsWith('assets/icons/')).map(path => new URL(shellURL(path)).pathname)
+);
+
 /* The pinned pdf.js build. The two entry points are stored up front so the
    Reader can open a book offline; its auxiliary files (cmaps, standard fonts)
    are fetched on demand and kept by the runtime cache below. */
@@ -283,7 +287,9 @@ async function releaseDocument(request) {
    the cache: a release is only ever filled as a whole, by install. */
 async function releaseAsset(request) {
   const cache = await caches.open(STATIC_CACHE);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, {
+    ignoreSearch: ICON_PATHS.has(new URL(request.url).pathname),
+  });
   if (cached) return cached;
   return fetch(request);
 }
