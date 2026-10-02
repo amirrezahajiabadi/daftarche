@@ -24,10 +24,6 @@ Desktop.ini
 .idea/
 .vscode/
 
-# local agent state and machine-specific settings
-/.gapcode/
-/.codex/
-
 # local QA output (never commit)
 .qa-out*.txt
 

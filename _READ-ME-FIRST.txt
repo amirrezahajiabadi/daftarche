@@ -1,0 +1,9 @@
+Daftarche 2.7.0 - changed files only
+====================================
+1) Copy everything in this folder over your project (keep the folder structure).
+2) Delete / move these by hand:
+   - move  qa-restore.json  ->  tests/fixtures/sample-tasks.json  (already included here; delete the old root file)
+   - delete  server/.qa-out.txt  and  server/.qa-out2.txt   (QA junk)
+   - server/node_modules is NOT needed in the repo: the new .gitignore ignores it
+     (if it is already committed, run once:  git rm -r --cached server/node_modules)
+3) Run:  node --test      (expects 98 passing)
