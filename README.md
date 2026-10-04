@@ -1,1 +1,1 @@
-دمو: https://amirrezahajiabadi.github.io/daftarche/
+daftrche.ir
