@@ -95,3 +95,18 @@ export const saveTheme   = t    => safeSet(STORAGE_KEYS.theme, t);
    preference, not data: unreadable means the first theme of that half. */
 export const loadThemeModes = ()    => read(STORAGE_KEYS.themeModes, null);
 export const saveThemeModes = m     => safeSet(STORAGE_KEYS.themeModes, JSON.stringify(m));
+
+/* The reader's own birthday, as a Jalali MM-DD with no year — a birthday is
+   the same day every year, so a year would only be one more thing to get wrong.
+   js/birthday.js owns the shape and refuses anything the calendar could not
+   write; this is only the shelf it sits on. Saving null takes the date away
+   again, which is why the row has a «پاک کن» that means what it says. */
+export const loadBirthday = ()    => read(STORAGE_KEYS.birthday, null);
+export const saveBirthday = b     => b ? safeSet(STORAGE_KEYS.birthday, JSON.stringify(b)) : safeRemove(STORAGE_KEYS.birthday);
+
+/* The last day the greeting was shown, as a bare MM-DD. It carries no year on
+   purpose: nothing about it has to expire, so next year's greeting arrives by
+   itself with no cleanup and no year to roll over. Device-local, so js/backup.js
+   keeps it out of the file. */
+export const loadBirthdaySeen = ()    => localStorage.getItem(STORAGE_KEYS.birthdaySeen) || '';
+export const saveBirthdaySeen = key   => safeSet(STORAGE_KEYS.birthdaySeen, key || '');

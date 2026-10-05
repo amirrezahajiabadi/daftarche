@@ -17,6 +17,7 @@ import { markThemePicker } from './theme.js';
 import { APP_VERSION, openReleaseNotes } from './changelog.js';
 import { clearLibraryData } from './library.js';
 import { clearUserAudioData } from './audio.js';
+import { renderBirthdayRow } from './birthday.js';
 import { collectBackup, parseBackup, applyBackup, backupFileName, BACKUP_MAX_CHARS } from './backup.js';
 
 /* What the page says about itself, painted on entry. The picker is marked here
@@ -25,6 +26,7 @@ import { collectBackup, parseBackup, applyBackup, backupFileName, BACKUP_MAX_CHA
    whichever door the reader came through. */
 export function renderSettings() {
   markThemePicker();
+  renderBirthdayRow();
 
   const pm = $('#profPomo');
   if (pm) pm.textContent = faNum(state.pomoMin) + ' دقیقه';

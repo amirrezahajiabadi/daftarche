@@ -112,7 +112,7 @@
   <!-- Every modal in the app declares the same contract: role=dialog, modal,
        labelled by its own visible heading. js/modal.js keeps focus inside it
        and freezes the page behind it while it is open. -->
-  <div class="name-card" id="nameCard" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <div class="name-card sheet-paper" id="nameCard" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
     <span class="badge">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
     </span>
@@ -123,6 +123,37 @@
       <button class="go" type="submit">بزن بریم</button>
     </form>
     <button class="skip" id="skipName">بعداً می‌گم</button>
+  </div>
+</div>
+
+<!-- ═══ Birthday ═══
+     Shown once, on the reader's own calendar day, and only because they wrote
+     the date down themselves. Same contract as every other modal here, so
+     js/modal.js contains the focus and freezes the page behind without knowing
+     this file exists. The contents are painted by js/birthday.js — the name in
+     particular goes in with textContent, since it is the reader's own text. -->
+<div class="overlay" id="bdOverlay" hidden>
+  <div class="bd-card sheet-paper" role="dialog" aria-modal="true" aria-labelledby="bdTitle">
+    <span class="bd-char" id="bdChar" aria-hidden="true"></span>
+    <span class="bd-kicker" id="bdKicker">روز توئه</span>
+    <h2 class="bd-title" id="bdTitle">تولدت مبارک</h2>
+    <p class="bd-name" id="bdName"></p>
+    <p class="bd-age" id="bdAge" hidden></p>
+    <p class="bd-line">یه سال دیگه با هم این دفترچه رو پر کردیم. سال بعد هم همین‌جاست.</p>
+    <button class="go" id="bdGo" type="button">بزن بریم</button>
+  </div>
+</div>
+
+<!-- ═══ Birthday date picker ═══
+     A month grid, not a text field: «۰۷/۱۲» is a format nobody remembers under
+     pressure. Drawn by js/birthday.js out of the same shared grid the deadline
+     picker uses, so the two calendars can never disagree about where a month
+     starts. The month title carries no year, because the stored date has none. -->
+<div class="overlay" id="bdPickOverlay" hidden>
+  <div class="name-card cal-card bd-pick-card sheet-paper" role="dialog" aria-modal="true" aria-labelledby="bdPickTitle">
+    <h2 id="bdPickTitle">تاریخ تولدت</h2>
+    <div id="bdCal"></div>
+    <button class="skip" id="bdPickClose">بستن</button>
   </div>
 </div>
 
@@ -147,7 +178,7 @@
         <p class="subtitle" id="todayDate"></p>
         <p class="today-summary" id="todaySummary"></p>
       </div>
-      <div style="display:flex;gap:8px">
+      <div class="header-actions">
         <button class="header-avatar" aria-label="پروفایل"></button>
         <button class="theme-btn" aria-label="تغییر تم">
           <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
@@ -202,7 +233,7 @@
         </h1>
         <p class="subtitle">لیست کارهای خودم و رفقا — <span id="dateLine"></span></p>
       </div>
-      <div style="display:flex;gap:8px">
+      <div class="header-actions">
         <button class="header-avatar" aria-label="پروفایل"></button>
         <button class="theme-btn" aria-label="تغییر تم">
           <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
@@ -802,6 +833,40 @@
       </div>
     </div>
 
+    <!-- One quiet row, on a page the reader has to open and find. Nothing asks
+for this date: no prompt, no banner, and no hint of it anywhere else.
+
+Two decisions here, both about how little this row says for itself.
+
+«خودت» (you) is gone. A settings card is grouped by what the thing is, and
+«تاریخ تولد» is the thing. A heading that names the person rather than the
+setting is the one line on this page that talks about the reader instead of
+about the notebook.
+
+So are the two buttons. The date itself is the control now: it is the only part
+of this row that can be edited, so «انتخاب» beside it asks the reader to press a
+word to reach the thing they came for, and «پاک کردن» asks them to think about removal in
+order to find out where it lives. Clearing is at the foot of the calendar itself
+— where the reader already is, and where the deadline picker keeps its own. One
+place for one job, rather than the same job in two places that then drift.
+
+The line under the row is the entire explanation, and it is the notebook talking
+rather than a form describing itself. -->
+    <div class="vibe-card">
+      <div class="vibe-head"><strong>تاریخ تولد</strong></div>
+      <div class="set-item">
+        <div class="settings-row">
+          <span class="settings-label">تولدت</span>
+          <div class="settings-value">
+            <button class="bd-date" id="bdPick" type="button" aria-haspopup="dialog">
+              <span id="bdDate" class="empty"></span>
+            </button>
+          </div>
+        </div>
+        <p class="settings-hint">دفترچه دوست داره تاریخ تولدتو بدونه!</p>
+      </div>
+    </div>
+
     <div class="vibe-card">
       <div class="vibe-head"><strong>درباره</strong></div>
       <div class="set-item">
@@ -857,7 +922,7 @@
 
 <!-- ═══ Jalali Due-Date Picker ═══ -->
 <div class="overlay" id="dueOverlay" hidden>
-  <div class="name-card due-card" role="dialog" aria-modal="true" aria-label="انتخاب مهلت">
+  <div class="name-card cal-card due-card sheet-paper" role="dialog" aria-modal="true" aria-label="انتخاب مهلت">
     <h2>مهلت انجام</h2>
     <p>تاریخ شمسی را انتخاب کن</p>
     <div id="dueCal"></div>
@@ -891,7 +956,7 @@
         </h1>
         <p class="subtitle">یه نگاه به کل هفته — چی برنامه‌ریزی شده و چی انجام شد.</p>
       </div>
-      <div style="display:flex;gap:8px">
+      <div class="header-actions">
         <button class="header-avatar" aria-label="پروفایل"></button>
         <button class="theme-btn" aria-label="تغییر تم">
           <svg class="moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
@@ -963,12 +1028,12 @@
   <span class="toast-bar"></span>
 </div>
 
-<div class="toast toast-sticky" id="storageToast" role="alert" hidden>
+<div class="toast toast-sticky sheet-paper" id="storageToast" role="alert" hidden>
   <span class="toast-text">ذخیره نشد؛ حافظهٔ مرورگر پر یا در دسترس نیست. از تنظیمات یه پشتیبان بگیر.</span>
   <button class="toast-btn" id="storageToastClose" type="button">باشه</button>
 </div>
 
-<div class="toast toast-sticky" id="updateToast" role="status" aria-live="polite" hidden>
+<div class="toast toast-sticky sheet-paper" id="updateToast" role="status" aria-live="polite" hidden>
   <span class="toast-text">نسخهٔ جدید اومده!</span>
   <button class="toast-btn" id="updateBtn">دریافتش کن</button>
 </div>

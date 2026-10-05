@@ -137,6 +137,10 @@ html[data-mode="dark"] .badge-status.warning{color:#ffcd8a}
 html[data-mode="dark"] .toast{background:var(--color-surface-elevated);color:var(--color-text-primary);border:1px solid var(--color-border-strong)}
 .toast[hidden]{display:none}
 .toast.show{animation:toastIn var(--duration-base) var(--ease-spring)}
+/* The inherited entrance slides sideways by 50% of the box, which only made
+   sense for the old inset-inline-start:50% centring. This note rises instead. */
+.toast-sticky.show{animation:toastStickyIn var(--duration-base) var(--ease-spring)}
+@keyframes toastStickyIn{from{opacity:0;transform:translateY(16px)}}
 @keyframes toastIn{from{opacity:0;transform:translateX(50%) translateY(16px)}}
 .toast-btn{border:none;background:transparent;color:var(--color-accent);font-family:var(--font-ui);
   font-size:13px;font-weight:700;cursor:pointer;padding:2px 4px;flex-shrink:0}
@@ -147,15 +151,80 @@ html[data-mode="dark"] .toast-btn{color:var(--color-accent)}
 @keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
 /* Sticky variant: no auto-dismiss bar, stays until the user acts.
-   Used by the update prompt — the action must never time out.
-   What it asks for is the point of the toast, so the action is a surface of its
-   own rather than a text link: one filled pill, the same language the primary
-   buttons speak. It keeps a 44px touch height either way. */
-.toast-sticky{font-size:14px;padding:12px 14px;gap:var(--space-3)}
+   The split is by lifetime, not by subject, and it is the whole rule:
+     «.that goes away on its own» -> dark bar above («پاک شد», four seconds, gone)
+     «.that waits for you»      -> this slip of paper (the update prompt, and
+                                        the storage warning — both need an answer)
+   Dressing up the blips would make every deletion feel like an event; leaving
+   the two notes as dark bars would make them look like the app shouting.
+
+   The paper, the ruled pitch, the ink and the tape all come from .sheet-paper
+   (css/base.css) — the one declaration the two calendars and the birthday greeting
+   read too — so what is left below is the note's own: where it sits, how it
+   centres, and what its line and button look like.
+
+   position:fixed, not relative: .toast pins itself to the bottom of the screen,
+   and .toast-sticky comes later at equal weight, so any other value here would
+   silently turn a note the reader must answer into one that scrolls off with
+   the page.
+
+   The centring is restated too. .toast centres with inset-inline-start:50% plus a
+   +50% X translate, which leaves only half the viewport as the box's available
+   width; a shrink-to-fit box therefore clamps itself to that half. Measured at a
+   320px viewport: a 152px note with «نسخهٔ» on one line and «جدید» on the next. Two insets plus an auto
+   margin centre it properly and hand it the full width, and width:fit-content
+   keeps it from stretching across the screen. The entrance animation is restated
+   for the same reason — the inherited keyframe translates by 50% of the box, which
+   would drag the note sideways on show. */
+.toast-sticky{position:fixed;inset-inline:16px;width:fit-content;max-width:calc(100vw - 32px);
+  margin-inline:auto;transform:none;font-size:14px;gap:var(--space-3);
+  padding:20px 16px 16px;border-radius:var(--radius-md);
+  /* .toast clips with overflow:hidden so its progress bar cannot poke out of its
+     rounded corner, and .sheet-paper's visible cannot outrank it on order — both are
+     bare classes — so the opt-out has to be said here. Measured without it: the tape
+     is simply gone and the note reads as a plain rectangle, which is the look this
+     was meant to replace. */
+  overflow:visible;
+  /* Same reason as #nameCard and .cal-card: .toast (line 130) carries --shadow-2
+     and is later in the cascade, so the recipe's own box-shadow:none loses to it. */
+  box-shadow:none}
+/* The tape is .sheet-paper's, not ours — this note only says where it hangs. Same token,
+   same size, same tilt; it sits further in because its paper is a narrow slip
+   rather than a card, and 20px on a 250px sheet is closer to the corner than it
+   looks on a 372px calendar. */
+.toast-sticky{--sheet-tape-inset:16px}
+/* The dark-mode rule above repaints .toast-sticky as a raised surface, so this
+   has to outrank it rather than lose on order: html[data-mode] adds an attribute
+   selector and therefore specificity. One line, because the recipe is a token. */
+html[data-mode="dark"] .toast-sticky{background:var(--sheet-paper);
+  color:var(--color-text-primary);border:1px solid var(--color-border);box-shadow:none}
+/* The line and the action share one row, both on the ruled 22px pitch of
+   .sheet-paper, so the text sits on a rule the way it would on paper. align-items:stretch would make
+   the text block as tall as the button and drift it off the line, so they are
+   centred on each other instead and the line-height does the aligning. */
+.toast-sticky .toast-text{line-height:1.7;font-weight:500;align-self:center;
+  /* min-width:0 so the text column is allowed to be narrower than its content.
+     Without it a flex item refuses to shrink below the longest word, which at
+     narrow widths means the button never gets a fair share of the row. */
+  flex:1 1 150px;min-width:0}
 .toast-sticky .toast-btn{padding:10px 16px;min-height:44px;display:inline-flex;align-items:center;
-  border-radius:var(--radius-pill);background:var(--color-accent);color:#fff;
+  border-radius:var(--radius-pill);background:var(--color-accent);
+  /* Not a literal #fff: that was unreadable in seven of the nine palettes. The
+     token exists for exactly this and every palette declares its own value. */
+  color:var(--color-text-on-accent);
   transition:transform var(--duration-fast) var(--ease-out)}
-html[data-mode="dark"] .toast-sticky .toast-btn{color:#fff}
+html[data-mode="dark"] .toast-sticky .toast-btn{color:var(--color-text-on-accent)}
+/* Below this the row cannot hold both parts side by side, and flex will not
+   break it on its own: measured at a 320px viewport, the note collapsed to 163px
+   and set «نسخهٔ جدید اومده!» one word to a line. Rather than let the sentence
+   shatter, the note stacks — the line on the ruled paper, the pill underneath it.
+   The threshold is the note's own measured two-column width (163 + 100 pill +
+   gap + 32 padding) plus a little slack. */
+@media (max-width:400px){
+  .toast-sticky{flex-wrap:wrap;row-gap:var(--space-2);padding:20px 14px 14px}
+  .toast-sticky .toast-text{flex:1 1 100%;align-self:start}
+  .toast-sticky .toast-btn{align-self:flex-start}
+}
 @media (hover:hover){
   .toast-sticky .toast-btn:hover{transform:translateY(-1px)}
   .toast-sticky .toast-btn:active{transform:translateY(1px)}

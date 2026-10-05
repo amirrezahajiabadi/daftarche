@@ -23,6 +23,132 @@ html[data-mode="dark"] .overlay{background:rgba(0,0,0,.5)}
 .name-card .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
 .skip{margin-top:14px;background:none;border:none;color:var(--muted);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer}
 
+/* ═══ The name card ═══
+   The first thing anybody sees, and the only card in this app that asks the
+   reader to put something on the page themselves: a name, written, in the space
+   where names go. So it is paper (css/base.css, .sheet-paper, the same recipe the
+   calendars, the greeting and the update note read) with a strip of tape holding
+   it down, and the field is a line on that paper rather than a box drawn on top
+   of it. A boxed input on a ruled card reads as a web form laid on top of a
+   notebook; a line with a caret reads as a blank space somebody filled in.
+
+   The id restatement is not duplication, it is load order: .name-card is declared
+   below in this same file and comes later in the cascade at equal weight, so its
+   own background would beat .sheet-paper's and the paper would never be seen.
+   This rule is an id, so it wins — and it only restates the two declarations
+   .name-card owns. The other five dialogs that share .name-card (the goal sheet,
+   the avatar picker, the two achievement cards, the profile one) are not sheets of
+   this notebook and are deliberately left as they are. */
+#nameCard{background:var(--sheet-paper);border-color:var(--color-border);
+  /* box-shadow:none is not decoration here. .sheet-paper already sets it in
+     css/base.css, but .name-card (overlays.css, line 16) declares --shadow-2
+     and is linked later, so at equal weight it wins and the warm halo comes
+     back on this card only. Measured: rgba(122,80,35,.35) 0 24px 50px -24px. */
+  box-shadow:none}
+
+/* The line to write on. No box, no fill, no rounding: one rule under an empty
+   space, which is what a blank on paper is. 48px tall so it is still an easy
+   thing to hit on a phone — removing the box must not make the target smaller — and
+   17px of type because this is the one word the reader is here to write.
+
+   Focus is the underline turning accent, plus a real outline for the keyboard.
+   Both, deliberately: a coloured underline alone is easy to miss for someone who
+   cannot see the colour change, and an outline alone is easy to miss for someone
+   who is looking at the text rather than at the edge of the field. */
+#nameCard input{min-height:48px;padding:2px 4px 4px;margin-bottom:var(--space-4);
+  border:none;border-bottom:2px solid var(--color-border-strong);border-radius:0;
+  background:transparent;font-size:17px;font-weight:600;
+  color:var(--color-text-primary);
+  transition:border-color var(--duration-base),box-shadow var(--duration-base)}
+#nameCard input::placeholder{color:var(--color-text-muted);font-weight:400}
+#nameCard input:focus{border-bottom-color:var(--color-accent);
+  box-shadow:0 10px 14px -12px var(--color-accent)}
+#nameCard input:focus-visible{outline:2px solid var(--color-accent);outline-offset:6px}
+
+/* #fff on the accent was a literal white, which is unreadable in the palettes
+   whose accent is light. Every palette declares what its accent needs behind it
+   under --color-text-on-accent, and this is the first thing anybody reads. */
+#nameCard .go{color:var(--color-text-on-accent)}
+
+/* «بعداً می‌گم» is the one control on this card that is not about the name, and it is the reason
+   the card is safe to open at all: it is how somebody says «not now» and never
+   has to think about it again. Measured before this change, it was a 20px-tall
+   line of muted text — the smallest target on the first screen of the app, on the
+   one control whose whole job is being easy to hit. 44px here, still quiet:
+   no fill, no border, same colour as before, only the box around it grows.
+   Scoped to #nameCard because .skip is shared with four other dialogs. */
+#nameCard .skip{min-height:44px;display:inline-flex;align-items:center;padding:0 12px;
+  border-radius:var(--radius-pill);transition:color var(--duration-fast)}
+#nameCard .skip:hover{color:var(--color-accent)}
+#nameCard .skip:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+
+/* ═══ The birthday card ═══
+   One day a year, so it is built out of the ordinary parts rather than a new
+   language: the .overlay scrim and the modal contract are the ones every other
+   dialog already uses, so focus containment and the frozen page behind come
+   from js/modal.js without this file knowing they exist.
+
+/* .sheet-paper does the work: the same ruled pitch, the same ink, the same tape
+   as the two calendars and the update note. It used to carry its own copy at a
+   22px pitch on --text/--surface with a 52x16 strip inset 22px, and it clipped
+   with overflow:hidden — which took its own tape with it, since the strip hangs
+   off the top edge by 7px. Measured before this change: a card with no tape on
+   it, which is precisely the look the reader is asking for.
+
+   What is left here is what is genuinely the greeting's own: its width, its
+   padding, the border-radius it has always had, and the entrance. */
+.bd-card{width:100%;max-width:360px;padding:30px 26px 24px;text-align:center;
+  border-radius:var(--radius-xl);
+  animation:popCard var(--duration-base) var(--ease-out)}
+
+.bd-char{display:block;width:76px;height:76px;margin:6px auto 0}
+.bd-char svg{width:100%;height:100%;filter:drop-shadow(0 8px 12px rgba(0,0,0,.14));animation:drift 6s ease-in-out infinite}
+.bd-kicker{display:inline-block;margin:12px 0 0;padding:5px 16px;border-radius:var(--radius-pill);
+  background:var(--accent-soft);color:var(--accent-strong);
+  font-family:var(--font-ui);font-size:12px;font-weight:700;line-height:1.6}
+.bd-title{margin:10px 0 6px;font-family:var(--font-personality);font-size:23px;font-weight:700;line-height:1.55}
+/* The name is the reader's own and it is written with textContent, never as
+   markup — it came from a field they typed into. */
+/* The name is the reader's own and it is written with textContent, never as
+   markup — it came from a field they typed into. */
+.bd-name{color:var(--color-text-secondary);font-size:14px;font-weight:500;line-height:1.8;overflow-wrap:anywhere}
+/* «۲۷ ساله‌ت», and the reason the calendar asks for a year at all. It sits under the name and
+   above the sentence that closes the card, because it is the fact the greeting
+   exists to deliver: the title says it happened, this says how many times.
+
+   A pill rather than a line, for the same reason the kicker above it is one —
+   two emphasised fragments on the same card should not both be plain text, or
+   the eye has nothing to catch on. It is hidden, not blank, when there is no
+   year to count from (js/birthday.js), so the card never shows an empty pill. */
+.bd-age{display:inline-block;margin:2px 0 0;padding:4px 14px;border-radius:var(--radius-pill);
+  background:var(--accent);color:var(--color-text-on-accent);
+  font-family:var(--font-ui);font-size:13px;font-weight:700;line-height:1.7}
+.bd-age[hidden]{display:none}
+.bd-line{margin:12px 0 18px;color:var(--muted);font-size:13px;line-height:1.9;font-weight:400}
+.bd-card .go{margin-top:0;width:100%;border:none;background:var(--accent);color:var(--color-text-on-accent);
+  font-family:var(--font-ui);font-size:15px;font-weight:600;padding:12px;border-radius:var(--radius-sm);
+  cursor:pointer;box-shadow:var(--shadow-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+.bd-card .go:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(120,55,20,.35)}
+@media (hover:hover){.bd-card .go:hover{transform:translateY(-2px)}}
+
+/* Reduced motion: the character's idle drift is decoration and stops with
+   everything else in the sheet. The card itself still appears — it is the
+   day's only greeting and must not be the thing that gets skipped. */
+@media (prefers-reduced-motion:reduce){
+  .bd-char svg{animation:none}
+  .bd-card{animation:none}
+}
+/* Likewise while nobody is looking at the tab. */
+html.tab-hidden .bd-char svg{animation-play-state:paused}
+
+@media (max-width:480px){
+  .bd-card{padding:24px 18px 20px;border-radius:var(--radius-lg)}
+  .bd-title{font-size:20px}
+  .bd-line{font-size:12px}
+  .bd-card .go{font-size:14px;padding:11px}
+  .bd-char{width:64px;height:64px}
+}
+
 .roll-card{padding:28px 24px 22px}
 .roll-title{color:var(--muted);font-family:var(--font-personality);font-size:16px;font-weight:700;margin-bottom:14px}
 .roll-box{min-height:88px;display:grid;place-items:center;background:var(--bg);border:2px dashed var(--border);border-radius:var(--radius-md);padding:var(--space-4);font-size:15px;font-weight:500;line-height:1.8;transition:border-color var(--duration-base)}
@@ -67,21 +193,294 @@ html[data-mode="dark"] .overlay{background:rgba(0,0,0,.5)}
 
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 
-/* ═══ Jalali Due-Date Picker ═══ */
-.due-card{max-width:340px}
-.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.cal-title{font-family:var(--font-personality);font-size:15px;font-weight:700}
-.cal-nav{width:32px;height:32px;border-radius:var(--radius-xs);border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:16px;cursor:pointer;transition:all var(--duration-fast);display:grid;place-items:center}
-.cal-quick{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
-.cal-q{font-family:var(--font-ui);font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:var(--radius-pill);padding:4px 12px;cursor:pointer;transition:all var(--duration-fast)}
-.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
-.cal-week span{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:2px 0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-day{height:34px;border:none;border-radius:var(--radius-xs);background:transparent;color:var(--text);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer;transition:all var(--duration-fast);display:grid;place-items:center}
-.cal-day.today{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent);font-weight:700}
-.cal-day.sel{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 3px 10px -3px var(--accent)}
-.cal-blank{height:34px}
-.cal-clear{display:block;margin:12px auto 0;border:none;background:transparent;color:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:500;cursor:pointer;transition:color var(--duration-fast)}
+/* ═══ The two date pickers ═══
+   Choosing a deadline and choosing a birthday are the same act on the same
+   grid, and they used to look like two different apps: the deadline card was a
+   plain white box 340px wide with 28px of padding, the birthday card was ruled
+   paper 372px wide with 20px. The reader sets a due date far more often than a
+   birthday, so the plainer of the two was the one they saw most.
+
+   Both are now the same object. .cal-card is that object — one width, one
+   padding, one sheet of ruled paper, one strip of tape — and each picker adds
+   only what is genuinely its own: the deadline has the quick row, the birthday
+   does not. Everything below the frame is already shared through
+   js/jalalical.js, so the two cannot drift apart again in the part that
+   actually draws a month.
+
+   The width is 372 rather than the 340 that either card used to have, and that
+   is arithmetic rather than taste: seven 44px columns and six 4px gaps need
+   332px, which does not fit inside 340px minus .name-card's 28px of padding.
+   Set to 340, the columns overflowed their track and the cells sat on top of
+   each other — measured in the browser, five of the seven pairs overlapping. */
+.cal-card{max-width:372px;padding:24px 20px 20px;box-shadow:none}
+/* The tape is not written here: it comes with .sheet-paper (css/base.css), which
+   is the one recipe the greeting card and the update note read too. */
+/* Its own heading, because in both of these the calendar is the content
+   rather than a preamble to it: the title is the thing being set, so it
+   sits close to the thing it names. The line under it is one rule, not a
+   shared promise - the deadline picker still has a sentence there and the
+   birthday card no longer does, which is why the gap under this title is
+   set per card further down. */
+.cal-card h2{margin:8px 0 4px;font-size:19px}
+.cal-card>p{margin-bottom:14px;font-size:12.5px;line-height:1.7}
+
+/* The birthday card says only its title now - the line under it was
+   instructions, and a card that opens on the thing being asked for does
+   not need to be told how to use itself. What that paragraph used to
+   contribute to the rhythm is kept here: 14px of air under the title,
+   which is what .cal-card>p put below it. The deadline picker still has
+   its own paragraph, so the shared .cal-card>p rule above stays. */
+.bd-pick-card h2{margin-bottom:14px}
+/* The close control is a full-width secondary button in both, so the foot of
+   either card offers the same two obvious things and «بستن» can never be
+   mistaken for one of them. */
+.cal-card .skip{display:block;width:100%;min-height:44px;margin-top:8px;padding:0 16px;
+  border:1.5px solid var(--border);border-radius:var(--radius-pill);
+  font-size:13px;font-weight:500;color:var(--color-text-secondary);
+  transition:border-color var(--duration-fast),color var(--duration-fast)}
+/* ── The year row ──
+   The birthday picker asks for a year as well as a month and a day, and it asks
+   with a stepper rather than a list of 120 options or a free-text field. Two
+   reasons, both about the reader holding the phone one-handed:
+
+     «± 1» walks one year, which is a gesture that cannot be misread. A row of chips
+       would need a scroll to reach 1379 from 1405; a «type it» box would want four
+       Persian digits and would happily accept a year nobody is born in.
+     the year in the middle is the way into the year grid below, which is a decade
+       at a time — so the short walk stays for the year next door and the long one
+       has somewhere to go.
+
+   There was a fourth button here and it is gone. «I don't know» meant «leave this
+   alone», which is a legitimate answer, but a control whose whole job is to be
+   pressed when nothing is wanted is a control that gets pressed by accident — and
+   the year stays optional without it: the button reads «سال؟» until a year is
+   chosen, so a reader who never opens the grid stores no year and still gets
+   their greeting.
+
+   Every button is 44px for the same reason every day cell is — this is the one
+   place in the app where a number is chosen by finger rather than by eye. */
+.bd-year{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 14px}
+.bd-year button{min-width:44px;min-height:44px;padding:0 12px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border);border-radius:var(--radius-pill);
+  background:var(--color-surface-elevated);color:var(--color-text-secondary);
+  font-family:var(--font-ui);font-size:14px;font-weight:600;line-height:1;cursor:pointer;
+  transition:color var(--duration-fast),border-color var(--duration-fast)}
+.bd-year button:active{transform:translateY(1px)}
+/* Wide enough for a four-digit year, and it is the way into the year grid, so it
+   carries a border like the arrows do rather than reading as the plain number it
+   replaced. «سال؟» is the same width when nothing is stored — a button that
+   changed size as it filled would move the arrows either side of it. */
+.bd-year .bd-year-now{min-width:88px;color:var(--color-text-primary)}
+/* The arrows are glyphs, so their box is padded out to the same 44px the day
+   cells get while the glyph itself stays small. */
+.bd-year .bd-year-step{font-size:17px;color:var(--color-accent)}
+.bd-year button:disabled{opacity:.35;cursor:not-allowed}
+@media (hover:hover){
+  .bd-year button:not(:disabled):hover{border-color:var(--color-accent);color:var(--color-accent)}
+}
+
+@media (max-width:480px){
+  .bd-year{gap:6px}
+  .bd-year button{padding:0 9px}
+  .bd-year .bd-year-now{min-width:76px}
+}
+
+/* ── The year grid ──
+   The same sheet of paper as the month grid with one axis left: five years
+   across, two rows, a decade at a time.
+
+   Five across rather than four because ten divides it exactly — a decade that
+   did not fill its last row would leave a gap the reader has to explain to
+   themselves. And minmax(44px, 1fr) rather than 1fr for the same reason the day
+   grid uses it: a year is chosen by finger, and 1fr would quietly hand back 39px
+   cells on a narrowed card. Measured, not assumed — that is the whole argument
+   for writing the floor down rather than letting the grid divide whatever it is
+   given.
+
+   44px tall like every day cell, because it is the same act: a finger choosing a
+   number from a grid of neighbours. */
+.bd-years{display:grid;grid-template-columns:repeat(5,minmax(44px,1fr));
+  gap:4px;margin:10px 0 0;justify-items:center}
+
+.bd-year-cell{width:100%;height:44px;min-width:44px;max-width:72px;
+  border:1.5px solid transparent;border-radius:var(--radius-sm);
+  background:transparent;color:var(--color-text-primary);
+  font-family:var(--font-ui);font-size:14px;font-weight:500;cursor:pointer;
+  display:grid;place-items:center;
+  transition:background var(--duration-fast),color var(--duration-fast),border-color var(--duration-fast)}
+
+/* The year the reader is about to be — outlined, not filled, exactly as «today»
+   is in the day grid: an outline says «this one, and it is still choosable»,
+   where a fill would compete with the year actually chosen. */
+.bd-year-cell.now{border-color:var(--color-accent);color:var(--color-accent);font-weight:700}
+
+/* The chosen year wears the accent as a fill, for the same reason the chosen day
+   does, and with the same ink token: a hardcoded #fff was unreadable in seven of
+   the nine palettes, and a picker whose selection cannot be read has not
+   answered the question it was opened to answer. */
+.bd-year-cell.sel{background:var(--color-accent);border-color:var(--color-accent);
+  color:var(--color-text-on-accent);font-weight:700;box-shadow:0 3px 10px -3px var(--color-accent)}
+.bd-year-cell.now.sel{border-width:2px;
+  box-shadow:0 3px 10px -3px var(--color-accent),inset 0 0 0 1px var(--color-text-on-accent)}
+
+@media (hover:hover){
+  .bd-year-cell:not(.sel):hover{background:var(--color-accent-soft);border-color:var(--color-accent)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .bd-year-cell{transition:none}
+}
+
+/* Placed after the .bd-years rule above for the reason recorded at the .cal-grid
+   breakpoint: a media query declared before the rule it is meant to correct
+   loses to it at equal specificity, however narrow the screen is. */
+@media (max-width:400px){
+  .bd-years{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+  .bd-year-cell{min-width:0;max-width:none}
+}
+
+/* ── The month grid ──
+   Every control here is sized by the finger, not by the eye. A day is the
+   smallest thing a person has to hit accurately — miss one and you store the
+   wrong birthday, which then greets them on the wrong day once a year. So the
+   targets are 44px (the WCAG 2.5.5 minimum) rather than the 34px this started
+   at, the gaps are wide enough to tell two days apart by touch, and the arrows
+   for stepping through months are the same 44px. What that costs in density is
+   why the grid is allowed to be the widest thing in the card.
+
+   Spacing is the other half. The weekday row is 10px above the grid so the
+   letters sit in their column rather than floating over it, and the grid is
+   centred on the card so a thumb reaching for «۱۲» is not also covering «۲۱». */
+/* The head is a three-column row: an arrow, the month, an arrow — with the
+   title centred on the card rather than merely spaced between the two. That
+   last part is the reason the title is its own flex child and not a filler:
+   space-between only centres it when the two arrows are the same width, and
+   they are (both 32px), so the title sits dead centre even when the month name
+   changes length between تیر and شهریور. */
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.cal-title{font-family:var(--font-personality);font-size:16px;font-weight:700;line-height:1.3;
+  text-align:center;flex:1 1 auto;min-width:0}
+
+/* Month arrows, as drawn: a 32px rounded square with a hairline border and a
+   hairline chevron, and nothing else — no fill to tell it from the paper it
+   sits on, no shadow. The border is 1px rather than 1.5px because at 32px a
+   heavier one closes the gap on the sides and the square stops reading as a
+   square; the radius is 10px, which is close enough to the 12px used elsewhere
+   to feel like the same family without turning a small square into a lozenge. */
+.cal-nav{position:relative;width:32px;height:32px;flex:0 0 auto;border-radius:10px;
+  border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);
+  font-size:17px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;
+  transition:border-color var(--duration-fast),color var(--duration-fast),background var(--duration-fast)}
+.cal-nav:active{background:var(--color-accent-soft);color:var(--color-accent)}
+
+/* The 44px target, kept without the 44px box. A finger needs 44px of target
+   and the design needs 32px of square, and those are two different boxes: this
+   one is 32×32 and invisible, and it sits on top of the visible square so a
+   thumb anywhere in the surrounding 6px still lands on the arrow. Without it
+   the arrow shrinks to 32px and a 44px target quietly becomes 32 — the whole
+   point of the grid below it is that a miss here stores the wrong birthday. */
+.cal-nav::after{content:'';position:absolute;inset:-6px}
+
+/* The quick row: «امروز / فردا / پس‌فردا», which only make sense for something
+   due in the next three days and so belong to the deadline picker alone.
+
+   They were 28px tall — half the 44px minimum — and that is the one control in
+   this card a reader hits most often, because three quarters of the deadlines
+   anyone sets are inside the next three days. At 28px they are also the easiest
+   thing on the card to miss by a thumb. So they are 44px now, in the same
+   hairline square as the month arrows rather than in a pill: three small
+   buttons in a row of pills read as three different kinds of control, and
+   these are the same kind as the arrows beside them. */
+.cal-quick{display:flex;gap:6px;justify-content:center;margin:12px 0 0}
+.cal-q{flex:1 1 0;min-height:44px;min-width:44px;position:relative;
+  font-family:var(--font-ui);font-size:13px;font-weight:500;
+  border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);
+  border-radius:10px;padding:0 10px;cursor:pointer;
+  transition:border-color var(--duration-fast),color var(--duration-fast),background var(--duration-fast)}
+.cal-q:active{background:var(--color-accent-soft);color:var(--color-accent)}
+
+.cal-week{display:grid;grid-template-columns:repeat(7,minmax(44px,1fr));gap:4px;margin-bottom:6px}
+.cal-week span{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:3px 0;line-height:1.2}
+
+/* 4px gaps rather than 3: with a 44px cell the gap is what separates one day's
+   target from the next, and on a touch screen that separation is felt, not
+   read.
+
+   The columns are minmax(44px, 1fr), not 1fr, and that is load-bearing rather
+   than tidier. 1fr divides whatever width it is given, so a card narrowed to
+   340px handed back 39px columns and every day quietly became a 39px target —
+   measured, not assumed. The card can be resized by the reader's own font
+   size, by a longer translation, or by anyone narrowing the layout later, and
+   1fr would absorb each of those silently. minmax says 44 is the floor: if
+   there is not enough room the grid overflows the padding and the card can be
+   seen to be too small, which is a visible bug — instead of an invisible one
+   that only shows up as a mis-tap on the wrong birthday. */
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(44px,1fr));gap:4px;justify-items:center}
+
+.cal-day{width:100%;height:44px;min-width:44px;max-width:44px;border:1.5px solid transparent;border-radius:var(--radius-sm);
+  background:transparent;color:var(--color-text-primary);
+  font-family:var(--font-ui);font-size:14px;font-weight:500;cursor:pointer;
+  display:grid;place-items:center;
+  transition:background var(--duration-fast),color var(--duration-fast),border-color var(--duration-fast)}
+
+/* Today is outlined, not filled: an outline says «this one, and it is still
+   choosable» where a fill would compete with the day already chosen. */
+.cal-day.today{border-color:var(--color-accent);color:var(--color-accent);font-weight:700}
+
+/* The chosen day wears the accent as a fill, so its label needs whichever ink
+   sits on that accent — and that is not the same in every theme. A hardcoded
+   #fff was unreadable in seven of the nine palettes (1.6:1 on «طلایی»'s gold,
+   2.1:1 on «شب»), and a calendar whose selected day cannot be read is a
+   calendar that has not answered the question it was opened to answer.
+   --color-text-on-accent is the token that exists for exactly this, and every
+   palette in css/base.css already declares its own value for it. */
+.cal-day.sel{background:var(--color-accent);border-color:var(--color-accent);color:var(--color-text-on-accent);
+  font-weight:700;box-shadow:0 3px 10px -3px var(--color-accent)}
+
+/* Today *and* chosen: the fill is what wins, because it is the answer, and the
+   border thickens so the day is still identifiable as today underneath. */
+.cal-day.today.sel{border-width:2px;box-shadow:0 3px 10px -3px var(--color-accent),inset 0 0 0 1px var(--color-text-on-accent)}
+
+/* Placed here rather than with the other media queries on purpose: .cal-grid and
+   .cal-day are declared further down this file, and a media query above them
+   loses to them at equal specificity no matter how narrow the screen is.
+   Measured with this block in the wrong place: the columns stayed 44px at a
+   320px viewport and the card still ran off the left edge by 70px. */
+/* ══ 320px and under ══
+   The card is 372px because seven 44px columns and six 4px gaps do not fit in
+   less — 332px of grid plus 40px of padding. On a 320px phone that is arithmetic
+   that does not fit: measured, a 370px card centred in 280px of available width
+   put its left edge at −70px, so a third of the calendar — and the weekday
+   column above it — was off the screen with no way to scroll to it. The grid was
+   not the thing that broke; the card simply never had a narrow-width answer.
+
+   So below 400px the columns give up width and keep height. 44px tall is the
+   part a finger needs — it is the axis the day is hit on — and a column can be
+   30px wide and still be comfortably past the 24px WCAG 2.5.8 minimum, which is
+   the level that is actually required. Height is not negotiable, width is
+   arithmetic. */
+@media (max-width:400px){
+  .cal-card{max-width:none;padding:20px 12px 16px}
+  .cal-week,.cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+  .cal-day{min-width:0;max-width:none}
+  .cal-q{min-width:0}
+}
+
+
+.cal-blank{height:44px;width:100%;min-width:44px;max-width:44px}
+
+/* The footer action. Named for what it does rather than left as a bare
+   «پاک کردن» floating under the grid, where it reads as closing the dialog. It
+   is a real button with a 44px target, and it only exists when there is
+   something to clear. */
+.cal-clear{display:block;margin:14px auto 0;min-height:44px;padding:0 18px;border:1.5px solid var(--border);
+  border-radius:var(--radius-pill);background:transparent;color:var(--color-text-secondary);
+  font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer;
+  transition:border-color var(--duration-fast),color var(--duration-fast)}
+.cal-clear:active{transform:translateY(1px)}
+.cal-clear[hidden]{display:none}
 
 /* ═══ Highlight Toolbar ═══ */
 .hl-toolbar{position:fixed;z-index:96;display:flex;gap:8px;align-items:center;background:var(--text);padding:8px 12px;border-radius:var(--radius-pill);box-shadow:var(--shadow-lg);animation:popIn var(--duration-fast) cubic-bezier(.34,1.56,.64,1)}
@@ -120,10 +519,14 @@ html[data-mode="dark"] .overlay{background:rgba(0,0,0,.5)}
   .roll-actions .ghost:hover{color:var(--accent);border-color:var(--accent)}
   .focus-presets button:hover{border-color:var(--accent)}
   .focus-rating button:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
-  .cal-nav:hover{color:var(--accent);border-color:var(--accent);transform:scale(1.08)}
-  .cal-q:hover{transform:translateY(-2px);border-color:var(--accent);color:var(--accent)}
-  .cal-day:hover{background:var(--accent-soft);color:var(--accent);transform:scale(1.08)}
-  .cal-clear:hover{color:var(--danger)}
+  /* No scale on the grid: at 44px a cell grows into its neighbour and the two
+     targets a thumb is aiming between stop being distinguishable. A tint is
+     enough to say «this one». */
+  .cal-nav:hover{color:var(--color-accent);border-color:var(--color-accent)}
+  .cal-q:hover{border-color:var(--color-accent);color:var(--color-accent)}
+  .cal-day:hover:not(.sel){background:var(--color-accent-soft);color:var(--color-accent-strong)}
+  .cal-day.sel:hover{background:var(--color-accent-strong)}
+  .cal-clear:hover{color:var(--color-danger);border-color:var(--color-danger)}
   .hl-toolbar button:hover{transform:scale(1.25)}
   .note-del:hover{color:var(--danger)}
 }

@@ -13,6 +13,39 @@
 .set-item{display:flex;flex-direction:column;gap:5px;padding:14px 0}
 .set-item .settings-row{padding:0}
 
+/* The date the reader picked, shown as «۱۲ ۰۷۴ ۱۳۷۰» — month by its name rather than as ۱۲/۰۷۴/۱۳۷۰,
+   because that is how they just chose it and it is the one form that needs no
+   remembering.
+
+   It is the control. There is no «انتخاب» beside it any more: the date is the only part of this row
+   that can be edited, so making the date itself the button is both fewer things
+   to read and a bigger thing to hit. It is drawn as a plain text row rather
+   than as a pill, because a settings value that looks like a button everywhere
+   else would promise an edit it cannot do — pressing this one opens the
+   calendar, it does not accept typing. The dotted underline is what says «this
+   responds to a press» in a list where nothing else does.
+
+   44px of height, and a :focus ring that does not vanish: this is now the only
+   way to reach the feature from the keyboard. */
+.bd-date{min-height:44px;min-width:72px;padding:0 2px;display:inline-flex;align-items:center;
+  justify-content:flex-start;background:none;border:none;border-radius:var(--radius-sm);
+  font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--color-text-primary);
+  line-height:1.6;cursor:pointer;text-decoration:underline dotted;
+  text-decoration-color:var(--color-border-strong);text-underline-offset:5px;
+  text-decoration-thickness:1.5px}
+.bd-date:hover{text-decoration-color:var(--color-accent)}
+.bd-date:active{color:var(--color-accent)}
+.bd-date:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
+/* Empty, the row says so rather than leaving a blank gap that reads as a
+   rendering fault. Kept in the markup as text so it is announced, not a
+   placeholder that disappears when focused. */
+#bdDate.empty::before{content:'—';color:var(--color-text-muted);font-weight:400}
+#bdDate{display:inline}
+
+@media (max-width:480px){
+  .bd-date{font-size:12px}
+}
+
 .settings-hint{color:var(--muted);font-size:12px;line-height:1.9;font-weight:400;margin:0}
 
 @media (max-width:480px){

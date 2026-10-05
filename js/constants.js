@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   ledger: 'daftarche-ledger',
   achievements: 'daftarche-achievements',
   freeze: 'daftarche-streak-freeze',
+  birthday: 'daftarche-birthday',
+  birthdaySeen: 'daftarche-birthday-seen',
 };
 
 /* ═══ Themes ═══

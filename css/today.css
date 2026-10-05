@@ -30,16 +30,40 @@
 /* ── Frog hero ── */
 /* ── Decision Hero ──
    The signature component: largest title, strongest CTA, most air.
-   Everything else on Today is quieter than this card. */
-.frog-hero{position:relative;overflow:hidden;border-radius:30px;padding:30px 24px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
-  border:1.5px solid color-mix(in srgb,var(--green) 36%,transparent);
-  background:
-    radial-gradient(130% 120% at 88% -12%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 55%),
-    radial-gradient(130% 140% at 8% 115%,color-mix(in srgb,var(--green) 22%,transparent),transparent 55%),
-    var(--surface);
-  box-shadow:var(--shadow-sm);transition:background var(--duration-slow)}
-.frog-hero::before{content:'';position:absolute;top:16px;inset-inline-start:18px;width:12px;height:12px;border-radius:50%;background:var(--accent-2);opacity:.5;animation:twinkle 5s ease-in-out infinite;pointer-events:none}
-.frog-hero::after{content:'';position:absolute;bottom:18px;inset-inline-end:20px;width:9px;height:9px;border-radius:50%;background:var(--green);opacity:.35;pointer-events:none}
+   Everything else on Today is quieter than this card.
+
+   The card is paper, not glass. It used to carry two corner radials — accent
+   top-inline-end, green bottom-inline-start — over the surface, plus two
+   drifting dots. Together those read as a decorative glow that no other card in
+   the app has, which is exactly what makes a screen look machine-dressed: hue
+   with no job. So the halos and the dots are gone, and what is left is the one
+   thing this card should have been all along — the same flat surface every other
+   card uses, with the notebook's own ruling showing through it.
+
+   The ruling used to be written out here, in --text at a flat 5%, with a long
+   note about why --border would have been wrong and why a fraction of it would
+   have been worse. Both reasons still hold and neither has gone anywhere: they
+   are written once, on .sheet-paper in css/base.css, and this card now reads
+   them like the other five sheets do. Duplicating that paragraph here was how the
+   gradient ended up duplicated here too — same 22px pitch, same 5%, written out
+   twice so that changing it in one place was a coin toss.
+
+*/
+/* The paper, the ruling and the tape are .sheet-paper's now (css/base.css) — the
+   same declaration the two calendars, the birthday greeting and the update note
+   read. This card had its own copy of the gradient, identical to the calendar's
+   down to the 22px pitch, and no tape at all; it also clipped with
+   overflow:hidden, so the one thing that made it read as a page of this notebook
+   rather than as a themed panel was missing.
+
+   What stays here is what is genuinely this card's: the 30px radius (it is the
+   biggest thing on the screen), the padding, the centred column, and one border
+   — a green-tinted one, because the card is about the day being finished or
+   about there being nothing to do, and the accent edge says so before the words
+   are read. Everything else is inherited. */
+.frog-hero{border-radius:30px;padding:30px 24px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  border-color:color-mix(in srgb,var(--green) 28%,var(--color-border));
+  transition:background var(--duration-slow)}
 /* Idle motion: one slow, very low-character breathing drift for the hero only */
 .frog-emoji{font-size:58px;line-height:1;transform-origin:bottom center;filter:drop-shadow(0 10px 14px rgba(0,0,0,.14));animation:drift 6s ease-in-out infinite}
 @keyframes frogFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}

@@ -23,8 +23,12 @@ export const BACKUP_FORMAT = 1;
 export const BACKUP_MAX_CHARS = 5 * 1024 * 1024;
 
 /* Device-local keys that must not travel: which release notes this device has
-   already shown is a fact about this device, not about the person's data. */
-const EXCLUDED = new Set(['daftarche-seen-version']);
+   already shown is a fact about this device, not about the person's data. The
+   day the birthday card was last shown belongs here for the same reason — it is
+   a property of this installation, and moving it to another device would only
+   mean that device greets them twice or not at all. The date itself does travel,
+   because that one is theirs. */
+const EXCLUDED = new Set(['daftarche-seen-version', 'daftarche-birthday-seen']);
 
 export const isBackupKey = key =>
   typeof key === 'string' &&

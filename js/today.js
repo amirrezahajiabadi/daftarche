@@ -147,7 +147,7 @@ function renderFrog(force) {
         ? 'وقتی کاری اضافه کنی، همین‌جا پیشنهادش رو می‌ذارم.'
         : (rec.reason || ALL_DONE_REASON);
     wrap.innerHTML = `
-      <div class="frog-hero frog-empty frog-empty-${kind}">
+      <div class="frog-hero sheet-paper frog-empty frog-empty-${kind}">
         <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(expr)}</span>
         <span class="frog-kicker">الان چی کار کنیم؟</span>
         <h3 class="frog-empty-title"></h3>
@@ -161,7 +161,7 @@ function renderFrog(force) {
   /* Visual order (Priority 8.4): title → metadata → reason → actions.
      The task title outranks the reason; the reason stays secondary. */
   wrap.innerHTML = `
-    <div class="frog-hero">
+    <div class="frog-hero sheet-paper">
       <span class="frog-emoji" aria-hidden="true">${qorqoriMarkup(frogExpr())}</span>
       <span class="frog-kicker">الان چی کار کنیم؟</span>
       <h3 class="frog-name"></h3>

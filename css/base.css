@@ -307,6 +307,56 @@
   --pal-plum-tape:rgba(157,78,221,.22);
   --pal-plum-glass:rgba(27,5,56,.72);
   --pal-plum-on-accent:#17052e;
+
+  /* day — the birthday palette, and the only one here that no theme points at.
+     It is written in the palette table for the same reason as the other eight:
+     a colour is written down once. What makes it different is who chose it —
+     nobody did. The reader wrote a date into a settings row and this is the day
+     the app answers it, so the block that consumes it hangs off data-day rather
+     than data-theme, and nothing in the picker ever names it.
+
+     It stays inside the notebook's own language instead of reaching for a
+     birthday palette of its own: the same warm paper as «کاغذ», the same orange family as its ink, a shade
+     brighter and more saturated to mark the day, and a deeper rose behind it.
+     A cake-and-streamers palette would look like it came from another app.
+
+     The dark half is a lamp-lit version of the same idea, in the half of the
+     table that already owns the night. Both are plain colours, never a
+     color-mix(), because the share card parses whatever this table holds. */
+  --pal-day-bg:#fff4e6;
+  --pal-day-surface:#fffdf8;
+  --pal-day-elev:#ffffff;
+  --pal-day-text:#3a2a1c;
+  --pal-day-text2:#6b5240;
+  --pal-day-muted:#8a7360;
+  --pal-day-border:rgba(140,90,50,.14);
+  --pal-day-border-strong:rgba(140,90,50,.28);
+  --pal-day-accent:#c2410c;
+  --pal-day-accent-strong:#9a3412;
+  --pal-day-accent-soft:rgba(194,65,12,.14);
+  --pal-day-tape:rgba(255,170,90,.55);
+  --pal-day-glass:rgba(255,244,230,.74);
+  --pal-day-on-accent:#fff8f0;
+
+  /* daydark — the same day after dark. Its own name and not a mode suffix,
+     because the palette table has no notion of a half: the theme blocks choose
+     by name, so this one is chosen by the rule that pairs it with the light
+     day above, and a reader who is in a dark theme at 22:00 on their birthday
+     gets a dark birthday rather than a bright one pasted over their night. */
+  --pal-daydark-bg:#181008;
+  --pal-daydark-surface:#241a10;
+  --pal-daydark-elev:#312415;
+  --pal-daydark-text:#f8ecdd;
+  --pal-daydark-text2:#d8c3ab;
+  --pal-daydark-muted:#a3907a;
+  --pal-daydark-border:rgba(255,200,140,.14);
+  --pal-daydark-border-strong:rgba(255,200,140,.28);
+  --pal-daydark-accent:#fb923c;
+  --pal-daydark-accent-strong:#fdba74;
+  --pal-daydark-accent-soft:rgba(251,146,60,.16);
+  --pal-daydark-tape:rgba(251,146,60,.22);
+  --pal-daydark-glass:rgba(36,26,16,.74);
+  --pal-daydark-on-accent:#241a10;
 }
 
 /* ── From palette to the card's vocabulary ──
@@ -615,6 +665,62 @@ html[data-theme="plum"]{
   --glass:var(--pal-plum-glass);
 }
 
+/* ═══ The day ═══
+   The third face on the root, after the theme and the mode, and the only one
+   the reader did not choose. It is painted from the palette table like anything
+   else, and it overrides the theme above it by source order — html[data-day]
+   ties html[data-theme] on specificity, so being written last is what makes it
+   win. Nothing about the theme underneath is changed: when the day is over the
+   attribute is deleted and the reader's own colours are exactly where they left
+   them, because they were never replaced.
+
+   It is deliberately absent from THEMES. That list is what the picker walks and
+   what the header switch swaps between, and a day is not a choice — putting it
+   there would let someone select it on any date and it would then have to
+   survive being a theme, which is the opposite of what it is. */
+html[data-day="birthday"]{
+  color-scheme:light;
+  --color-bg:var(--pal-day-bg);
+  --color-surface:var(--pal-day-surface);
+  --color-surface-elevated:var(--pal-day-elev);
+  --color-text-primary:var(--pal-day-text);
+  --color-text-secondary:var(--pal-day-text2);
+  --color-text-muted:var(--pal-day-muted);
+  --color-text-on-accent:var(--pal-day-on-accent);
+  --color-border:var(--pal-day-border);
+  --color-border-strong:var(--pal-day-border-strong);
+  --color-accent:var(--pal-day-accent);
+  --color-accent-strong:var(--pal-day-accent-strong);
+  --color-accent-soft:var(--pal-day-accent-soft);
+  --color-focus:var(--pal-day-accent);
+  --tape:var(--pal-day-tape);
+  --glass:var(--pal-day-glass);
+}
+
+/* A birthday at night is a birthday, not a flashbulb. The reader's own theme
+   says which half of the table they are in, and this answers in the same half
+   rather than overriding their choice of darkness with brightness. Two
+   attribute selectors beat the single one above, so this needs no !important
+   and no source-order trick. */
+html[data-day="birthday"][data-mode="dark"]{
+  color-scheme:dark;
+  --color-bg:var(--pal-daydark-bg);
+  --color-surface:var(--pal-daydark-surface);
+  --color-surface-elevated:var(--pal-daydark-elev);
+  --color-text-primary:var(--pal-daydark-text);
+  --color-text-secondary:var(--pal-daydark-text2);
+  --color-text-muted:var(--pal-daydark-muted);
+  --color-text-on-accent:var(--pal-daydark-on-accent);
+  --color-border:var(--pal-daydark-border);
+  --color-border-strong:var(--pal-daydark-border-strong);
+  --color-accent:var(--pal-daydark-accent);
+  --color-accent-strong:var(--pal-daydark-accent-strong);
+  --color-accent-soft:var(--pal-daydark-accent-soft);
+  --color-focus:var(--pal-daydark-accent);
+  --tape:var(--pal-daydark-tape);
+  --glass:var(--pal-daydark-glass);
+}
+
 /* Scroll behavior is decided per call, not globally.
    A global `scroll-behavior:smooth` turned every programmatic jump into a
    long animated scroll — switching tabs from far down the task list meant the
@@ -700,6 +806,15 @@ h1 .underline{display:block;width:110px;height:10px;color:var(--accent);margin-t
 h1 .underline path{stroke-dasharray:140;stroke-dashoffset:140;animation:draw var(--duration-slow) ease var(--duration-base) forwards}
 .subtitle{color:var(--muted);font-size:13px;margin-top:6px;font-weight:400}
 
+/* The two controls in the top corner, together. They were three copies of an
+   inline display:flex;gap:8px with no align-items, which is what let them drift
+   apart: .theme-btn had a mobile rule shrinking it to 40px, .header-avatar (in
+   profile.css, linked later) never did, so below 480px the pair rendered as a
+   44px button beside a 40px one — top-aligned, because nothing said otherwise.
+   align-items:center is the part that was actually missing; without it the
+   smaller box hangs off the top of the row rather than sitting level with it. */
+.header-actions{display:flex;gap:8px;align-items:center}
+.header-actions>*{flex-shrink:0}
 .theme-btn{width:44px;height:44px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-1);position:relative;overflow:hidden;transition:transform var(--duration-base),background var(--duration-slow);flex-shrink:0}
 /* hover state lives in the @media(hover:hover) block above */
 .theme-btn svg{position:absolute;transition:transform var(--duration-slow) var(--ease-out),opacity var(--duration-base)}
@@ -956,7 +1071,6 @@ button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
 @media (max-width:480px){
   .page{padding:24px 12px calc(var(--nav-height) + 16px)}
   .subtitle{font-size:12px}
-  .theme-btn{width:40px;height:40px;border-radius:var(--radius-sm)}
   .bottom-nav{gap:1px;padding:5px;border-radius:var(--radius-xl)}
   .nav-tab{min-width:44px;padding:6px 7px;font-size:10px;border-radius:var(--radius-lg)}
   .nav-tab .beta-tag{font-size:7px;padding:2px 3.5px}
@@ -978,3 +1092,57 @@ button:disabled,.switch:disabled{opacity:.45;cursor:not-allowed}
   .focus-page-card{padding:18px 12px}
   .settings-card{padding:6px 14px}
 }
+
+/* ═══ 19. The sheet of paper ═══
+   The one object four components share: the two date calendars, the birthday
+   greeting and the update note. They used to spell the recipe out between them —
+   two gradients in two files, a third at a different pitch in a third, and three
+   strips of tape in three sizes — which is four chances for the same paper to
+   stop being the same paper.
+
+   overflow stays visible on purpose: the tape hangs off the top edge by 7px, and
+   a component that clips for some other reason — .toast clips so its auto-dismiss
+   bar cannot escape a rounded corner — would take the tape with it. Measured
+   with it clipped: the tape is not there and the sheet reads as a plain
+   rectangle. Components that inherit overflow:hidden from elsewhere must opt out
+   in their own rule; .toast-sticky does.
+
+   The tape, same comment: it is here, once, and everything else inherits it. */
+.sheet-paper{
+  /* The recipe, declared here rather than in :root for one reason: the share card
+     reads its colours out of getComputedStyle and its parser only understands
+     #hex and rgb()/rgba(), and tests/themes.test.mjs holds the default token block
+     to that. color-mix() is the only way to write a 5% ink over an unknown
+     surface, and this gradient is not one of the tokens the card reads — so it
+     lives on the class instead of in the block the card does read. */
+  --sheet-rule:repeating-linear-gradient(to bottom,
+    transparent 0 22px,
+    color-mix(in srgb,var(--color-text-primary) 5%,transparent) 22px 23px);
+  --sheet-paper:var(--sheet-rule),var(--color-surface);
+  --sheet-tape-w:48px;
+  --sheet-tape-h:15px;
+  --sheet-tape-tilt:-2deg;
+  --sheet-tape-inset:20px;
+  position:relative;overflow:visible;
+  background:var(--sheet-paper);
+  color:var(--color-text-primary);
+  border:1px solid var(--color-border);
+  /* No drop shadow, and that is a decision rather than an omission.
+     --shadow-2 is 0 24px 50px -24px in a warm brown, and on a sheet this size it
+     does not read as the shadow a page casts on the page below — it reads as a
+     warm glow spilling out past the edges, which is exactly what it was asked to
+     stop doing. The tape is what lifts the sheet now, and the tape is the honest
+     version of that cue: it says «this is held down here» rather than «this button is
+     about to be pressed», which is what a big soft accent halo says.
+
+     The border stays, because a sheet of paper on a sheet of paper needs an edge. */
+  box-shadow:none}
+/* The strip of tape: same size, same tilt, same token as every other sheet. It
+   says «this page is a physical object from this notebook», which is exactly
+   what a calendar being filled in, a day being marked and an announcement being
+   pinned to the book have in common. */
+.sheet-paper::before{content:'';position:absolute;
+  inset-inline-start:var(--sheet-tape-inset);top:-7px;
+  width:var(--sheet-tape-w);height:var(--sheet-tape-h);
+  border-radius:2px;background:var(--tape);opacity:.75;
+  transform:rotate(var(--sheet-tape-tilt));pointer-events:none}

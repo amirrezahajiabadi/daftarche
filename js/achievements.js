@@ -26,28 +26,108 @@
 import { dayKey, shiftKey } from './utils.js';
 
 /* ── Icons ── one 24×24 stroke path per idea, in the same outline language as
-   the rest of the interface (fill:none, round caps, currentColor). */
+   the rest of the interface (fill:none, round caps, currentColor).
+
+   Every badge has its own. They used to share seventeen, which meant the shelf
+   was not a set of pictures but a set of repeated words — five badges wore the
+   same tick, three the same book, and a reader scanning the page could not tell
+   «روزِ کار» from «روزِ شلوغ» by shape at all. One icon per badge is what makes
+   the grid readable before the text is.
+
+   Drawn to the same rules as the characters in assets/characters: the meaning
+   comes from shape alone, so there is no fill, no gradient and no glow here —
+   a badge that only reads in one theme's accent is a badge that disappears in
+   the other seven.
+
+   The last five are the records row (js/achievements.js recordsOf), which has
+   its own vocabulary — a day, a week, a streak, a session — and reuses the
+   original shapes on purpose. */
 const ICONS = {
-  check: '<path d="M20 6L9 17l-5-5"/>',
-  star: '<path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>',
-  flame: '<path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/>',
-  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
-  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
-  pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  /* ── شروع: the first of something ── */
+  foot:     '<path d="M9 20.5c-1.9 0-3-1.4-2.6-3.6.4-2.2 2.4-4 4.4-4s3.4 1.4 3 3.6c-.4 2.2-2.4 4-4.8 4z"/><circle cx="9" cy="7.5" r="1.6"/><circle cx="13" cy="5.5" r="1.5"/><circle cx="17" cy="7" r="1.5"/>',
+  lamp:     '<path d="M9 3.5h6M12 3.5v3"/><path d="M7.5 18.5h9l-1.2-6.2a3.8 3.8 0 0 0-1.5-2.5h-3.6a3.8 3.8 0 0 0-1.5 2.5z"/><path d="M9.5 21h5"/>',
+  slip:     '<path d="M5.5 3.5h13v17l-6.5-3-6.5 3z"/><path d="M9 8.5h6M9 12h4"/>',
+  spine:    '<path d="M6 3.5h12a1 1 0 0 1 1 1v14a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z"/><path d="M4 17.5h15"/><path d="M8.5 3.5v14"/>',
+
+  /* ── پیوستگی: the days themselves ── */
+  flame:    '<path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/>',
+  sprout:   '<path d="M12 21v-8"/><path d="M12 13c0-3.3-2.7-6-6-6 0 3.3 2.7 6 6 6z"/><path d="M12 15c0-2.8 2.2-5 5-5 0 2.8-2.2 5-5 5z"/>',
+  wipe:     '<rect x="3.5" y="4.5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><rect x="6" y="12" width="2.4" height="2.4" rx=".6"/><rect x="10.3" y="12" width="2.4" height="2.4" rx=".6"/><rect x="14.6" y="12" width="2.4" height="2.4" rx=".6"/><rect x="6" y="16" width="2.4" height="2.4" rx=".6"/><rect x="10.3" y="16" width="2.4" height="2.4" rx=".6"/>',
+  return:   '<path d="M3.5 12a8.5 8.5 0 1 1 2.6 6.1"/><path d="M3 6v6h6"/>',
+
+  /* ── کار ── */
+  strike:   '<path d="M4 7h9M4 12h16M4 17h11"/><path d="M16.5 15.5l2 2 3.5-3.5"/>',
+  piled:    '<path d="M12 3.5l8.5 4.5L12 12.5 3.5 8z"/><path d="M3.5 12l8.5 4.5 8.5-4.5"/><path d="M3.5 16l8.5 4.5 8.5-4.5"/>',
+  bare:     '<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 8.5h7"/>',
+  stamp:    '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.5l3.5 2"/><path d="M12 3.5V2M20.5 12H19"/>',
+  tray:     '<path d="M3.5 6.5h17v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 10.5h17"/><path d="M9.5 14.5h5"/>',
+
+  /* ── تمرکز ── */
+  beam:     '<path d="M12 2.5v4.5"/><circle cx="12" cy="12" r="4"/><path d="M4 20.5h16"/><path d="M8.5 21.5a5 5 0 0 1 0-7M15.5 21.5a5 5 0 0 0 0-7"/>',
+  longhand: '<circle cx="12" cy="13" r="8"/><path d="M12 13V7.5"/><path d="M12 5.5V3M9 3h6"/>',
+  five:     '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><path d="M7.5 13h2M11.5 13h2M15.5 13h1M7.5 16.5h2M11.5 16.5h2M15.5 16.5h1"/>',
+  anvil:    '<path d="M14 3.5l-6.5 8h4.5l-1.5 3.5h6l-1.5-3.5h4.5z"/><path d="M4 20.5h16"/>',
+
+  /* ── مطالعه ── */
+  reading:  '<path d="M12 6.5C10.6 5 8.6 4.5 6.5 4.5H4v13h2.5c2.1 0 4.1.5 5.5 1.5 1.4-1 3.4-1.5 5.5-1.5H20v-13h-2.5c-2.1 0-4.1.5-5.5 2z"/><path d="M12 6.5v12.5"/>',
+  flip:     '<path d="M4 5.5a2 2 0 0 1 2-2h7l3 3v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M13 3.5v3h3"/><path d="M8 19.5c3 0 4.5-1.2 4.5-3.5-1.7 0-4.5.5-4.5 3.5z"/>',
+  shelf:    '<path d="M3.5 4h17"/><path d="M3.5 20h17"/><path d="M3.5 4v16"/><path d="M6 17V7.5h2.5V17M10 17V5h2.5v12M14 17v-8h2.5v8M18 17V9.5H20"/>',
+  volume:   '<path d="M4.5 6.5h11a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-11z"/><path d="M17.5 9.5l3-2.5v11l-3-2.5"/><path d="M8 3.5h5"/>',
+
+  /* ── حال ── */
+  noted:    '<circle cx="12" cy="12" r="8.5"/><circle cx="9.5" cy="10.5" r="1"/><circle cx="14.5" cy="10.5" r="1"/><path d="M9 14.5c1.2 1.2 2 1.7 3 1.7s1.8-.5 3-1.7"/><path d="M12 3.5v-2M20.5 12h2"/>',
+  sun:      '<circle cx="12" cy="13" r="4"/><path d="M12 4v2M4.5 13h-2M21.5 13h-2M6.2 6.7L4.8 5.3M17.8 6.7l1.4-1.4M3 20h18"/>',
+  chainup:  '<path d="M4 17.5l4.5-5 3.5 3 7-8"/><path d="M15.5 7.5h3.5V4"/>',
+
+  /* ── افسانه‌ای: months of something ── */
+  dawn:     '<path d="M4 18h16"/><path d="M7.5 18a4.5 4.5 0 0 1 9 0"/><path d="M12 5V3M5.5 8L4 6.5M18.5 8L20 6.5"/><path d="M9.5 21h5"/>',
+  moon:     '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/><path d="M17 4l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  dragon:   '<path d="M12 2.5c1.5 3.5-.5 5.5-2 7.5C8.5 11.7 7.5 13.5 7.5 15.5a5 5 0 0 0 10 0c0-2-.9-3.8-2.5-5.7C13.5 7.7 11.5 5.5 12 2.5z"/><path d="M10 17.5c.5 1 1.2 1.5 2 1.5s1.5-.5 2-1.5"/>',
+  flag:     '<path d="M5.5 21V3.5"/><path d="M5.5 4.5h13l-2.5 4 2.5 4h-13"/>',
+  full:     '<rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/><path d="M7.5 13h2M11.5 13h2M15 13h2M7.5 16.5h2M11.5 16.5h2M15 16.5h2"/>',
+
+  /* ── رکوردها: the records row's own vocabulary ── */
+  check:    '<path d="M20 6L9 17l-5-5"/>',
+  star:     '<path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>',
+  clock:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  book:     '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  pen:      '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
   calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
-  grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
-  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>',
-  bolt: '<path d="M13 2L4.5 13H11l-1 9 8.5-11H12z"/>',
-  layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13.5l3.5 2L12 18.5l5.5-3L21 13.5"/>',
-  moon: '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/>',
-  sun: '<circle cx="12" cy="14" r="4"/><path d="M12 4v2M4.5 14h-2M21.5 14h-2M6.2 7.7L4.8 6.3M17.8 7.7l1.4-1.4M3 20h18"/>',
-  trophy: '<path d="M8 4h8v4.5a4 4 0 0 1-8 0z"/><path d="M8 5H5.5A2.5 2.5 0 0 0 8 9.5M16 5h2.5A2.5 2.5 0 0 1 16 9.5"/><path d="M10.5 12.5h3v4h-3zM8 19.5h8"/>',
-  smile: '<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.5 14.5c1 1.6 2.1 2.4 3.5 2.4s2.5-.8 3.5-2.4"/>',
-  back: '<path d="M9 6l-6 6 6 6"/><path d="M3 12h13a5 5 0 0 1 5 5v1"/>',
-  crown: '<path d="M3 18h18l-1.6-9-4.4 4-3-6-3 6-4.4-4z"/><path d="M4.5 21h15"/>',
+  grid:     '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+  target:   '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>',
+  bolt:     '<path d="M13 2L4.5 13H11l-1 9 8.5-11H12z"/>',
+  layers:   '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13.5l3.5 2L12 18.5l5.5-3L21 13.5"/>',
+  trophy:   '<path d="M8 4h8v4.5a4 4 0 0 1-8 0z"/><path d="M8 5H5.5A2.5 2.5 0 0 0 8 9.5M16 5h2.5A2.5 2.5 0 0 1 16 9.5"/><path d="M10.5 12.5h3v4h-3zM8 19.5h8"/>',
+  smile:    '<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8.5 14.5c1 1.6 2.1 2.4 3.5 2.4s2.5-.8 3.5-2.4"/>',
+  back:     '<path d="M9 6l-6 6 6 6"/><path d="M3 12h13a5 5 0 0 1 5 5v1"/>',
+  crown:    '<path d="M3 18h18l-1.6-9-4.4 4-3-6-3 6-4.4-4z"/><path d="M4.5 21h15"/>',
 };
 
-export const iconOf = key => ICONS[key] || ICONS.star;
+/* The wrapper the paths above are written for. Every one of them is bare markup
+   — a <path>, a <circle>, or a few together — and a bare <path> dropped straight
+   into the page is not a picture: HTML has no drawing context for it, the
+   browser parses it as unknown inline content and nothing is painted. So the
+   paths stay unwrapped in the table (that is what makes them readable and
+   editable as one line each) and the frame is added here, once, on the way out.
+
+   It is the same wrapper `ICONS` in js/constants.js uses, and the same one the
+   stylesheet already targets: css/achievements.css sizes `.achv-medal svg`,
+   `.achv-detail-medal svg` and `.achv-unlock-medal svg` and paints them with
+   stroke/fill/stroke-width on this element. Nothing there needed changing —
+   the drawing attributes live on the <svg>, so every badge picks up the theme's
+   colour through `currentColor` and inherits the earned/locked treatment from
+   its own medal disc. */
+const SVG_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+const SVG_CLOSE = '</svg>';
+
+/* Wrapped once, at module load, rather than on every call: the catalogue is
+   fixed, so the same eighteen strings are built eighteen times either way and
+   the table below becomes the only place a raw path is allowed to exist. */
+const WRAPPED = Object.fromEntries(
+  Object.entries(ICONS).map(([k, body]) => [k, SVG_OPEN + body + SVG_CLOSE])
+);
+
+export const iconOf = key => WRAPPED[key] || WRAPPED.star;
 
 /* ── Families ── the tabs of the page, in the order a reader makes progress. */
 export const FAMILIES = [
@@ -76,76 +156,76 @@ export const KIND_LABEL = { base: 'پایه', skilled: 'ماهر', legend: 'اف
    value   — read from the totals; a pure function of the book, never of time */
 export const ACHIEVEMENTS = [
   /* ── شروع: open on the first day, so the shelf is never empty ── */
-  { id: 'first-step', family: 'start', kind: 'base', icon: 'check', title: 'نخستین قدم', unit: 'کار',
+  { id: 'first-step', family: 'start', kind: 'base', icon: 'foot', title: 'نخستین قدم', unit: 'کار',
     how: 'کار تیک بزن', tiers: [1, 10, 100], value: t => t.done },
-  { id: 'first-focus', family: 'start', kind: 'base', icon: 'clock', title: 'چراغ روشن', unit: 'نشست',
+  { id: 'first-focus', family: 'start', kind: 'base', icon: 'lamp', title: 'چراغ روشن', unit: 'نشست',
     how: 'یک نشست تمرکز را تا آخر ببر', tiers: [1, 10, 100], value: t => t.focus.sessions },
-  { id: 'first-note', family: 'start', kind: 'base', icon: 'pen', title: 'یادگار', unit: 'یادداشت',
+  { id: 'first-note', family: 'start', kind: 'base', icon: 'slip', title: 'یادگار', unit: 'یادداشت',
     how: 'یک یادداشت یا هایلایت بساز', tiers: [1, 25, 100, 400], value: t => t.read.notes },
-  { id: 'first-book', family: 'start', kind: 'base', icon: 'book', title: 'کتاب‌خوان', unit: 'کتاب',
+  { id: 'first-book', family: 'start', kind: 'base', icon: 'spine', title: 'کتابِ تمام‌شده', unit: 'کتاب',
     how: 'یک کتاب را تمام کن', tiers: [1, 3, 10, 25], value: t => t.read.booksDone },
 
   /* ── پیوستگی: the days themselves ── */
   { id: 'chain', family: 'streak', kind: 'base', icon: 'flame', title: 'پشت‌سرهم', unit: 'روز',
     how: 'روزهای پیاپی را بلند کن', tiers: [3, 7, 30, 100], value: t => t.bestStreak },
-  { id: 'active-days', family: 'streak', kind: 'base', icon: 'calendar', title: 'روزهای فعال', unit: 'روز',
+  { id: 'active-days', family: 'streak', kind: 'base', icon: 'sprout', title: 'روزِ کار', unit: 'روز',
     how: 'روزهایی که دفترچه باز شده', tiers: [7, 30, 100, 365], value: t => t.activeDays },
-  { id: 'clean-weeks', family: 'streak', kind: 'skilled', icon: 'grid', title: 'هفتهٔ پاک', unit: 'هفته',
+  { id: 'clean-weeks', family: 'streak', kind: 'skilled', icon: 'wipe', title: 'هفتهٔ منظم', unit: 'هفته',
     how: 'هفته‌هایی با ۵ روز فعال یا بیشتر', tiers: [4, 12, 52], value: t => t.consistency.weeksClean },
-  { id: 'returned', family: 'streak', kind: 'skilled', icon: 'back', title: 'برگشتم', unit: 'بار',
+  { id: 'returned', family: 'streak', kind: 'skilled', icon: 'return', title: 'برگشتم', unit: 'بار',
     how: 'بعد از دو هفته دوری برگرد', tiers: [1, 3, 10], value: t => t.consistency.returns },
 
   /* ── کار ── */
-  { id: 'done', family: 'work', kind: 'base', icon: 'check', title: 'کارِ انجام‌شده', unit: 'کار',
+  { id: 'done', family: 'work', kind: 'base', icon: 'strike', title: 'کارهای انجام‌شده', unit: 'کار',
     how: 'کار تیک بزن', tiers: [10, 50, 200, 500], value: t => t.done },
-  { id: 'big-day', family: 'work', kind: 'skilled', icon: 'bolt', title: 'روز پرکار', unit: 'روز',
+  { id: 'big-day', family: 'work', kind: 'skilled', icon: 'piled', title: 'روزِ شلوغ', unit: 'روز',
     how: 'روزهایی با ۵ کار یا بیشتر', tiers: [1, 10, 30, 100], value: t => t.task.bigDays },
-  { id: 'clear-day', family: 'work', kind: 'skilled', icon: 'layers', title: 'روز بی‌مانده', unit: 'روز',
+  { id: 'clear-day', family: 'work', kind: 'skilled', icon: 'bare', title: 'روز بی‌مانده', unit: 'روز',
     how: 'روزی که صف کارها خالی ماند', tiers: [1, 5, 20, 60], value: t => t.task.clearDays },
-  { id: 'on-time', family: 'work', kind: 'skilled', icon: 'target', title: 'بموقع', unit: '٪',
+  { id: 'on-time', family: 'work', kind: 'skilled', icon: 'stamp', title: 'بموقع', unit: '٪',
     how: 'کارهای تاریخ‌دار را قبل از مهلت بزن (حداقل ۲۰ کار)',
     tiers: [70, 90], value: t => (t.task.dated >= 20 ? t.task.onTimePct || 0 : 0) },
-  { id: 'categorized', family: 'work', kind: 'skilled', icon: 'grid', title: 'دسته‌بند', unit: 'دسته',
+  { id: 'categorized', family: 'work', kind: 'skilled', icon: 'tray', title: 'دسته‌بندی‌شده', unit: 'دسته',
     how: 'در هر دسته ۵ کار انجام بده', tiers: [3, 6], value: t => t.cats.with5 },
 
   /* ── تمرکز ── */
-  { id: 'focus-minutes', family: 'focus', kind: 'base', icon: 'clock', title: 'کانون', unit: 'دقیقه',
+  { id: 'focus-minutes', family: 'focus', kind: 'base', icon: 'beam', title: 'کانون', unit: 'دقیقه',
     how: 'دقیقه‌های تمرکز را جمع کن', tiers: [60, 600, 3000, 10000], value: t => t.focus.minutes },
-  { id: 'long-session', family: 'focus', kind: 'base', icon: 'target', title: 'نشست بلند', unit: 'دقیقه',
+  { id: 'long-session', family: 'focus', kind: 'base', icon: 'longhand', title: 'جلسهٔ بلند', unit: 'دقیقه',
     how: 'یک نشست طولانی‌تر بگذار', tiers: [25, 50, 90, 150], value: t => t.focus.longest },
-  { id: 'focus-weeks', family: 'focus', kind: 'skilled', icon: 'calendar', title: 'هفتهٔ متمرکز', unit: 'هفته',
+  { id: 'focus-weeks', family: 'focus', kind: 'skilled', icon: 'five', title: 'هفتهٔ تمرکز', unit: 'هفته',
     how: 'هفته‌هایی با ۵ روز تمرکز', tiers: [2, 8, 26], value: t => t.consistency.weeksFocus },
-  { id: 'hard-worker', family: 'focus', kind: 'skilled', icon: 'flame', title: 'سخت و ساخته', unit: 'نشست',
+  { id: 'hard-worker', family: 'focus', kind: 'skilled', icon: 'anvil', title: 'سخت و ساخته', unit: 'نشست',
     how: 'نشست‌هایی که سخت بودند و تمام شدند', tiers: [10, 25, 60], value: t => t.focus.hard },
 
   /* ── مطالعه ── */
-  { id: 'read-minutes', family: 'read', kind: 'base', icon: 'book', title: 'دقیقهٔ مطالعه', unit: 'دقیقه',
+  { id: 'read-minutes', family: 'read', kind: 'base', icon: 'reading', title: 'دقیقهٔ خواندن', unit: 'دقیقه',
     how: 'مطالعه کن', tiers: [60, 600, 3000, 10000], value: t => t.read.minutes },
-  { id: 'pages', family: 'read', kind: 'base', icon: 'layers', title: 'صفحه‌شمار', unit: 'صفحه',
+  { id: 'pages', family: 'read', kind: 'base', icon: 'flip', title: 'صفحه‌خوان', unit: 'صفحه',
     how: 'صفحه ورق بزن', tiers: [100, 1000, 5000, 20000], value: t => t.read.pages },
-  { id: 'shelf', family: 'read', kind: 'skilled', icon: 'book', title: 'قفسه‌ساز', unit: 'کتاب',
+  { id: 'shelf', family: 'read', kind: 'skilled', icon: 'shelf', title: 'قفسه‌ساز', unit: 'کتاب',
     how: 'کتاب‌هایی که به کتابخانه اضافه می‌کنی', tiers: [3, 10, 30], value: t => t.read.books },
-  { id: 'finished', family: 'read', kind: 'skilled', icon: 'trophy', title: 'تمامش کردی', unit: 'کتاب',
+  { id: 'finished', family: 'read', kind: 'skilled', icon: 'volume', title: 'کتابِ بسته', unit: 'کتاب',
     how: 'کتاب را تا صفحهٔ آخر بخوان', tiers: [1, 5, 20, 50], value: t => t.read.booksDone },
 
   /* ── حال ── */
-  { id: 'mood-days', family: 'mood', kind: 'base', icon: 'smile', title: 'حالِ ثبت‌شده', unit: 'روز',
+  { id: 'mood-days', family: 'mood', kind: 'base', icon: 'noted', title: 'حالِ ثبت‌شده', unit: 'روز',
     how: 'حال روزت را ثبت کن', tiers: [7, 30, 120, 365], value: t => t.mood.days },
-  { id: 'mood-good-days', family: 'mood', kind: 'skilled', icon: 'sun', title: 'روزهای میزان', unit: 'روز',
+  { id: 'mood-good-days', family: 'mood', kind: 'skilled', icon: 'sun', title: 'روزهای خوب', unit: 'روز',
     how: 'روزهایی با حال خوب', tiers: [20, 100, 365], value: t => t.mood.goodDays },
-  { id: 'mood-run', family: 'mood', kind: 'legend', icon: 'star', title: 'زنجیرهٔ خوب', unit: 'روز',
+  { id: 'mood-run', family: 'mood', kind: 'legend', icon: 'chainup', title: 'زنجیرهٔ خوب', unit: 'روز',
     how: 'روزهای پیاپی با حال خوب', tiers: [7, 30, 100], value: t => t.mood.bestRun },
 
   /* ── افسانه‌ای: months of something, never a week ── */
-  { id: 'early-bird', family: 'legend', kind: 'legend', icon: 'sun', title: 'سحرخیز', unit: 'بار',
+  { id: 'early-bird', family: 'legend', kind: 'legend', icon: 'dawn', title: 'سحرخیز', unit: 'بار',
     how: 'کار قبل از ۷ صبح تیک بزن', tiers: [5, 20, 60], value: t => t.task.morning },
   { id: 'night-owl', family: 'legend', kind: 'legend', icon: 'moon', title: 'شب‌زنده‌دار', unit: 'بار',
     how: 'بعد از نیمه‌شب تمرکز کن', tiers: [3, 10, 30], value: t => t.focus.dawn },
-  { id: 'dragon', family: 'legend', kind: 'legend', icon: 'flame', title: 'اژدها', unit: 'روز',
+  { id: 'dragon', family: 'legend', kind: 'legend', icon: 'dragon', title: 'اژدها', unit: 'روز',
     how: 'روزی ۳۰۰ دقیقه تمرکز، تمرکز است', tiers: [1, 5, 20], value: t => t.focus.bigDays },
-  { id: 'record-breaker', family: 'legend', kind: 'legend', icon: 'crown', title: 'رکوردشکن', unit: 'بار',
+  { id: 'record-breaker', family: 'legend', kind: 'legend', icon: 'flag', title: 'رکوردشکن', unit: 'بار',
     how: 'روزی بساز که از همهٔ روزهای قبلت بهتر باشد', tiers: [3, 10, 25], value: t => t.task.recordDays },
-  { id: 'perfect-month', family: 'legend', kind: 'legend', icon: 'calendar', title: 'کامل‌کننده', unit: 'ماه',
+  { id: 'perfect-month', family: 'legend', kind: 'legend', icon: 'full', title: 'کامل‌کننده', unit: 'ماه',
     how: 'یک ماه را کامل زندگی کن — هر روزش فعال باشد', tiers: [1, 3, 12], value: t => t.consistency.perfectMonths },
 ];
 
