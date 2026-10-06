@@ -741,7 +741,7 @@ function drawIdentity(ctx, d, c, face, model) {
   ctx.font = `700 ${d.portrait ? 32 : 28}px ${FONT_MAD}`;
   ctx.globalAlpha = 0.72;
   ctx.fillStyle = c.accent;
-  ctx.fillText('دَفتَرچه', d.left, cy + 12);
+  ctx.fillText('دفتَرچه', d.left, cy + 12);
   ctx.globalAlpha = 1;
 
   return { top: d.cardTop + 40, bottom: Math.max(cy + r, ny + ph) + 16 };
@@ -770,7 +770,7 @@ function drawClosing(ctx, d, c, model) {
 
   ctx.font = `400 ${d.portrait ? 24 : 22}px ${FONT_UI}`;
   ctx.fillStyle = c.soft;
-  ctx.fillText('ساخته‌شده با دَفتَرچه', d.cx, brandY);
+  ctx.fillText('ساخته‌شده با دفتَرچه', d.cx, brandY);
 
   return { top: divY - 30 };
 }
@@ -1151,7 +1151,7 @@ function downloadCard() {
 async function shareCard() {
   if (!cardBlob) return;
   try {
-    await navigator.share({ files: [fileFor(cardBlob)], title: 'آمار من در دَفتَرچه' });
+    await navigator.share({ files: [fileFor(cardBlob)], title: 'آمار من در دفتَرچه' });
   } catch (e) {
     /* A cancelled share is not a failure; anything else falls back to the file
        the reader can still keep. */

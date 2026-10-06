@@ -216,7 +216,7 @@ self.addEventListener('notificationclick', event => {
    Every notification is Persian, right-to-left, and carries the deep-link
    context the notificationclick handler above consumes. */
 self.addEventListener('push', event => {
-  let data = { title: 'دَفتَرچه', body: 'شما یک یادآوری جدید دارید!' };
+  let data = { title: 'دفتَرچه', body: 'شما یک یادآوری جدید دارید!' };
   if (event.data) {
     try { data = event.data.json(); }
     catch { data = { body: event.data.text() }; }
@@ -230,7 +230,7 @@ self.addEventListener('push', event => {
     lang: 'fa',
     data: data.data || { url: '/' },
   };
-  event.waitUntil(self.registration.showNotification(data.title || 'دَفتَرچه', options));
+  event.waitUntil(self.registration.showNotification(data.title || 'دفتَرچه', options));
 });
 
 /* A subscription that the push service reports as gone (user cleared site

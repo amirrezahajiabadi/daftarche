@@ -1,4 +1,4 @@
-/* ═══ دَفتَرچه — Web Push Server (production-hardened) ═══
+/* ═══ دفتَرچه — Web Push Server (production-hardened) ═══
    Stores Web Push subscriptions and dispatches due-date reminders with
    VAPID authentication, so notifications arrive even when the PWA is fully
    closed (including iOS 16.4+ standalone).
@@ -321,7 +321,7 @@ async function sendToAll(payload) {
 function reminderPayload(task) {
   const isOverdue = task.overdue;
   return {
-    title: isOverdue ? 'دَفتَرچه — یه کار از موعدش گذشت!' : 'دَفتَرچه — یادآوری کار',
+    title: isOverdue ? 'دفتَرچه — یه کار از موعدش گذشت!' : 'دفتَرچه — یادآوری کار',
     body: isOverdue
       ? `مهلت «${task.text}» گذشته!`
       : `مهلت «${task.text}» رسید!`,
@@ -417,7 +417,7 @@ app.post('/api/test-push', async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!rateLimit('test-push', req, res)) return fail(res, 429, 'درخواست‌های زیاد؛ کمی بعد دوباره تلاش کنید');
   const r = await sendToAll({
-    title: 'دَفتَرچه',
+    title: 'دفتَرچه',
     body: 'این یک اعلان آزمایشی است — پوش فعال است! 🎉',
     tag: 'test-push',
     data: { url: '/' },

@@ -165,7 +165,7 @@ const PHOTO_PLACEHOLDER = '<svg class="ph-ico" viewBox="0 0 24 24" aria-hidden="
    (a theme flip, a rename). One signature covers both: the chosen character id
    and whether a photo is set. */
 const CHAR_INFO = {
-  qorqori: { mark: qorqoriMarkup('default'), name: 'قورقوری', sub: 'همدم دَفتَرچه' },
+  qorqori: { mark: qorqoriMarkup('default'), name: 'قورقوری', sub: 'همدم دفتَرچه' },
   rizolo: { mark: rizoloMarkup('default'), name: 'ریزولو', sub: 'دوستِ شروع‌های کوچک' },
   khabalo: { mark: khabaloMarkup('default'), name: 'خوابالو', sub: 'دوستِ روزهای آروم' },
   fekrbaz: { mark: fekrbazMarkup('default'), name: 'فکرباز', sub: 'دوستِ لحظه‌های تمرکز' },

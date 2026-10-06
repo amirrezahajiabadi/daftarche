@@ -29,7 +29,7 @@ import { initStorageWarning } from './storagewarn.js';
 /* Each section is initialized separately; an error in one section doesn't break the rest of the app */
 const safe = (name, fn) => {
   try { fn(); }
-  catch (err) { console.error(`[دَفتَرچه] خطا در راه‌اندازی «${name}»:`, err); }
+  catch (err) { console.error(`[دفتَرچه] خطا در راه‌اندازی «${name}»:`, err); }
 };
 
 /* ═══ Navigation + Glass Glider ═══

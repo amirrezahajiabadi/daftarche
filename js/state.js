@@ -4,7 +4,7 @@ import { loadTasks, loadName, loadHistory, loadMoods, loadPomo, loadSession } fr
 import { dayKey, dueKeyFromOffset, parseDurationMin, parseTimeRange } from './utils.js';
 
 const defaultTasks = () => [
-  { id: 'a1', text: 'نسخهٔ جدید دَفتَرچه را بازبینی کن', done: false, p: 'high', cat: 'project', dueDate: dayKey(new Date()), durationMin: null },
+  { id: 'a1', text: 'نسخهٔ جدید دفتَرچه را بازبینی کن', done: false, p: 'high', cat: 'project', dueDate: dayKey(new Date()), durationMin: null },
   { id: 'a2', text: 'چای تازه دم کن', done: true, p: 'low', cat: 'home', doneAt: Date.now(), durationMin: null },
   { id: 'a3', text: 'برای امتحان هفتهٔ بعد برنامه بریز', done: false, p: 'mid', cat: 'study', dueDate: dueKeyFromOffset(1), durationMin: null, timeFrom: 16 * 60, timeTo: 18 * 60 },
 ];

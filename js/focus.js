@@ -366,7 +366,7 @@ function syncRunningUI() {
   if (timeEl) timeEl.textContent = fmtClock(remain);
   const stateEl = $('#focusState');
   if (stateEl) stateEl.textContent = session.status === 'paused' ? 'متوقف شده' : 'در حال تمرکز…';
-  document.title = session.status === 'active' ? `${fmtClock(remain)} · دَفتَرچه` : APP_TITLE;
+  document.title = session.status === 'active' ? `${fmtClock(remain)} · دفتَرچه` : APP_TITLE;
 }
 
 /* ═══ Pick view — the task book ═══
