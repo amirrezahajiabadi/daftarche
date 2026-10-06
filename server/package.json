@@ -2,7 +2,7 @@
   "name": "daftarche-push-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Web Push backend for دَفتَرچه — stores subscriptions and dispatches due-date reminders via VAPID",
+  "description": "Web Push backend for دفتَرچه — stores subscriptions and dispatches due-date reminders via VAPID",
   "main": "push-server.js",
   "scripts": {
     "start": "node push-server.js",

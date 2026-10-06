@@ -1,4 +1,4 @@
-export const APP_TITLE = 'دَفتَرچه — لیست کارهای خودمون';
+export const APP_TITLE = 'دفتَرچه — لیست کارهای خودمون';
 
 export const STORAGE_KEYS = {
   tasks:   'daftarche-v1',

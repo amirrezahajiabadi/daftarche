@@ -2,7 +2,7 @@
   "name": "daftarche",
   "version": "2.7.0",
   "private": true,
-  "description": "دَفتَرچه — Persian local-first task, focus and reading PWA (no runtime dependencies)",
+  "description": "دفتَرچه — Persian local-first task, focus and reading PWA (no runtime dependencies)",
   "scripts": {
     "test": "node --test"
   },
