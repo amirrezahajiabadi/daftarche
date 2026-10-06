@@ -53,6 +53,11 @@ function initNavigation() {
   nav.prepend(glider);
 
   const moveGlider = () => {
+    /* While a dock drag holds the capsule it is the pointer, not the active
+       tab, that decides where it sits — a resize or a per-page sync landing
+       mid-gesture must not yank it out from under the finger. The drag ends
+       by taking the class off and calling this itself. */
+    if (nav.classList.contains('nav-dragging')) return;
     const act = nav.querySelector('.nav-tab.active');
     if (!act) { glider.style.opacity = 0; return; }
     glider.style.opacity = 1;
@@ -142,11 +147,143 @@ function initNavigation() {
   /* Any module can request a page change (avatar, frog start, stats entry) */
   window.addEventListener('navigate', e => go(String(e.detail || '')));
 
+  /* A press that turns into a dock drag lands through the drag itself; the
+     click the browser still fires afterwards is the very same step again and
+     is dropped. The mark is deliberately short-lived — the pointerdown of the
+     next press clears it and a timer keeps it from outliving the drag — so it
+     can never grow into a tap that is silently ignored. A plain tap never
+     sets it, so a tap is untouched. */
+  let swallowClick = false;
+
   nav.addEventListener('click', e => {
+    if (swallowClick) { swallowClick = false; return; }
     const tab = e.target.closest('.nav-tab');
     if (!tab || tab.classList.contains('active')) return;
     go(tab.dataset.page);
   });
+
+  /* ── The dock answers the pointer, not just the press ──
+     A tap is the click above. A press that then *moves* down the bar is a
+     drag: the capsule leaves the active tab and rides with the pointer, and
+     the tab it is over reads as chosen for as long as it is there. Nothing is
+     navigated until the pointer is let go — one press, one step, one history
+     entry, exactly like a tap — so the trail never learns about the tabs a
+     finger merely passed over.
+
+     The capsule is measured in the dock's own coordinates and blended between
+     the two tab centres the pointer sits between, so it tracks the pointer
+     continuously instead of hopping from tab to tab. The geometry is sorted by
+     position before it is read: the bar is RTL, so the first button in the
+     markup is the rightmost tab on screen and "which is on the left" is a
+     question about x, not about the DOM. */
+  const tabs = [...nav.querySelectorAll('.nav-tab')];
+  const localX = clientX => clientX - nav.getBoundingClientRect().left - nav.clientLeft;
+  let ndrag = null;
+
+  const paintDrag = x => {
+    const g = tabs.map(t => ({ el: t, left: t.offsetLeft, w: t.offsetWidth }));
+    if (!g.length) return;
+    g.sort((a, b) => a.left - b.left);
+    const mid = g.map(m => m.left + m.w / 2);
+    let left, w;
+    if (x <= mid[0]) ({ left, w } = g[0]);
+    else if (x >= mid[mid.length - 1]) ({ left, w } = g[g.length - 1]);
+    else {
+      let i = 0;
+      while (i < mid.length - 1 && x > mid[i + 1]) i++;
+      const t = (x - mid[i]) / ((mid[i + 1] - mid[i]) || 1);
+      left = g[i].left + (g[i + 1].left - g[i].left) * t;
+      w = g[i].w + (g[i + 1].w - g[i].w) * t;
+    }
+    /* The tab the pointer is over is the one whose centre is nearest — read
+       from the pointer directly rather than from the blend, so at the very
+       ends of the bar the far tab is still chosen. */
+    let over = g[0].el, best = Infinity;
+    for (const m of g) {
+      const d = Math.abs(x - (m.left + m.w / 2));
+      if (d < best) { best = d; over = m.el; }
+    }
+    glider.style.opacity = 1;
+    glider.style.width = w + 'px';
+    glider.style.transform = `translateX(${left}px)`;
+    tabs.forEach(t => t.classList.toggle('nav-preview', t === over));
+    if (ndrag) ndrag.page = over.dataset.page;
+  };
+
+  const endDrag = commit => {
+    const d = ndrag;
+    if (!d) return;
+    ndrag = null;
+    nav.classList.remove('nav-dragging');
+    tabs.forEach(t => t.classList.remove('nav-preview'));
+    if (d.started) {
+      swallowClick = true;
+      setTimeout(() => { swallowClick = false; }, 350);
+    }
+    /* Only a real drag reaches the page; a press that never moved is left to
+       the click above. The capsule goes back to the tab that is now active
+       either way, and with the dragging class gone that return glides. */
+    const act = nav.querySelector('.nav-tab.active')?.dataset.page;
+    if (d.started && commit && d.page && d.page !== act) go(d.page);
+    else moveGlider();
+  };
+
+  /* A drag belongs to the dock until the pointer is released, so the press is
+     captured once it is unmistakably a drag — a tap keeps its own target and
+     its click, a drag keeps the pointer even when it leaves the bar. */
+  const onDockDown = e => {
+    swallowClick = false;                 // a new press owns the next click
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const t = e.target instanceof Element ? e.target : null;
+    if (!t || !t.closest('.nav-tab')) return;
+    const rv = document.getElementById('readerView');
+    if (rv && !rv.hidden) return;                   // inside a book: not our bar
+    if (document.querySelector('.overlay:not([hidden]), .sheet:not([hidden])')) return;
+    ndrag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, started: false, page: null };
+  };
+
+  const onDockMove = e => {
+    if (!ndrag || e.pointerId !== ndrag.id) return;
+    const dx = e.clientX - ndrag.x0;
+    const dy = e.clientY - ndrag.y0;
+    if (!ndrag.started) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      /* A press that is really going up or down is not a walk along the bar:
+         it is dropped outright, so a thumb on the dock never slides the
+         capsule sideways on its way somewhere else. */
+      if (Math.abs(dy) > Math.abs(dx)) { ndrag = null; return; }
+      ndrag.started = true;
+      nav.classList.add('nav-dragging');
+      /* A mouse drag that began on a label has already started the browser's
+         own selection; the gesture owns the pointer from here. Touch never
+         selects by dragging. */
+      if (e.pointerType === 'mouse') getSelection()?.removeAllRanges();
+      try { nav.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    if (e.cancelable) e.preventDefault();
+    paintDrag(localX(e.clientX));
+  };
+
+  const onDockUp = e => { if (ndrag && e.pointerId === ndrag.id) endDrag(true); };
+  const onDockCancel = e => { if (ndrag && e.pointerId === ndrag.id) endDrag(false); };
+
+  /* The one touch event that can still beat the dock: with touch-action:none
+     on the bar the browser is not scrolling it, and this keeps a move off the
+     page underneath even where that declaration is not honoured. A move with
+     no drag behind it is left completely alone. */
+  nav.addEventListener('touchmove', e => { if (ndrag) e.preventDefault(); }, { passive: false });
+  nav.addEventListener('pointerdown', onDockDown);
+  document.addEventListener('pointermove', onDockMove);
+  document.addEventListener('pointerup', onDockUp);
+  document.addEventListener('pointercancel', onDockCancel);
+  addEventListener('blur', () => { if (ndrag) endDrag(false); });
+
+  /* And the third way in: a horizontal drag — a thumb on a phone or the mouse
+     on a desktop — that carries the pages sideways like a chat app. It lands
+     on the neighbour through the very same go(), so everything above (the
+     trail, the history entries, the glider) reacts exactly as it does to a
+     tap. */
+  initSwipeNavigation(() => trail[trail.length - 1], go);
 
   /* Back, in the way the system sends it. A gesture made over an open dialog
      belongs to the dialog: it closes, and the page entry is put straight back,
@@ -181,9 +318,211 @@ function initNavigation() {
   moveGlider();
 }
 
-/* The five homes the bottom bar already moves between. A page in here needs no
-   back control of its own: the bar is its way in and out. */
-const TAB_PAGES = new Set(['today', 'tasks', 'focus', 'library', 'week']);
+/* The five homes the bottom bar already moves between, in bar order — the
+   order a swipe walks through, one neighbour at a time. A page in here needs
+   no back control of its own: the bar is its way in and out. */
+const TAB_ORDER = ['today', 'tasks', 'focus', 'library', 'week'];
+const TAB_PAGES = new Set(TAB_ORDER);
+
+/* ═══ Swipe / drag between tab pages ═══
+   A horizontal drag — touch or mouse, no dependency and no library — carries
+   the current page under the pointer while the neighbour slides in behind it
+   with a parallax delay, Telegram-style. Release past a quarter of the screen
+   (or a quick flick) lands on that neighbour; anything less springs back.
+
+   What the gesture deliberately does not do: it never starts on an interactive
+   surface (forms, buttons, the PDF reader's canvas, the week's draggable rows),
+   never fights vertical scrolling — the pages declare touch-action:pan-y, so a
+   vertical thumb is answered by the browser's own scroll and a pointercancel —
+   and never runs while a dialog or the book reader is open. At the first and
+   last tab the drag meets resistance, the way a drawer meets its frame.
+
+   The landing itself is a plain go(): the trail, the history entry, the glider
+   and every per-page sync behave exactly as they do for a tap on the bar.
+   Readers who ask the system for reduced motion skip the live follow and get
+   the same threshold landing without the theatre. */
+function initSwipeNavigation(curPage, go) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rtl = () => document.documentElement.dir === 'rtl';
+  const IGNORE = 'input, textarea, select, button, a, label, iframe, canvas, '
+    + '[contenteditable], [data-no-swipe]';
+  let drag = null;
+
+  const overlayOpen = () =>
+    !!document.querySelector('.overlay:not([hidden]), .sheet:not([hidden])');
+
+  /* Which neighbour a drag toward dx leads to, or -1 at either end of the bar.
+     In RTL the next page lives to the left, so there the drag runs the other
+     way: pulling rightward is what pulls the next page into view. */
+  const neighbor = dx => {
+    const idx = TAB_ORDER.indexOf(curPage());
+    if (idx < 0) return -1;
+    const forward = rtl() === (dx > 0);
+    const j = forward ? idx + 1 : idx - 1;
+    return j >= 0 && j < TAB_ORDER.length ? j : -1;
+  };
+
+  /* Stage both pages out of the document flow for the length of the drag:
+     fixed to the viewport, each with its own scrollbar, so the live follow
+     never reflows the page behind. The outgoing page keeps its scroll
+     position; the incoming one starts at its top, like any page switch. */
+  const enter = () => {
+    const fromEl = document.getElementById('page-' + curPage());
+    /* At either end of the bar there is no neighbour to bring in — the drag
+       still stages, so paint() can show the drawer-meets-frame resistance
+       instead of nothing at all. */
+    const toEl = drag.j >= 0
+      ? document.getElementById('page-' + TAB_ORDER[drag.j]) : null;
+    if (!fromEl) { drag = null; return; }
+    drag.fromEl = fromEl;
+    drag.toEl = toEl;
+    drag.w = window.innerWidth;
+    document.body.classList.add('page-swiping');
+    for (const el of [fromEl, toEl]) {
+      if (!el) continue;
+      el.style.transition = 'none';        // a re-drag during a spring-back
+      el.style.position = 'fixed';
+      el.style.inset = '0';
+      el.style.overflowY = 'auto';
+      el.style.display = 'block';
+    }
+    fromEl.scrollTop = window.scrollY;
+    if (toEl) { toEl.scrollTop = 0; toEl.style.zIndex = '1'; }
+  };
+
+  /* The follow itself. The outgoing page rides the pointer one to one; the
+     incoming one trails at a third of that, the parallax that makes the pair
+     read as two sheets of paper rather than one sliding pane. */
+  const paint = () => {
+    const { fromEl, toEl, dx, w, j } = drag;
+    const d = j < 0 ? dx * 0.3 : dx;       // resistance past the first/last tab
+    const side = rtl() ? -1 : 1;           // the side the neighbour parks on
+    fromEl.style.transform = `translateX(${d}px)`;
+    if (toEl) toEl.style.transform = `translateX(${side * w + d / 3}px)`;
+  };
+
+  const cleanup = d => {
+    /* A drag released moments ago may still have its spring-back timer pending
+       while a new drag takes the pages over — the new drag owns the styles,
+       and its own cleanup will return them. */
+    if (drag) return;
+    for (const el of [d.fromEl, d.toEl]) {
+      if (!el) continue;
+      for (const prop of ['position', 'inset', 'overflowY', 'display',
+        'transform', 'transition', 'zIndex']) el.style[prop] = '';
+    }
+    document.body.classList.remove('page-swiping');
+  };
+
+  const settle = commit => {
+    const d = drag;
+    if (!d) return;
+    /* The gesture ends here, whatever follows: an abort must never leave the
+       pointer armed, or the same release could land the very swipe it was
+       meant to cancel. */
+    drag = null;
+    if (reduced) {                          // no staging happened; just land
+      if (commit && d.j >= 0) go(TAB_ORDER[d.j]);
+      return;
+    }
+    if (!d.fromEl) { cleanup(d); return; }
+    const { fromEl, toEl, w } = d;
+    if (!(commit && d.j >= 0)) {           // spring back to where it started
+      const side = rtl() ? -1 : 1;
+      fromEl.style.transition = 'transform .22s cubic-bezier(.2,.7,.3,1)';
+      fromEl.style.transform = 'translateX(0)';
+      if (toEl) {
+        toEl.style.transition = 'transform .22s cubic-bezier(.2,.7,.3,1)';
+        toEl.style.transform = `translateX(${side * w}px)`;
+      }
+      setTimeout(() => cleanup(d), 240);
+      return;
+    }
+    go(TAB_ORDER[d.j]);
+    const side = rtl() ? 1 : -1;           // exit the way it was dragged
+    fromEl.style.transition = 'transform .26s cubic-bezier(.2,.7,.3,1)';
+    fromEl.style.transform = `translateX(${side * w}px)`;
+    if (toEl) {
+      toEl.style.transition = 'transform .26s cubic-bezier(.2,.7,.3,1)';
+      toEl.style.transform = 'translateX(0)';
+    }
+    setTimeout(() => cleanup(d), 290);
+  };
+
+  const onDown = e => {
+    if (drag) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const t = e.target instanceof Element ? e.target : null;
+    if (!t || t.closest(IGNORE) || overlayOpen()) return;
+    const rv = document.getElementById('readerView');
+    if (rv && !rv.hidden) return;          // inside a book: the pages are its own
+    drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0,
+      t0: e.timeStamp, tLast: e.timeStamp, decided: false, j: -2,
+      fromEl: null, toEl: null };
+  };
+
+  const onMove = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x0;
+    const dy = e.clientY - drag.y0;
+    if (!drag.decided) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      drag.decided = true;
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) { drag = null; return; } // a scroll
+      /* A mouse drag that began on text has already begun the browser's own
+         selection — a few pixels of highlight that would otherwise smear
+         across the staged pages and survive the swipe. The gesture owns the
+         pointer from here: clear what the first pixels caught; the swiping
+         class's user-select:none keeps the rest off. Touch never selects by
+         dragging, so its path is untouched. */
+      if (e.pointerType === 'mouse') getSelection()?.removeAllRanges();
+      drag.j = neighbor(dx);
+      if (reduced) return;                 // threshold landing, no live follow
+      enter();
+      if (!drag) return;
+      try { document.documentElement.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    drag.dx = dx;
+    drag.tLast = e.timeStamp;
+    if (drag && drag.fromEl) paint();
+  };
+
+  const onUp = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const { dx, t0, tLast } = drag;
+    const j = Math.abs(dx) >= 45 ? neighbor(dx) : -1;
+    /* A quarter of the screen is a thumb's reach on a phone — and an absurd
+       arm's length on a desktop window, where it would make a normal mouse
+       drag spring back every time. The cap keeps the landing within a wrist's
+       movement there; on phones the cap never wins and nothing changes. */
+    const far = Math.abs(dx) > Math.min(window.innerWidth * 0.25, 150);
+    const flick = Math.abs(dx) > 60 && tLast - t0 < 240;
+    settle(j >= 0 && j === drag.j && (far || flick));
+  };
+
+  const onCancel = e => {
+    if (drag && e.pointerId === drag.id) settle(false);
+  };
+
+  /* A native drag-and-drop — an image, a highlighted run of text — would
+     answer the pointer with a pointercancel and kill the swipe mid-air, and
+     it has no business inside the notebook pages anyway. While a swipe holds
+     the pointer the native drag is refused and the swipe springs back
+     cleanly; everywhere else the browser's drag stays untouched. */
+  document.addEventListener('dragstart', e => {
+    if (drag) { e.preventDefault(); settle(false); }
+  });
+
+  /* And a drag that loses the window — alt-tab, a system gesture — must never
+     hang the module with a drag that has no end: the spring-back runs and the
+     next drag starts from nothing. */
+  addEventListener('blur', () => { if (drag) settle(false); });
+
+  document.addEventListener('pointerdown', onDown);
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onCancel);
+}
 
 /* The page named by the URL hash, if it names a real one; otherwise the first
    tab. Used both at boot and when a history entry carries no state at all. */
