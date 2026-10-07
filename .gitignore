@@ -1,20 +1,33 @@
-
+# Dependencies and caches
 node_modules/
 .npm/
+.cache/
 
+# Logs and test output
 *.log
+*.log.*
 coverage/
 .nyc_output/
 test-results/
 playwright-report/
+blob-report/
+.qa-out*.txt
 
+# Generated output
+/dist/
+/build/
+/artifacts/
 
+# Temporary files and local backups
 *.tmp
 *.bak
 *~
 daftarche-backup-*.json
+/.tmp/
+/tmp/
+/temp/
 
-
+# Editor and operating system files
 *.swp
 *.swp?
 .DS_Store
@@ -23,11 +36,10 @@ Desktop.ini
 .idea/
 .vscode/
 
-
-.qa-out*.txt
-
+# Environment files and private keys
 .env
 .env.*
+.envrc
 !.env.example
 !.env.sample
 !.env.template
@@ -35,11 +47,18 @@ Desktop.ini
 *.key
 *.p12
 *.pfx
+*.jks
+*.keystore
 vapid-keys*.json
 
+# Local server data
 /server/subscriptions.json
 /server/subscriptions.json.*
 
-
+# Local tools and workspace notes
+.agents/
+.gapcode/
+.aws/
+.local/
 _READ-ME-FIRST.txt
 AGENTS.md

@@ -55,7 +55,17 @@ function worker(base = 'https://example.test/daftarche/') {
           }
         },
         async keys() { return [...entries.keys()].map(url => new Request(url)); },
-        async add(request) { entries.set(request.url, new Response(`fresh:${request.url}`)); },
+        async put(request, response) {
+          entries.set(typeof request === 'string' ? request : request.url, response.clone());
+        },
+        async addAll(requests) {
+          for (const request of requests) {
+            const body = request.url.endsWith('/js/version.js')
+              ? `self.DAFTARCHE_BUILD = '${self.DAFTARCHE_BUILD}';`
+              : `fresh:${request.url}`;
+            entries.set(request.url, new Response(body));
+          }
+        },
       };
     },
     async keys() { return [...stores.keys()]; },

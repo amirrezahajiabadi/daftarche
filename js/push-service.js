@@ -13,7 +13,7 @@
 import { urlBase64ToUint8Array } from './utils.js';
 
 /* The single switch for the deferred background layer. Flip to true only
-   together with a reachable server (see server/README.md) and a scheduler;
+   together with a reachable push server and a scheduler;
    there is deliberately no UI control that can turn it on mid-release. */
 const WEB_PUSH_ENABLED = false;
 

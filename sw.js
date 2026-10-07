@@ -16,8 +16,7 @@
    A release is the unit of change. `install` writes a whole cache for the next
    build and `activate` drops every earlier one, so a release is never applied
    in pieces: the cache is only filled as a set, and swapping a running client
-   over happens through the worker lifecycle below (the page offers the update,
-   or hands over quietly while it is in the background). That is why js/version.js
+   over happens after the user accepts the update. That is why js/version.js
    has to move for any change to a shell file — it is what makes the new worker
    install at all.
 
@@ -28,9 +27,10 @@
 /* Release identity, from the one file the page reads as well. The path is
    relative to this worker's own script URL, so it lands inside whatever
    subpath the project is served from. */
-try { importScripts('./js/version.js'); } catch { /* deploy is missing it; the fallback below keeps the worker usable */ }
+importScripts('./js/version.js');
 
-const BUILD = self.DAFTARCHE_BUILD || 'unknown';
+const BUILD = self.DAFTARCHE_BUILD;
+if (!BUILD) throw new Error('Missing build identity');
 
 const STATIC_CACHE = `daftarche-static-${BUILD}`;
 const RUNTIME_CACHE = `daftarche-runtime-${BUILD}`;
@@ -96,6 +96,7 @@ const SHELL = [
   'js/notifications.js',
   'js/planner.js',
   'js/push-service.js',
+  'js/pwa.js',
   'js/profile.js',
   'js/progress.js',
   'js/qorqori.js',
@@ -135,9 +136,8 @@ const ICON_PATHS = new Set(
   SHELL.filter(path => path.startsWith('assets/icons/')).map(path => new URL(shellURL(path)).pathname)
 );
 
-/* The pinned pdf.js build. The two entry points are stored up front so the
-   Reader can open a book offline; its auxiliary files (cmaps, standard fonts)
-   are fetched on demand and kept by the runtime cache below. */
+/* The page warms these files after activation. Other reader files are cached
+   when requested. Existing cached files are kept across updates. */
 const PDFJS_PREFIX = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/';
 const PDFJS_ENTRIES = [
   `${PDFJS_PREFIX}build/pdf.min.mjs`,
@@ -151,21 +151,12 @@ const isPdfJs = href => href.startsWith(PDFJS_PREFIX);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(STATIC_CACHE);
-    /* The shell of this build is already cached. That is a release which moved
-       only the version marker: every other file is byte-identical, so the
-       marker is re-read and nothing else is touched — no pointless download,
-       and no window where a cache someone is reading from is short of files. */
-    const held = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
-    if (SHELL.every(path => held.has(new URL(shellURL(path)).pathname))) {
-      await cache.add(new Request(shellURL('js/version.js'), { cache: 'reload' })).catch(() => {});
-      return;
-    }
-    /* A build this cache has not seen: individual adds so one missing file can
-       never abort the whole install, and `reload` so a stale HTTP cache entry
-       is not baked into the shell. */
-    await Promise.allSettled(
-      SHELL.map(path => cache.add(new Request(shellURL(path), { cache: 'reload' })))
-    );
+    // A missing shell file must leave the current worker active.
+    await cache.addAll(SHELL.map(path => new Request(shellURL(path), { cache: 'reload' })));
+    const version = await cache.match(shellURL('js/version.js'));
+    const source = await version.text();
+    const cachedBuild = source.match(/self\.DAFTARCHE_BUILD\s*=\s*['"]([^'"]+)['"]/);
+    if (cachedBuild?.[1] !== BUILD) throw new Error('Build changed during install');
   })());
 });
 
@@ -173,21 +164,46 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const names = await caches.keys();
+    // Keep cached PDF files without making activation depend on the network.
+    const runtime = await caches.open(RUNTIME_CACHE);
+    await Promise.allSettled(names.filter(n => n.startsWith('daftarche-runtime-') && n !== RUNTIME_CACHE).map(async name => {
+      const previous = await caches.open(name);
+      for (const request of await previous.keys()) {
+        if (!isPdfJs(request.url) || await runtime.match(request)) continue;
+        const response = await previous.match(request);
+        if (response) await runtime.put(request, response);
+      }
+    }));
     await Promise.all(
       names.filter(n => n.startsWith('daftarche-') && !KEEP.includes(n)).map(n => caches.delete(n))
     );
-    /* The pdf.js entries are kept in the runtime cache and refreshed from the
-       network when this worker activates on a new version. */
-    const runtime = await caches.open(RUNTIME_CACHE);
-    await Promise.allSettled(PDFJS_ENTRIES.map(href => runtime.add(new Request(href))));
     await self.clients.claim();
   })());
 });
 
 /* ── The page decides when an installed update may take over ── */
 self.addEventListener('message', event => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
+  if (event.data === 'WARM_PDF_CACHE') event.waitUntil(warmPdfCache());
 });
+
+let warmingPdf = null;
+function warmPdfCache() {
+  if (warmingPdf) return warmingPdf;
+  warmingPdf = (async () => {
+    const cache = await caches.open(RUNTIME_CACHE);
+    await Promise.allSettled(PDFJS_ENTRIES.map(async href => {
+      if (await cache.match(href)) return;
+      const abort = new AbortController();
+      const timer = setTimeout(() => abort.abort(), 10000);
+      try {
+        const response = await fetch(href, { signal: abort.signal });
+        if (response.ok) await cache.put(href, response);
+      } finally { clearTimeout(timer); }
+    }));
+  })().finally(() => { warmingPdf = null; });
+  return warmingPdf;
+}
 
 /* ── Notifications: tapping an alert opens (or focuses) the app ──
    Deep-links to the task list; when the payload carries a specific task the
