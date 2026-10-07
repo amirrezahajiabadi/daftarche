@@ -111,17 +111,20 @@ export const saveBirthday = b     => b ? safeSet(STORAGE_KEYS.birthday, JSON.str
 export const loadBirthdaySeen = ()    => localStorage.getItem(STORAGE_KEYS.birthdaySeen) || '';
 export const saveBirthdaySeen = key   => safeSet(STORAGE_KEYS.birthdaySeen, key || '');
 
-/* The guided tour. «Done» means the reader either walked it to the end or
-   skipped it; both are a real answer, so the welcome question never asks twice.
-   Leaving mid-tour (Escape) writes nothing, so the next visit offers it again. */
+/* The guided tour. This release owns a new marker on purpose: the old
+   `daftarche-tour-done` key belongs to the previous tour and must not suppress
+   this release's required first visit. «Done» means the reader either walked
+   it to the end or skipped it; leaving mid-tour (Escape) writes nothing. */
 export const loadTourDone = ()    => {
   try {
-    /* The first draft of the copied tour used an underscore key and stored the
-       word "true". Honour it so an existing reader does not get a second
-       uninvited welcome after this build changes the storage name. */
-    return localStorage.getItem(STORAGE_KEYS.tourDone) === 'yes'
-      || localStorage.getItem('daftarche_tour_completed') === 'true';
+    return localStorage.getItem(STORAGE_KEYS.tourDone) === 'yes';
   }
   catch { return false; }
 };
 export const saveTourDone   = ()    => safeSet(STORAGE_KEYS.tourDone, 'yes');
+/* The one-time achievement is tied to the current release marker, and is
+   therefore raised only after this release's tour reaches its final station. */
+export const loadTourAwarded = ()    => {
+  try { return localStorage.getItem(STORAGE_KEYS.tourDone) === 'yes'; }
+  catch { return false; }
+};

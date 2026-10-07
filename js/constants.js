@@ -19,7 +19,10 @@ export const STORAGE_KEYS = {
   freeze: 'daftarche-streak-freeze',
   birthday: 'daftarche-birthday',
   birthdaySeen: 'daftarche-birthday-seen',
-  tourDone: 'daftarche-tour-done',
+  /* A fresh marker for the main 3.0.0 tour. The previous marker is deliberately
+     left behind as inert device data so every reader gets this release's walk
+     once, including readers who completed an earlier tour. */
+  tourDone: 'daftarche-tour-complete',
 };
 
 /* ═══ Themes ═══

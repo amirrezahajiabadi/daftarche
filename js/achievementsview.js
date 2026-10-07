@@ -24,7 +24,7 @@ import { $, faNum, dayKey, esc } from './utils.js';
 import { state } from './state.js';
 import { subscribe } from './bus.js';
 import { STORAGE_KEYS } from './constants.js';
-import { loadAchv, saveAchv, loadFreeze, saveFreeze } from './store.js';
+import { loadAchv, saveAchv, loadFreeze, saveFreeze, loadTourAwarded } from './store.js';
 import { collectTotals } from './ledger.js';
 import { getBooks } from './library.js';
 import { getHistory } from './focushistory.js';
@@ -72,7 +72,7 @@ function fingerprint() {
   return [
     tasks.length, done, lastDone,
     Array.isArray(state.history) ? state.history.length : 0,
-    moods, getHistory().length, books, led, loadFreeze() ? 1 : 0, dayKey(new Date()),
+    moods, getHistory().length, books, led, loadFreeze() ? 1 : 0, loadTourAwarded() ? 1 : 0, dayKey(new Date()),
   ].join('|');
 }
 
@@ -85,6 +85,7 @@ function tick(force = false) {
   lastSig = sig;
 
   book = collectTotals();
+  book.totals.tourDone = loadTourAwarded() ? 1 : 0;
   const prev = normalizeState(loadAchv());
   res = evaluate(book, prev);
 
@@ -368,6 +369,9 @@ function sentence(item) {
     return `${who}رکورد «${r.label}» را شکستی — ${faNum(r.value)} ${r.unit} در برابر ${faNum(r.prev)} قبلی.`;
   }
   const a = item.row.a;
+  if (a.id === 'tour-intro') {
+    return name ? `تبریک میگم ${name}، نشان آشنایی با دفترچه برات باز شد!` : 'تبریک میگم، نشان آشنایی با دفترچه برات باز شد!';
+  }
   if (item.kind === 'tier') return `«${a.title}» رفت روی ${TIER_NAMES[item.row.tier - 1]}.`;
   if (a.kind === 'legend') return `${who}این دیگه افسانه‌ست. «${a.title}» باز شد.`;
   if (a.kind === 'skilled') return `${who}این یکی کارِ هر روز نیست. «${a.title}» باز شد.`;

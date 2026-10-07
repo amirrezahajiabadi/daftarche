@@ -27,7 +27,7 @@ test('catalogue sanity: unique ids, ascending tiers, known family/kind, totals a
   assert.equal(new Set(ids).size, ids.length, 'duplicate id');
   const families = new Set(A.FAMILIES.map(f => f.key));
   for (const a of A.ACHIEVEMENTS) {
-    assert.ok(a.tiers.length >= 2 && a.tiers.length <= 4, a.id + ' tiers count');
+    assert.ok((a.id === 'tour-intro' ? a.tiers.length >= 1 : a.tiers.length >= 2) && a.tiers.length <= 4, a.id + ' tiers count');
     assert.deepEqual([...a.tiers].sort((x, y) => x - y), a.tiers, a.id + ' tiers ascending');
     assert.equal(new Set(a.tiers).size, a.tiers.length, a.id + ' tiers distinct');
     assert.ok(families.has(a.family), a.id + ' family');
@@ -75,6 +75,20 @@ test('on the baseline run nothing is "new"; after it, a raised tier is', () => {
   const st = A.normalizeState({ baselineAt: '2026-09-01', unlocked: {} });
   const second = A.evaluate(collectTotals(NOW), st);
   assert.ok(second.newly.some(r => r.a.id === 'first-step'));
+});
+
+test('the tour achievement opens only after the tour is marked complete', () => {
+  const before = collectTotals(NOW);
+  before.totals.tourDone = 0;
+  assert.equal(rowOf(A.evaluate(before, A.emptyState()), 'tour-intro').tier, 0);
+
+  const after = collectTotals(NOW);
+  after.totals.tourDone = 1;
+  const st = A.normalizeState({ baselineAt: '2026-09-01', unlocked: {} });
+  const row = rowOf(A.evaluate(after, st), 'tour-intro');
+  assert.equal(row.tier, 1);
+  assert.equal(row.raised, true);
+  assert.equal(row.complete, true);
 });
 
 test('badges with a minimum sample stay at 0 until it is met (on-time needs 20 dated ticks)', () => {

@@ -7,7 +7,7 @@
 
    Three ideas hold the catalogue together:
 
-     · every badge is a **ladder**, not a tick — two to four rungs, from برنز to
+     · every badge is a **ladder**, not a tick — one to four rungs, from برنز to
        الماس. A reader who has taken one step always has a next step written
        down in front of them, which is the whole difference between a trophy
        shelf and a reason to come back;
@@ -48,6 +48,7 @@ const ICONS = {
   lamp:     '<path d="M9 3.5h6M12 3.5v3"/><path d="M7.5 18.5h9l-1.2-6.2a3.8 3.8 0 0 0-1.5-2.5h-3.6a3.8 3.8 0 0 0-1.5 2.5z"/><path d="M9.5 21h5"/>',
   slip:     '<path d="M5.5 3.5h13v17l-6.5-3-6.5 3z"/><path d="M9 8.5h6M9 12h4"/>',
   spine:    '<path d="M6 3.5h12a1 1 0 0 1 1 1v14a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z"/><path d="M4 17.5h15"/><path d="M8.5 3.5v14"/>',
+  compass:  '<circle cx="12" cy="12" r="8.5"/><path d="m14.5 9.5-2 5-3 2 2-5z"/>',
 
   /* ── پیوستگی: the days themselves ── */
   flame:    '<path d="M12 2c1.2 3-.3 4.9-1.7 6.6C8.9 10.3 8 11.9 8 13.8a4.5 4.5 0 0 0 9 0c0-1.9-.9-3.5-2.3-5.2C13.3 6.9 11.8 5 12 2z"/>',
@@ -164,6 +165,8 @@ export const ACHIEVEMENTS = [
     how: 'یک یادداشت یا هایلایت بساز', tiers: [1, 25, 100, 400], value: t => t.read.notes },
   { id: 'first-book', family: 'start', kind: 'base', icon: 'spine', title: 'کتابِ تمام‌شده', unit: 'کتاب',
     how: 'یک کتاب را تمام کن', tiers: [1, 3, 10, 25], value: t => t.read.booksDone },
+  { id: 'tour-intro', family: 'start', kind: 'base', icon: 'compass', title: 'آشنایی با دفترچه', unit: 'بار',
+    how: 'تور راهنمای دفترچه را تمام کن', tiers: [1], value: t => t.tourDone },
 
   /* ── پیوستگی: the days themselves ── */
   { id: 'chain', family: 'streak', kind: 'base', icon: 'flame', title: 'پشت‌سرهم', unit: 'روز',

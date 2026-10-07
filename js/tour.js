@@ -10,7 +10,7 @@
      · the first visit, after the name card (js/app.js chains it);
      · «راهنمای دفترچه» in Settings, for whoever wants the walk again;
      · nowhere else, and never twice uninvited — finishing or skipping writes
-       daftarche-tour-done, and leaving mid-walk (Escape) writes nothing.
+       the current tour marker, and leaving mid-walk (Escape) writes nothing.
 
    The engine borrows the shared modal contract the way every other dialog
    does: the root is an `.overlay` flipped with `hidden`, so js/modal.js keeps
@@ -20,6 +20,7 @@
 
 import { faNum } from './utils.js';
 import { loadTourDone, saveTourDone } from './store.js';
+import { notify } from './bus.js';
 
 /* ═══ The stations ═══
    `sel` is what the spotlight cuts its hole around; `wrap` lifts the hole to
@@ -240,8 +241,8 @@ function ensureRoot() {
   document.body.append(root);
 
   prevBtn.addEventListener('click', () => show(idx - 1));
-  nextBtn.addEventListener('click', () => (idx === STEPS.length - 1 ? finish(true) : show(idx + 1)));
-  skipBtn.addEventListener('click', () => finish(true));
+  nextBtn.addEventListener('click', () => (idx === STEPS.length - 1 ? finish(true, true) : show(idx + 1)));
+  skipBtn.addEventListener('click', () => finish(true, false));
 }
 
 function render() {
@@ -335,7 +336,7 @@ async function show(i) {
   requestAnimationFrame(position);
 }
 
-function finish(markDone) {
+function finish(markDone, award = false) {
   active = false;
   if (root) root.hidden = true;
   if (repositionFrame) {
@@ -346,7 +347,10 @@ function finish(markDone) {
   window.removeEventListener('resize', scheduleReposition);
   document.removeEventListener('scroll', scheduleReposition, true);
   document.removeEventListener('keydown', onKey);
-  if (markDone) saveTourDone();
+  if (markDone) {
+    saveTourDone();
+    if (award) notify();
+  }
 }
 
 function onKey(e) {
