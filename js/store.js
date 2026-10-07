@@ -110,3 +110,18 @@ export const saveBirthday = b     => b ? safeSet(STORAGE_KEYS.birthday, JSON.str
    keeps it out of the file. */
 export const loadBirthdaySeen = ()    => localStorage.getItem(STORAGE_KEYS.birthdaySeen) || '';
 export const saveBirthdaySeen = key   => safeSet(STORAGE_KEYS.birthdaySeen, key || '');
+
+/* The guided tour. «Done» means the reader either walked it to the end or
+   skipped it; both are a real answer, so the welcome question never asks twice.
+   Leaving mid-tour (Escape) writes nothing, so the next visit offers it again. */
+export const loadTourDone = ()    => {
+  try {
+    /* The first draft of the copied tour used an underscore key and stored the
+       word "true". Honour it so an existing reader does not get a second
+       uninvited welcome after this build changes the storage name. */
+    return localStorage.getItem(STORAGE_KEYS.tourDone) === 'yes'
+      || localStorage.getItem('daftarche_tour_completed') === 'true';
+  }
+  catch { return false; }
+};
+export const saveTourDone   = ()    => safeSet(STORAGE_KEYS.tourDone, 'yes');

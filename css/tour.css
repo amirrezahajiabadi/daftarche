@@ -1,0 +1,118 @@
+/* ═══ Tour — the guided walk ═══
+   The card is a small page of this notebook: it reads .sheet-paper
+   (css/base.css) for the ruled lines, the ink and the strip of tape at the top
+   inline-start corner, and adds only its own size, radius and shadow. The
+   shadow has to be restated here because .sheet-paper sets box-shadow:none and
+   this file is linked later — the same restatement #nameCard makes in
+   css/overlays.css, for the same cascade reason.
+
+   The dim is not the overlay's scrim: the root's scrim is transparent, and the
+   spotlight element draws its own dim with one huge box-shadow — everything
+   outside the hole goes dark, the card rides above it. */
+
+.tour-overlay{
+  /* A stage, not a dialog: the children are fixed and positioned from JS, so
+     the grid centring, the padding and the scroll the other overlays own would
+     only be in the way. The dim itself belongs to .tour-spot. */
+  background:transparent;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  display:block;
+  padding:0;
+  overflow:visible;
+  animation:none}
+
+/* The spotlight: positioned and sized from JS over the target, everything
+   around it dimmed by the shadow. The accent ring is what makes the hole read
+   as «look here» rather than as a tear in the page. */
+.tour-spot{position:fixed;z-index:1;display:none;pointer-events:none;
+  border-radius:18px;
+  border:1.5px solid var(--color-accent);
+  box-shadow:0 0 0 200vmax color-mix(in srgb,var(--color-text-primary) 50%,transparent);
+  animation:fadeIn var(--duration-base) ease;
+  transition:inset-block-start .25s ease,inset-inline-start .25s ease,width .25s ease,height .25s ease}
+html[data-mode="dark"] .tour-spot{box-shadow:0 0 0 200vmax color-mix(in srgb,var(--color-text-primary) 60%,transparent)}
+
+/* The arrow: one diamond, half of it tucked under the card's edge, always
+   pointing from card to hole. Flat surface colour, not the ruled sheet — the
+   lines would rotate with the diamond and give it away. */
+.tour-arrow{position:fixed;z-index:1;display:none;pointer-events:none;
+  width:14px;height:14px;
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  transform:rotate(45deg);
+  animation:fadeIn var(--duration-base) ease;
+  transition:inset-block-start .25s ease,inset-inline-start .25s ease}
+
+/* The card: a page of the notebook, small enough to sit beside what it talks
+   about. Width is fixed rather than content-driven so the station texts all
+   read at the same measure. */
+.tour-card{position:fixed;z-index:2;
+  --sheet-tape-w:40px;
+  --sheet-tape-h:12px;
+  --sheet-tape-tilt:-3deg;
+  --sheet-tape-inset:14px;
+  width:min(320px,calc(100vw - 28px));
+  border-radius:var(--radius-lg);
+  padding:20px 16px 14px;
+  box-shadow:var(--shadow-2);
+  animation:popCard var(--duration-base) var(--ease-out)}
+/* Over the dark half the page behind the spotlight is already near-black, and
+   the shadow is black too — the card needs its own edge to stay a sheet rather
+   than a hole in the dim. The strong border token is exactly that edge. */
+html[data-mode="dark"] .tour-card{border-color:var(--color-border-strong)}
+
+.tour-kicker{display:inline-block;margin-bottom:6px;padding:3px 12px;
+  border-radius:var(--radius-pill);
+  background:var(--color-accent-soft);color:var(--color-accent-strong);
+  font-size:11px;font-weight:700;line-height:1.6}
+
+.tour-title{margin:0 0 4px;font-family:var(--font-personality);
+  font-size:17px;font-weight:700;line-height:1.6}
+
+.tour-text{margin:0;color:var(--color-text-secondary);
+  font-size:12.5px;font-weight:400;line-height:1.9}
+
+.tour-dots-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.tour-dots{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.tour-dot{width:6px;height:6px;border-radius:50%;
+  background:var(--color-border-strong);transition:background var(--duration-fast)}
+.tour-dot.on{background:var(--color-accent)}
+.tour-count{margin-inline-start:auto;color:var(--color-text-muted);
+  font-size:11px;font-weight:600}
+
+.tour-actions{display:flex;gap:8px;margin-top:12px}
+.tour-btn{flex:1;min-height:44px;border:none;cursor:pointer;
+  border-radius:var(--radius-sm);
+  font-family:var(--font-ui);font-size:13.5px;font-weight:700;
+  transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+.tour-btn.is-next{background:var(--color-accent);color:var(--color-text-on-accent);
+  box-shadow:var(--shadow-accent)}
+.tour-btn.is-next:active{transform:translateY(3px);box-shadow:var(--shadow-accent)}
+.tour-btn.is-prev{background:none;color:var(--color-text-secondary);
+  border:1.5px solid var(--color-border-strong)}
+.tour-btn.is-prev:hover{border-color:var(--color-accent);color:var(--color-accent)}
+.tour-btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+
+/* The way out, in the reader's own words. Quiet on purpose — muted text on the
+   paper, but a full 40px of height so it is easy to hit when it is wanted. */
+.tour-skip{width:100%;min-height:40px;margin-top:2px;padding:0 10px;
+  background:none;border:none;cursor:pointer;
+  color:var(--color-text-muted);font-family:var(--font-ui);
+  font-size:11.5px;font-weight:500;line-height:1.7;
+  border-radius:var(--radius-sm);transition:color var(--duration-fast)}
+.tour-skip:hover{color:var(--color-accent)}
+.tour-skip:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+
+/* A window narrower than the card's usual measure: the dots row steps aside
+   for the counter, and the arrow keeps its place — the geometry above already
+   clamps to whatever viewport it is given. */
+@media (max-width:360px){
+  .tour-card{padding:18px 13px 8px}
+  .tour-dots{gap:3px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .tour-spot,.tour-arrow{transition:none;animation:none}
+  .tour-card{animation:none}
+}

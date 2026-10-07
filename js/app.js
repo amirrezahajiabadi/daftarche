@@ -22,6 +22,7 @@ import { initNotifications, notificationsSupported } from './notifications.js';
 import { initDuePicker } from './duepicker.js';
 import { initBirthday } from './birthday.js';
 import { initChangelogCheck } from './changelog.js';
+import { offerTour } from './tour.js';
 import { initModalContainment } from './modal.js';
 import { initPWA } from './pwa.js';
 import { initStorageWarning } from './storagewarn.js';
@@ -696,6 +697,10 @@ safe('پوستهٔ آفلاین', initPWA);
    already has a name gets the notes on the usual beat after boot. */
 if (state.userName) {
   safe('چی خبر', initChangelogCheck);
+  safe('تور راهنما', offerTour);
 } else {
-  safe('اولین بازدید', () => openNameModal(false, () => safe('چی خبر', initChangelogCheck)));
+  safe('اولین بازدید', () => openNameModal(false, () => {
+    safe('تور راهنما', offerTour);
+    safe('چی خبر', initChangelogCheck);
+  }));
 }

@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   freeze: 'daftarche-streak-freeze',
   birthday: 'daftarche-birthday',
   birthdaySeen: 'daftarche-birthday-seen',
+  tourDone: 'daftarche-tour-done',
 };
 
 /* ═══ Themes ═══

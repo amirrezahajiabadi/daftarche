@@ -15,6 +15,7 @@ import { $, faNum } from './utils.js';
 import { state } from './state.js';
 import { markThemePicker } from './theme.js';
 import { APP_VERSION, openReleaseNotes } from './changelog.js';
+import { startTour } from './tour.js';
 import { clearLibraryData } from './library.js';
 import { clearUserAudioData } from './audio.js';
 import { renderBirthdayRow } from './birthday.js';
@@ -45,6 +46,8 @@ export function initSettings() {
      release; this is the other door — someone who wants to read what they are
      running right now. */
   $('#profNotes')?.addEventListener('click', openReleaseNotes);
+
+  $('#profTour')?.addEventListener('click', () => startTour());
 
   /* ── Backup ──
      Export writes every daftarche-* key to one JSON file; import validates a
