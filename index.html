@@ -13,7 +13,7 @@
      · blob: is for what the person made on this device: PDF files for the
        browser viewer, uploaded music, the share-card image.
      · Not expressible in a <meta>: frame-ancestors / report-uri. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-MWVR8Z/q1Ps8198XlcId07eH1Rz9tEs7aMIncnxY2LI=' https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net; frame-src blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EPY/fOLqm3P32nFtcsZpA7zkJojK+4fZNpfCHFHMZk8=' https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net; frame-src blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f6efe3"/>
 <!-- The browser paints its own chrome (page canvas, scrollbars, form controls)
@@ -48,6 +48,15 @@
     var saved = localStorage.getItem('theme');
     saved = ALIAS[saved] || saved;
     if (KEYS.indexOf(saved) < 0) saved = '';
+    /* Match the theme reward gate before paint. The full reward catalogue
+       lives in js/achievements.js; this one boot rule prevents a locked saved
+       theme flashing before js/theme.js can apply the same gate. */
+    if (saved === 'lilac') {
+      var shelf = null;
+      try { shelf = JSON.parse(localStorage.getItem('daftarche-achievements')); } catch (e) {}
+      if (!shelf || !shelf.unlocked || !shelf.unlocked['tour-intro']
+        || !(Number(shelf.unlocked['tour-intro'].tier) >= 1)) saved = 'paper';
+    }
     if (!saved) saved = matchMedia('(prefers-color-scheme:dark)').matches ? 'night' : 'paper';
     document.documentElement.dataset.theme = saved;
     document.documentElement.dataset.mode = DARK.indexOf(saved) < 0 ? 'light' : 'dark';

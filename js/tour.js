@@ -19,7 +19,7 @@
    carry the target into view — then reopened on the new station. */
 
 import { faNum } from './utils.js';
-import { loadTourDone, saveTourDone } from './store.js';
+import { loadTourDone, saveTourDone, saveTourAwarded } from './store.js';
 import { notify } from './bus.js';
 
 /* ═══ The stations ═══
@@ -470,7 +470,10 @@ function finish(markDone, award = false) {
   cardObserver?.disconnect();
   if (markDone) {
     saveTourDone();
-    if (award) notify();
+    if (award) {
+      saveTourAwarded();
+      notify();
+    }
   }
 }
 

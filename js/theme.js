@@ -23,12 +23,13 @@
    other. */
 
 import { $ } from './utils.js';
-import { loadTheme, saveTheme, loadThemeModes, saveThemeModes } from './store.js';
+import { loadTheme, saveTheme, loadThemeModes, saveThemeModes, loadAchv } from './store.js';
 import {
   THEMES, THEME_MODES, DEFAULT_THEME, NIGHT_THEME,
   normalizeTheme, modeOf, themesOfMode,
 } from './constants.js';
 import { modeSwitch, swatchRow } from './chipgroup.js';
+import { hasReward, normalizeState, rewardFor, rewardRequirements } from './achievements.js';
 
 let modeControl = { mark() {} };
 let swatchControl = { mark() {}, setMode() {} };
@@ -43,6 +44,18 @@ export const currentMode = () => (root().dataset.mode === 'dark' ? 'dark' : 'lig
 
 export const currentTheme = () =>
   normalizeTheme(root().dataset.theme) || (systemPrefersDark() ? NIGHT_THEME : DEFAULT_THEME);
+
+/* A theme with a reward contract is unavailable until the achievement engine
+   has stored the matching rung. Themes without a contract stay basic forever,
+   which makes adding a future reward opt-in and safe. */
+export const isThemeUnlocked = key => {
+  const normalized = normalizeTheme(key);
+  if (!normalized) return false;
+  const reward = rewardFor('theme', normalized);
+  return !reward || hasReward(normalizeState(loadAchv()), reward.id);
+};
+
+const allowedTheme = key => isThemeUnlocked(key) ? key : DEFAULT_THEME;
 
 /* The last theme used in each half, cleaned on the way in: a key that no longer
    exists, or one whose mode has changed under it, is dropped rather than used. */
@@ -64,7 +77,9 @@ function rememberMode(mode, key) {
    last used there, else the first of that half in the table. This is what makes
    the header switch remember instead of reset. */
 export function themeForMode(mode) {
-  return rememberedModes()[mode] || themesOfMode(mode)[0].key;
+  const remembered = rememberedModes()[mode];
+  if (remembered && isThemeUnlocked(remembered)) return remembered;
+  return themesOfMode(mode).find(t => isThemeUnlocked(t.key))?.key || DEFAULT_THEME;
 }
 
 /* The browser paints its own chrome (Android status bar, Safari toolbar) from
@@ -102,7 +117,9 @@ export function markThemePicker() {
    never chose), where re-saving it would turn a system preference into a
    decision. */
 export function applyTheme(key, { remember = true } = {}) {
-  const next = normalizeTheme(key) || DEFAULT_THEME;
+  const requested = normalizeTheme(key) || DEFAULT_THEME;
+  if (remember && !isThemeUnlocked(requested)) return false;
+  const next = allowedTheme(requested);
   const mode = modeOf(next);
   root().dataset.theme = next;
   root().dataset.mode = mode;
@@ -112,6 +129,7 @@ export function applyTheme(key, { remember = true } = {}) {
   }
   syncThemeColor();
   markThemePicker();
+  return true;
 }
 
 /* Move to a half of the table without naming a theme in it — the mode switch
@@ -134,7 +152,20 @@ export function initTheme() {
   applyTheme(loadTheme() || currentTheme(), { remember: false });
 
   modeControl = modeSwitch($('#themeModeSwitch'), { modes: THEME_MODES, onPick: applyMode });
-  swatchControl = swatchRow($('#themeSwatches'), THEMES, { group: 'theme', onPick: applyTheme });
+  swatchControl = swatchRow($('#themeSwatches'), THEMES.map(theme => {
+    const reward = rewardFor('theme', theme.key);
+    const condition = reward ? rewardRequirements(reward.id).map(({ achievement }) =>
+      `نشان «${achievement.title}»`).join(' یا ') : '';
+    return {
+      ...theme, rewardId: reward?.id,
+      locked: !isThemeUnlocked(theme.key),
+      lockText: reward?.lockedText,
+      lockCondition: condition ? `شرط باز شدن: ${condition}` : '',
+    };
+  }), {
+    group: 'theme', onPick: applyTheme,
+    isLocked: key => !isThemeUnlocked(key),
+  });
   markThemePicker();
 
   document.querySelectorAll('.theme-btn').forEach(btn => { btn.onclick = toggleTheme; });

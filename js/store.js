@@ -122,9 +122,10 @@ export const loadTourDone = ()    => {
   catch { return false; }
 };
 export const saveTourDone   = ()    => safeSet(STORAGE_KEYS.tourDone, 'yes');
-/* The one-time achievement is tied to the current release marker, and is
-   therefore raised only after this release's tour reaches its final station. */
+/* A separate marker is essential: dismissing the automatic offer must never
+   count as completing the tour or unlock an achievement reward on next boot. */
+export const saveTourAwarded = () => safeSet(STORAGE_KEYS.tourAwarded, 'yes');
 export const loadTourAwarded = ()    => {
-  try { return localStorage.getItem(STORAGE_KEYS.tourDone) === 'yes'; }
+  try { return localStorage.getItem(STORAGE_KEYS.tourAwarded) === 'yes'; }
   catch { return false; }
 };

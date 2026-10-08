@@ -32,9 +32,10 @@ import { formatJalaliDate, dateToJalali, JALALI_MONTHS } from './jalali.js';
 import { qorqoriMarkup } from './qorqori.js';
 import { confetti, beep } from './confetti.js';
 import { isBusy } from './calm.js';
+import { markThemePicker } from './theme.js';
 import {
   FAMILIES, TIER_NAMES, KIND_LABEL, byId, iconOf, emptyState, normalizeState,
-  evaluate, nearest, weekBoard,
+  evaluate, nearest, weekBoard, rewardsOf,
 } from './achievements.js';
 
 /* ── Kept between ticks ── */
@@ -126,9 +127,14 @@ function tick(force = false) {
 
   saved = { v: 1, baselineAt: prev.baselineAt || book.today, unlocked, recSeen };
   saveAchv(saved);
+  markThemePicker();
 
   if (!firstRun) {
-    for (const r of res.newly) queue.push({ kind: r.tier === 1 ? 'badge' : 'tier', row: r });
+    for (const r of res.newly) {
+      const previousRewards = rewardsOf(r.a, prev.unlocked[r.a.id]?.tier || 0);
+      const rewards = rewardsOf(r.a, r.tier).filter(reward => !previousRewards.includes(reward));
+      queue.push({ kind: r.tier === 1 ? 'badge' : 'tier', row: r, rewards });
+    }
     queue.push(...broken);
   }
   flush();
@@ -221,6 +227,7 @@ function itemHtml(r) {
       `<span class="achv-item-top"><b>${esc(a.title)}</b>` +
       `<span class="achv-kind k-${a.kind}">${KIND_LABEL[a.kind]}</span></span>` +
       (locked ? `<span class="achv-how">${esc(a.how)}</span>` : '') +
+      rewardsOf(a).map(reward => `<span class="achv-how">پاداش: ${esc(reward.kind === 'theme' ? 'تم' : 'ویژگی')} «${esc(reward.label)}»</span>`).join('') +
       `<span class="achv-item-foot">${pips(r.tier, a.tiers.length)}${rowProgress(r)}` +
       `<small>${locked ? `${faNum(r.value)} از ${faNum(r.nextGoal)}` : esc(leftText(r))}</small></span>` +
     `</span></button>`;
@@ -316,6 +323,16 @@ export function renderAchievements() {
 }
 
 /* ═══ Detail ═══ */
+/* The reward surface is shared by the badge details and celebration. A future
+   theme or feature uses the same title, condition and locked/unlocked states. */
+function rewardHtml(reward, unlocked) {
+  return `<div class="reward-card" data-reward-state="${unlocked ? 'unlocked' : 'locked'}">` +
+    `<span class="reward-card-icon" aria-hidden="true">${iconOf(unlocked ? 'check' : 'layers')}</span>` +
+    `<span class="reward-card-copy"><b>${esc(reward.kind === 'theme' ? 'تم' : 'ویژگی')} «${esc(reward.label)}»</b>` +
+    `<small>${esc(unlocked ? (reward.unlockText || 'پاداشت باز شد!') : 'با گرفتن این نشان باز می‌شود')}</small></span>` +
+    `<span class="reward-card-status">${unlocked ? 'باز شد' : 'قفل'}</span></div>`;
+}
+
 function openDetail(id) {
   const r = res?.rows.find(x => x.a.id === id);
   const overlay = $('#achvDetailOverlay');
@@ -337,6 +354,7 @@ function openDetail(id) {
     <ul class="achv-ladder">${rungs}</ul>
     ${r.nextGoal === null ? '<p class="achv-detail-done">همهٔ پله‌های این نشان بالا رفته.</p>' : `<p class="achv-detail-how">${esc(a.how)} — ${esc(leftText(r))}</p>`}
     ${when ? `<p class="achv-detail-at">${esc(when)}</p>` : ''}
+    ${rewardsOf(a).map(reward => rewardHtml(reward, rewardsOf(a, r.tier).includes(reward))).join('')}
     <span class="achv-detail-char" aria-hidden="true">${qorqoriMarkup(r.tier ? 'proud' : 'thinking')}</span>
     <button class="ghost" type="button" id="achvDetailClose">بستن</button>`;
   overlay.hidden = false;
@@ -369,13 +387,21 @@ function sentence(item) {
     return `${who}رکورد «${r.label}» را شکستی — ${faNum(r.value)} ${r.unit} در برابر ${faNum(r.prev)} قبلی.`;
   }
   const a = item.row.a;
+  const rewardLine = (item.rewards || []).map(reward => reward.unlockText
+    || `ویژگی «${reward.label}» برات باز شد!`).join(' ');
+  let message;
   if (a.id === 'tour-intro') {
-    return name ? `تبریک میگم ${name}، نشان آشنایی با دفترچه برات باز شد!` : 'تبریک میگم، نشان آشنایی با دفترچه برات باز شد!';
+    message = name ? `تبریک میگم ${name}، نشان آشنایی با دفترچه برات باز شد!` : 'تبریک میگم، نشان آشنایی با دفترچه برات باز شد!';
+  } else if (item.kind === 'tier') {
+    message = `«${a.title}» رفت روی ${TIER_NAMES[item.row.tier - 1]}.`;
+  } else if (a.kind === 'legend') {
+    message = `${who}این دیگه افسانه‌ست. «${a.title}» باز شد.`;
+  } else if (a.kind === 'skilled') {
+    message = `${who}این یکی کارِ هر روز نیست. «${a.title}» باز شد.`;
+  } else {
+    message = `${who}«${a.title}» باز شد — ${FAMILY_LINE[a.family] || 'ادامه بده.'}`;
   }
-  if (item.kind === 'tier') return `«${a.title}» رفت روی ${TIER_NAMES[item.row.tier - 1]}.`;
-  if (a.kind === 'legend') return `${who}این دیگه افسانه‌ست. «${a.title}» باز شد.`;
-  if (a.kind === 'skilled') return `${who}این یکی کارِ هر روز نیست. «${a.title}» باز شد.`;
-  return `${who}«${a.title}» باز شد — ${FAMILY_LINE[a.family] || 'ادامه بده.'}`;
+  return `${message}${rewardLine ? ` ${rewardLine}` : ''}`;
 }
 
 function showSheet(item) {
@@ -391,6 +417,7 @@ function showSheet(item) {
     <span class="achv-unlock-medal" aria-hidden="true">${iconOf(icon)}</span>
     <h2>${esc(title)}${tierLine}</h2>
     <p>${esc(sentence(item))}</p>
+    ${(item.rewards || []).map(reward => rewardHtml(reward, true)).join('')}
     <button class="go" type="button" id="achvUnlockOk">دمت گرم!</button>
     <button class="ghost sm" type="button" id="achvUnlockMore">دیدن نشان‌ها</button>`;
   overlay.hidden = false;

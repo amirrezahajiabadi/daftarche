@@ -18,7 +18,7 @@
    changes underneath it. A chip with no mode (the card's own «برنامه») is always
    visible, because it belongs to neither half. */
 
-import { faDigits } from './utils.js';
+import { faDigits, esc } from './utils.js';
 
 export function pickerRow(host, items, { group, onPick }) {
   if (!host || !items.length) return { mark() {}, setMode() {} };
@@ -193,32 +193,44 @@ export function modeSwitch(host, { modes = ['light', 'dark'], onPick }) {
    CSS — the host carries data-mode — so moving the switch above shows the other
    three without rebuilding anything: the selection is only marked again. */
 
-export function swatchRow(host, items, { group, onPick }) {
+export function swatchRow(host, items, { group, onPick, isLocked = null }) {
   if (!host || !items.length) return { mark() {}, setMode() {} };
 
   const mark = key => {
     host.querySelectorAll('.swatch').forEach(b => {
       const on = b.dataset.key === key;
+      const item = items.find(it => it.key === b.dataset.key);
+      const locked = isLocked ? isLocked(b.dataset.key) : Boolean(item?.locked);
       b.classList.toggle('sel', on);
+      b.classList.toggle('locked', locked);
+      if (item?.rewardId) b.dataset.rewardState = locked ? 'locked' : 'unlocked';
+      const lock = b.querySelector('.swatch-lock');
+      if (lock) lock.hidden = !locked;
+      b.disabled = locked;
+      b.setAttribute('aria-disabled', String(locked));
+      b.setAttribute('aria-label', locked && item?.lockText
+        ? `${item.label}، ${item.lockText} ${item.lockCondition || ''}` : (item?.label || b.dataset.key));
       b.setAttribute('aria-checked', String(on));
-      b.tabIndex = on ? 0 : -1;
+      b.tabIndex = locked ? -1 : (on ? 0 : -1);
     });
   };
 
   if (!host.dataset.built) {
     host.dataset.built = '1';
     host.innerHTML = items.map(it =>
-      `<button type="button" class="swatch" role="radio" data-group="${group}"`
-      + ` data-key="${it.key}" data-mode="${it.mode}" data-palette="${it.palette}"`
+      `<button type="button" class="swatch" role="radio" data-group="${esc(group)}"`
+      + ` data-key="${esc(it.key)}" data-mode="${esc(it.mode)}" data-palette="${esc(it.palette)}"`
       + ` aria-checked="false" tabindex="-1">`
       + `<i class="swatch-preview" aria-hidden="true"><i></i><i></i><i></i></i>`
-      + `<span class="swatch-name">${it.label}</span>`
+      + `<span class="swatch-name">${esc(it.label)}</span>`
+      + (it.rewardId ? '<svg class="swatch-lock-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>' : '')
+      + (it.locked || it.lockText ? `<small class="swatch-lock">${esc(it.lockText || 'قفل')}<span>${esc(it.lockCondition || '')}</span></small>` : '')
       + `</button>`
     ).join('');
 
     host.addEventListener('click', e => {
       const b = e.target.closest('.swatch');
-      if (b) onPick(b.dataset.key);
+      if (b && !b.disabled) onPick(b.dataset.key);
     });
 
     /* Only the half on screen is walkable: the arrow keys step through the three
@@ -228,8 +240,8 @@ export function swatchRow(host, items, { group, onPick }) {
       if (!step) return;
       e.preventDefault();
       const on = [...host.querySelectorAll('.swatch')]
-        .filter(s => s.dataset.mode === host.dataset.mode);
-      const i = on.findIndex(s => s.classList.contains('sel'));
+        .filter(s => s.dataset.mode === host.dataset.mode && !s.disabled);
+      const i = on.findIndex(s => s === document.activeElement || s.classList.contains('sel'));
       const next = on[(i + step + on.length) % on.length];
       if (!next) return;
       onPick(next.dataset.key);

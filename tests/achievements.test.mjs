@@ -8,6 +8,8 @@ import { ls } from './_env.mjs';
 const { state } = await import('../js/state.js');
 const { collectTotals } = await import('../js/ledger.js');
 const A = await import('../js/achievements.js');
+const S = await import('../js/store.js');
+const T = await import('../js/theme.js');
 
 const NOW = new Date(2026, 8, 30, 14, 0, 0);
 
@@ -89,6 +91,42 @@ test('the tour achievement opens only after the tour is marked complete', () => 
   assert.equal(row.tier, 1);
   assert.equal(row.raised, true);
   assert.equal(row.complete, true);
+});
+
+test('achievement rewards are generic and unlock from the earned tier', () => {
+  const tour = A.byId('tour-intro');
+  assert.deepEqual(A.rewardsOf(tour).map(reward => reward.id), ['theme:lilac']);
+  assert.equal(A.hasReward(A.emptyState(), 'theme:lilac'), false);
+  assert.equal(A.hasReward(A.normalizeState({
+    baselineAt: '2026-09-01',
+    unlocked: { 'tour-intro': { tier: 1, at: '2026-09-02' } },
+  }), 'theme:lilac'), true);
+  assert.equal(A.rewardFor('theme', 'lilac').lockedText, 'هنوز تنونستی "یاسی" رو بدست بیاری!');
+  assert.deepEqual(A.rewardsOf({ rewards: [{ id: 'theme:lilac', tier: 2 }] }, 1), []);
+  assert.equal(A.rewardsOf({ rewards: [{ id: 'theme:lilac', tier: 2 }] }, 2).length, 1);
+  assert.equal(A.hasReward(A.emptyState(), 'unknown-reward'), false);
+});
+
+test('declining a tour suppresses its offer without earning its achievement', () => {
+  S.saveTourDone();
+  assert.equal(S.loadTourDone(), true);
+  assert.equal(S.loadTourAwarded(), false);
+  S.saveTourAwarded();
+  assert.equal(S.loadTourAwarded(), true);
+});
+
+test('only the rewarded theme is gated, including remembered theme choices', () => {
+  S.saveThemeModes({ light: 'lilac', dark: 'night' });
+  assert.equal(T.isThemeUnlocked('paper'), true);
+  assert.equal(T.isThemeUnlocked('night'), true);
+  assert.equal(T.isThemeUnlocked('lilac'), false);
+  assert.equal(T.applyTheme('lilac'), false);
+  assert.equal(T.themeForMode('light'), 'paper');
+  S.saveAchv(A.normalizeState({
+    unlocked: { 'tour-intro': { tier: 1, at: '2026-09-02' } },
+  }));
+  assert.equal(T.isThemeUnlocked('lilac'), true);
+  assert.equal(T.themeForMode('light'), 'lilac');
 });
 
 test('badges with a minimum sample stay at 0 until it is met (on-time needs 20 dated ticks)', () => {

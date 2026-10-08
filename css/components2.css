@@ -340,6 +340,30 @@ html[data-mode="dark"] .toast-sticky .toast-btn{color:var(--color-text-on-accent
 .swatch-preview i:nth-child(3){background:var(--card-accent,var(--color-accent))}
 .swatch-name{font-size:11.5px;font-weight:600;line-height:1.5;text-align:center;color:var(--color-text-secondary);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swatch{position:relative}
+.swatch.locked:disabled{opacity:1;border-style:dashed;cursor:not-allowed}
+.swatch.locked .swatch-preview{filter:grayscale(.75);opacity:.5}
+.swatch.locked:active{transform:none}
+.swatch-lock-icon{display:none;position:absolute;inset-block-start:16px;inset-inline-end:14px;
+  inline-size:23px;block-size:23px;padding:3px;border-radius:var(--radius-xs);
+  color:var(--color-text-primary);background:var(--color-surface)}
+.swatch.locked .swatch-lock-icon{display:block}
+.swatch-lock{font-size:11px;font-weight:500;line-height:1.7;text-align:center;
+  color:var(--color-text-secondary);overflow-wrap:anywhere}
+.swatch-lock span{display:block;margin-block-start:4px;font-size:10.5px;color:var(--color-text-muted)}
+/* Shared reward surface: theme/feature gates and achievement moments use the
+   same state names, copy area and quiet status badge across all palettes. */
+.reward-card{display:flex;align-items:center;gap:10px;margin-block:12px;padding:12px;
+  border:1px solid var(--color-border-strong);border-radius:var(--radius-md);
+  background:var(--color-bg);text-align:start;min-inline-size:0}
+.reward-card[data-reward-state="locked"]{border-style:dashed}
+.reward-card[data-reward-state="unlocked"]{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.reward-card-icon{display:grid;place-items:center;flex-shrink:0;color:var(--color-accent)}
+.reward-card-icon svg{inline-size:24px;block-size:24px}
+.reward-card-copy{display:flex;flex-direction:column;gap:3px;min-inline-size:0;flex:1;overflow-wrap:anywhere}
+.reward-card-copy b{font-size:13px;color:var(--color-text-primary)}
+.reward-card-copy small{font-size:11.5px;line-height:1.8;color:var(--color-text-secondary)}
+.reward-card-status{font-size:10px;white-space:nowrap;color:var(--color-text-secondary)}
 /* One half at a time: the host says which, the CSS hides the rest. */
 .swatch-row[data-mode="light"] .swatch[data-mode="dark"],
 .swatch-row[data-mode="dark"] .swatch[data-mode="light"]{display:none}

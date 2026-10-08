@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
      left behind as inert device data so every reader gets this release's walk
      once, including readers who completed an earlier tour. */
   tourDone: 'daftarche-tour-complete',
+  tourAwarded: 'daftarche-tour-awarded',
 };
 
 /* ═══ Themes ═══

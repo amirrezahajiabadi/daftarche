@@ -166,7 +166,8 @@ export const ACHIEVEMENTS = [
   { id: 'first-book', family: 'start', kind: 'base', icon: 'spine', title: 'کتابِ تمام‌شده', unit: 'کتاب',
     how: 'یک کتاب را تمام کن', tiers: [1, 3, 10, 25], value: t => t.read.booksDone },
   { id: 'tour-intro', family: 'start', kind: 'base', icon: 'compass', title: 'آشنایی با دفترچه', unit: 'بار',
-    how: 'تور راهنمای دفترچه را تمام کن', tiers: [1], value: t => t.tourDone },
+    how: 'تور راهنمای دفترچه را تمام کن', tiers: [1], value: t => t.tourDone,
+    rewards: ['theme:lilac'] },
 
   /* ── پیوستگی: the days themselves ── */
   { id: 'chain', family: 'streak', kind: 'base', icon: 'flame', title: 'پشت‌سرهم', unit: 'روز',
@@ -231,6 +232,36 @@ export const ACHIEVEMENTS = [
   { id: 'perfect-month', family: 'legend', kind: 'legend', icon: 'full', title: 'کامل‌کننده', unit: 'ماه',
     how: 'یک ماه را کامل زندگی کن — هر روزش فعال باشد', tiers: [1, 3, 12], value: t => t.consistency.perfectMonths },
 ];
+
+/* ═══ Rewards ═══
+   An achievement can open one or more things outside the shelf. The catalogue
+   stores stable reward ids; this table owns how each reward is described and
+   lets future features use the same lock, picker and celebration contract. */
+export const REWARDS = Object.freeze({
+  'theme:lilac': Object.freeze({
+    id: 'theme:lilac', kind: 'theme', key: 'lilac', label: 'یاسی', area: 'settings',
+    lockedText: 'هنوز تنونستی "یاسی" رو بدست بیاری!',
+    unlockText: 'تم «یاسی» در بخش تنظیمات برات باز شد!',
+  }),
+});
+
+export const rewardOf = id => REWARDS[id] || null;
+/* String ids mean the first rung; { id, tier } can target a future higher rung.
+   The same rules work for themes and features without adding separate flags. */
+const rewardRules = achievement => (achievement?.rewards || []).map(rule =>
+  typeof rule === 'string' ? { id: rule, tier: 1 } : rule);
+export const rewardsOf = (achievement, tier = Infinity) => rewardRules(achievement)
+  .filter(rule => rule.tier <= tier).map(rule => rewardOf(rule.id)).filter(Boolean);
+export const rewardRequirements = rewardId => ACHIEVEMENTS.flatMap(a =>
+  rewardRules(a).filter(rule => rule.id === rewardId).map(rule => ({ achievement: a, tier: rule.tier })));
+export const hasReward = (state, rewardId) => {
+  if (!rewardOf(rewardId) || !state?.unlocked) return false;
+  return rewardRequirements(rewardId).some(({ achievement, tier }) =>
+    Number(state.unlocked[achievement.id]?.tier) >= tier);
+};
+export const unlockedRewards = state => Object.values(REWARDS).filter(r => hasReward(state, r.id));
+export const rewardFor = (kind, key) => Object.values(REWARDS)
+  .find(r => r.kind === kind && r.key === key) || null;
 
 export const byId = id => ACHIEVEMENTS.find(a => a.id === id) || null;
 export const TOTAL_STEPS = ACHIEVEMENTS.reduce((n, a) => n + a.tiers.length, 0);
