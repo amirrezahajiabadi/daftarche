@@ -120,6 +120,7 @@ export function computePlacement(rect, vw, vh, boxW, boxH, opts = {}) {
   const gap = opts.gap ?? 14;
   const margin = opts.margin ?? 12;
   const pad = 10;                                // the hole's air around the target
+  const topLimit = (opts.topInset ?? 0) + margin;
   const bottomLimit = vh - (opts.bottomInset ?? 0) - margin;
 
   /* The hole: the target inflated by `pad`, clamped into the viewport so a
@@ -138,6 +139,48 @@ export function computePlacement(rect, vw, vh, boxW, boxH, opts = {}) {
 
   const spaceBelow = bottomLimit - (rect.bottom + pad);
   const spaceAbove = rect.top - pad - margin;
+
+  /* Phones have two separate reading areas: the card and the page preview.
+     Use a clear gap beside the target's top/bottom edge when it fits. For a
+     tall target, dock the card at the clearer viewport edge and return the
+     scroll needed to bring the target into the remaining area. The spotlight
+     is clipped to that area, so it can never pass beneath the card. */
+  if (opts.mobile) {
+    const overlap = top => Math.max(0, Math.min(top + boxH, rect.bottom + pad)
+      - Math.max(top, rect.top - pad));
+    const above = rect.top - pad - topLimit;
+    let chosen;
+    if (spaceBelow >= boxH + gap && rect.top >= topLimit + pad) {
+      chosen = { side: 'bottom', top: rect.bottom + pad + gap };
+    } else if (above >= boxH + gap && rect.bottom <= bottomLimit - pad) {
+      chosen = { side: 'top', top: rect.top - pad - gap - boxH };
+    } else {
+      chosen = [
+        { side: 'top', top: topLimit, gap: above },
+        { side: 'bottom', top: Math.max(topLimit, bottomLimit - boxH), gap: spaceBelow },
+      ].map(c => ({ ...c, overlap: overlap(c.top) }))
+        .sort((a, b) => a.overlap - b.overlap || b.gap - a.gap)[0];
+    }
+    const box = { left: clampX(cx - boxW / 2), top: chosen.top };
+    const preview = {
+      top: chosen.side === 'top' ? box.top + boxH + gap : topLimit,
+      bottom: chosen.side === 'bottom' ? box.top - gap : bottomLimit,
+    };
+    const available = preview.bottom - preview.top - 2 * pad;
+    let scrollBy = 0;
+    if (rect.height > available || rect.top < preview.top + pad) {
+      scrollBy = rect.top - preview.top - pad;
+    } else if (rect.bottom > preview.bottom - pad) {
+      scrollBy = rect.bottom - preview.bottom + pad;
+    }
+    spot.top = Math.min(Math.max(rect.top - pad, preview.top), preview.bottom);
+    spot.height = Math.max(0, Math.min(rect.bottom + pad, preview.bottom) - spot.top);
+    const arrow = {
+      left: Math.min(Math.max(cx - 7, box.left + 16), box.left + boxW - 30),
+      top: chosen.side === 'top' ? box.top + boxH - 7 : box.top - 7,
+    };
+    return { side: chosen.side, box, arrow, spot, preview, scrollBy };
+  }
 
   let side, box, arrow;
   if (spaceBelow >= boxH + gap) {
@@ -174,9 +217,31 @@ export function computePlacement(rect, vw, vh, boxW, boxH, opts = {}) {
 let root = null, spotEl = null, arrowEl = null, card = null;
 let kickerEl = null, titleEl = null, textEl = null;
 let dotsEl = null, countEl = null, prevBtn = null, nextBtn = null, skipBtn = null;
+let cardObserver = null;
 let idx = 0;
 let active = false;
 let offerTimer = 0;
+
+/* Width identifies portrait phones; coarse input plus a short viewport also
+   catches a phone rotated to landscape, without changing short desktop windows. */
+const MOBILE_QUERY = '(max-width: 600px), (pointer: coarse) and (max-width: 950px) and (max-height: 600px)';
+const mobileViewport = () => window.matchMedia(MOBILE_QUERY).matches;
+
+function prepareMobile() {
+  const mobile = mobileViewport();
+  document.body.classList.toggle('tour-mobile-stage', mobile);
+  if (mobile) {
+    const height = window.visualViewport?.height || window.innerHeight;
+    root.style.setProperty('--tour-viewport-height', height + 'px');
+    /* Temporary scroll space lets even the first/last page section move away
+       from the card. It disappears when the tour closes or switches to desktop. */
+    document.body.style.setProperty('--tour-page-space', Math.min(360, Math.max(280, height * .4)) + 'px');
+  } else {
+    root.style.removeProperty('--tour-viewport-height');
+    document.body.style.removeProperty('--tour-page-space');
+  }
+  return mobile;
+}
 
 const raf2 = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 const currentPage = () =>
@@ -219,6 +284,8 @@ function ensureRoot() {
   titleEl = el('h2', 'tour-title');
   textEl = el('p', 'tour-text');
   textEl.setAttribute('aria-live', 'polite');
+  const copy = el('div', 'tour-copy');
+  copy.append(titleEl, textEl);
 
   const dotsRow = el('div', 'tour-dots-row');
   dotsEl = el('div', 'tour-dots');
@@ -233,12 +300,28 @@ function ensureRoot() {
   nextBtn.type = 'button';
   actions.append(prevBtn, nextBtn);
 
-  skipBtn = el('button', 'tour-skip', 'دفترچه رو میشناسم بذار بریم سراغ کار زندگیمون');
+  skipBtn = el('button', 'tour-skip');
+  skipBtn.append(
+    el('span', 'tour-skip-label', 'دفترچه رو میشناسم بذار بریم سراغ کار زندگیمون'),
+    el('span', 'tour-skip-mobile', 'فعلاً رد کن'),
+  );
   skipBtn.type = 'button';
 
-  card.append(kickerEl, titleEl, textEl, dotsRow, actions, skipBtn);
+  card.append(kickerEl, copy, dotsRow, actions, skipBtn);
   root.append(spotEl, arrowEl, card);
   document.body.append(root);
+  const before = el('div', 'tour-page-space');
+  const after = el('div', 'tour-page-space');
+  before.setAttribute('aria-hidden', 'true');
+  after.setAttribute('aria-hidden', 'true');
+  document.body.prepend(before);
+  document.body.append(after);
+
+  if (typeof ResizeObserver !== 'undefined') {
+    cardObserver = new ResizeObserver(() => {
+      if (active && mobileViewport()) scheduleReposition();
+    });
+  }
 
   prevBtn.addEventListener('click', () => show(idx - 1));
   nextBtn.addEventListener('click', () => (idx === STEPS.length - 1 ? finish(true, true) : show(idx + 1)));
@@ -247,6 +330,7 @@ function ensureRoot() {
 
 function render() {
   const s = STEPS[idx];
+  card.querySelector('.tour-copy').scrollTop = 0;
   kickerEl.textContent = `ایستگاه ${LETTERS[idx]}`;
   titleEl.textContent = s.title;
   textEl.textContent = s.text;
@@ -263,6 +347,8 @@ function render() {
 }
 
 function position() {
+  if (!active || !root || root.hidden) return;
+  const mobile = prepareMobile();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const bw = card.offsetWidth;
@@ -271,17 +357,45 @@ function position() {
 
   let placement = null;
   const target = step.sel && resolveTarget(step);
+  const nav = document.getElementById('bottomNav');
+  let bottomInset = nav && !nav.hidden ? nav.offsetHeight + 26 : 0;
+  let topInset = 0;
+  if (mobile) {
+    const visual = window.visualViewport;
+    const style = getComputedStyle(root);
+    topInset = (visual?.offsetTop || 0) + (parseFloat(style.getPropertyValue('--tour-safe-top')) || 0);
+    let bottom = (visual?.offsetTop || 0) + (visual?.height || vh)
+      - (parseFloat(style.getPropertyValue('--tour-safe-bottom')) || 0);
+    /* The navigation is itself one station: don't clip its spotlight out
+       of the viewport by reserving the navigation's band for that station. */
+    if (nav && target !== nav && nav.getClientRects().length) {
+      bottom = Math.min(bottom, nav.getBoundingClientRect().top - 12);
+    }
+    bottomInset = vh - bottom;
+  }
   if (target) {
-    const nav = document.getElementById('bottomNav');
-    const bottomInset = nav && !nav.hidden ? nav.offsetHeight + 26 : 0;
-    placement = computePlacement(target.getBoundingClientRect(), vw, vh, bw, bh, { bottomInset });
+    const options = { bottomInset, topInset, mobile };
+    placement = computePlacement(target.getBoundingClientRect(), vw, vh, bw, bh, options);
+    if (mobile && getComputedStyle(target).position !== 'fixed') {
+      for (let attempt = 0; attempt < 3 && Math.abs(placement.scrollBy) > 1; attempt++) {
+        const previousTop = target.getBoundingClientRect().top;
+        window.scrollBy({ top: placement.scrollBy, behavior: 'instant' });
+        const rect = target.getBoundingClientRect();
+        placement = computePlacement(rect, vw, vh, bw, bh, options);
+        if (Math.abs(rect.top - previousTop) < 1) break;
+      }
+    }
   }
   /* No target (the welcome question) or a target that went missing: the card
      stands alone, a little above the middle, with no hole and no arrow. */
   if (!placement) {
     placement = {
       side: 'center',
-      box: { left: (vw - bw) / 2, top: (vh - bh) / 2 - vh * 0.06 },
+      box: {
+        left: (vw - bw) / 2,
+        top: mobile ? Math.max(topInset + 12, topInset + (vh - bottomInset - topInset - bh) / 2)
+          : (vh - bh) / 2 - vh * 0.06,
+      },
       arrow: null, spot: null,
     };
   }
@@ -300,7 +414,7 @@ function position() {
 
   put(card, placement.box.left, placement.box.top, card.offsetWidth, null);
 
-  if (placement.spot) {
+  if (placement.spot && placement.spot.height > 0) {
     spotEl.style.display = 'block';
     put(spotEl, placement.spot.left, placement.spot.top, placement.spot.width, placement.spot.height);
   } else {
@@ -323,17 +437,19 @@ async function show(i) {
   const step = STEPS[idx];
 
   if (root) root.hidden = true;
+  ensureRoot();
+  prepareMobile();
   if (currentPage() !== step.page) {
     window.dispatchEvent(new CustomEvent('navigate', { detail: step.page }));
   }
   const target = step.sel && resolveTarget(step);
   if (target) target.scrollIntoView({ block: 'center', behavior: 'instant' });
   await raf2();
+  if (!active) return;
 
-  ensureRoot();
   render();
   root.hidden = false;
-  requestAnimationFrame(position);
+  position();
 }
 
 function finish(markDone, award = false) {
@@ -347,6 +463,11 @@ function finish(markDone, award = false) {
   window.removeEventListener('resize', scheduleReposition);
   document.removeEventListener('scroll', scheduleReposition, true);
   document.removeEventListener('keydown', onKey);
+  window.visualViewport?.removeEventListener('resize', scheduleReposition);
+  window.visualViewport?.removeEventListener('scroll', scheduleReposition);
+  document.body.classList.remove('tour-mobile-stage');
+  document.body.style.removeProperty('--tour-page-space');
+  cardObserver?.disconnect();
   if (markDone) {
     saveTourDone();
     if (award) notify();
@@ -395,8 +516,12 @@ export function startTour() {
   if (active) return;
   active = true;
   ensureRoot();
+  cardObserver?.observe(card);
+  document.fonts?.ready.then(() => { if (active && mobileViewport()) scheduleReposition(); });
   document.addEventListener('keydown', onKey);
   window.addEventListener('resize', scheduleReposition);
+  window.visualViewport?.addEventListener('resize', scheduleReposition);
+  window.visualViewport?.addEventListener('scroll', scheduleReposition);
   /* Capture: the page itself scrolls on window — a bubble listener on document
      never hears it. */
   document.addEventListener('scroll', scheduleReposition, true);

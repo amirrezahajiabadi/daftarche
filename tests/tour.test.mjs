@@ -98,6 +98,67 @@ test('the card never leaves the viewport, whatever the target does', () => {
   }
 });
 
+test('mobile placement moves a wide target card to a clear top or bottom edge', () => {
+  const target = r(16, 430, 358, 300);
+  const p = computePlacement(target, 390, 844, 286, 286, { bottomInset: 70, mobile: true });
+  assert.ok(p.side === 'top' || p.side === 'bottom');
+  const overlaps = Math.max(0, Math.min(p.box.top + 286, target.bottom + 10)
+    - Math.max(p.box.top, target.top - 10));
+  assert.equal(overlaps, 0, 'the mobile card does not cover the highlighted target');
+  assert.ok(p.box.top >= 12 && p.box.top + 286 <= 844 - 70 - 12);
+});
+
+test('the mobile companion station leaves the entire target visible after scrolling', () => {
+  let target = r(12, 240, 366, 360);
+  const options = { mobile: true, bottomInset: 90 };
+  let p = computePlacement(target, 390, 844, 320, 260, options);
+  assert.notEqual(p.scrollBy, 0, 'a centered tall target needs to move away from the card');
+  target = r(target.left, target.top - p.scrollBy, target.width, target.height);
+  p = computePlacement(target, 390, 844, 320, 260, options);
+  assert.equal(p.scrollBy, 0);
+  assert.ok(p.box.top + 260 + 14 <= target.top - 10
+    || target.bottom + 10 + 14 <= p.box.top);
+  assert.equal(p.spot.height, target.height + 20);
+});
+
+test('mobile card and spotlight stay separate across small and rotated phone sizes', () => {
+  const phones = [
+    [320, 568, 288, 200], [390, 844, 320, 260], [430, 932, 320, 280],
+    [667, 375, 560, 160], [844, 390, 560, 170],
+  ];
+  for (const [vw, vh, bw, bh] of phones) {
+    for (const top of [-500, 0, 100, vh / 2, vh - 80]) {
+      for (const height of [44, 200, 360, 900]) {
+        let target = r(16, top, vw - 32, height);
+        const options = { mobile: true, topInset: 20, bottomInset: 80 };
+        let p;
+        for (let i = 0; i < 4; i++) {
+          p = computePlacement(target, vw, vh, bw, bh, options);
+          if (Math.abs(p.scrollBy) <= 1) break;
+          target = r(target.left, target.top - p.scrollBy, target.width, target.height);
+        }
+        const context = `${vw}x${vh}, target ${top}/${height}`;
+        assert.ok(p.side === 'top' || p.side === 'bottom', context);
+        assert.ok(p.box.top >= 32 && p.box.top + bh <= vh - 92, context);
+        assert.ok(p.box.left >= 12 && p.box.left + bw <= vw - 12, context);
+        assert.ok(p.spot.height > 0, context);
+        assert.ok(p.spot.top + p.spot.height + 14 <= p.box.top + .001
+          || p.box.top + bh + 14 <= p.spot.top + .001, context);
+        assert.ok(Math.abs(p.scrollBy) <= 1, 'scroll alignment settles: ' + context);
+      }
+    }
+  }
+});
+
+test('mobile navigation station remains highlighted rather than clipped by its own inset', () => {
+  const target = r(30, 754, 330, 64);
+  const p = computePlacement(target, 390, 844, 320, 240, { mobile: true, bottomInset: 0 });
+  assert.equal(p.side, 'top');
+  assert.equal(p.scrollBy, 0);
+  assert.equal(p.spot.height, target.height + 20);
+  assert.ok(p.box.top + 240 < target.top);
+});
+
 test('the hole never swallows the whole dimmed screen', () => {
   const p = computePlacement(r(0, 0, 390, 760), VW, VH, BW, BH, opts);
   assert.ok(p.spot.left >= 12 && p.spot.top >= 12);
