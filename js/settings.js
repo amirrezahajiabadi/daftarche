@@ -19,7 +19,7 @@ import { startTour } from './tour.js';
 import { clearLibraryData } from './library.js';
 import { clearUserAudioData } from './audio.js';
 import { renderBirthdayRow } from './birthday.js';
-import { collectBackup, parseBackup, applyBackup, backupFileName, BACKUP_MAX_CHARS } from './backup.js';
+import { collectBackup, parseBackup, applyBackup, mergeBackup, backupFileName, BACKUP_MAX_CHARS } from './backup.js';
 
 /* What the page says about itself, painted on entry. The picker is marked here
    as well as by js/theme.js because the two halves of the table are remembered
@@ -51,9 +51,9 @@ export function initSettings() {
 
   /* ── Backup ──
      Export writes every daftarche-* key to one JSON file; import validates a
-     file completely before touching anything, asks, and only then replaces the
-     stored data (js/backup.js rolls back if a write fails). The page reloads
-     after a restore so every module boots from the restored data. */
+     file completely before touching anything, then asks how it should land —
+     merge into what is here, or replace it. The page reloads after either, so
+     every module boots from the data as it now stands. */
   const status = $('#backupStatus');
   const say = msg => { if (status) status.textContent = msg; };
 
@@ -86,16 +86,47 @@ export function initSettings() {
     let text;
     try { text = await file.text(); } catch { say('فایل خوانده نشد.'); return; }
 
+    /* Only a file that passed every check reaches the question — an invalid
+       one is reported and nothing is asked. */
     const parsed = parseBackup(text);
     if (!parsed.ok) { say(parsed.reason); return; }
 
+    /* The decision dialog. Cancelling it — the Escape key, the backdrop, the
+       «انصراف» button — answers null and touches nothing. */
     const when = parsed.backup.exportedAt ? new Date(parsed.backup.exportedAt) : null;
-    const whenText = when && !isNaN(when) ? ' (' + when.toLocaleDateString('fa-IR') + ')' : '';
-    if (!confirm('داده‌های فعلی با این پشتیبان' + whenText + ' جایگزین بشن؟ این کار قابل برگشت نیست.')) return;
+    const whenEl = $('#backupWhen');
+    if (whenEl) whenEl.textContent = when && !isNaN(when) ? when.toLocaleDateString('fa-IR') : 'اخیراً';
+    const choice = await new Promise(resolve => {
+      const overlay = $('#backupOverlay');
+      if (!overlay) { resolve(null); return; }
+      const done = value => {
+        overlay.hidden = true;
+        $('#backupMerge')?.removeEventListener('click', onMerge);
+        $('#backupReplace')?.removeEventListener('click', onReplace);
+        $('#backupCancel')?.removeEventListener('click', onCancel);
+        overlay.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onEscape);
+        resolve(value);
+      };
+      const onMerge = () => done('merge');
+      const onReplace = () => done('replace');
+      const onCancel = () => done(null);
+      const onBackdrop = e => { if (e.target === overlay) done(null); };
+      const onEscape = e => { if (e.key === 'Escape') done(null); };
+      $('#backupMerge')?.addEventListener('click', onMerge);
+      $('#backupReplace')?.addEventListener('click', onReplace);
+      $('#backupCancel')?.addEventListener('click', onCancel);
+      overlay.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onEscape);
+      overlay.hidden = false;
+    });
+    if (choice === null) { say('وارد شدن پشتیبان لغو شد؛ چیزی عوض نشد.'); return; }
 
-    const res = applyBackup(localStorage, parsed.backup);
+    let res;
+    if (choice === 'merge') res = mergeBackup(localStorage, parsed.backup);
+    else res = applyBackup(localStorage, parsed.backup);
     if (!res.ok) { say(res.reason); return; }
-    say('بازگردانی شد؛ دفترچه دوباره بالا می‌آد…');
+    say(choice === 'merge' ? 'ادغام شد؛ دفترچه دوباره بالا می‌آد…' : 'بازگردانی شد؛ دفترچه دوباره بالا می‌آد…');
     setTimeout(() => location.reload(), 600);
   });
 

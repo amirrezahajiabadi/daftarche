@@ -918,8 +918,28 @@ rather than a form describing itself. -->
           <span class="settings-label">بازگردانی از پشتیبان</span>
           <button class="settings-btn" id="backupImport" type="button">انتخاب فایل</button>
         </div>
-        <p class="settings-hint" id="backupStatus" role="status" aria-live="polite">داده‌های فعلی با محتوای فایل جایگزین می‌شن.</p>
+        <p class="settings-hint" id="backupStatus" role="status" aria-live="polite">فایل معتبر که وارد شد، خودش می‌پرسه ادغام بشه یا جایگزین.</p>
         <input type="file" id="backupFile" accept=".json,application/json" hidden>
+      </div>
+    </div>
+
+    <!-- The import decision, as its own dialog rather than a confirm() — the two
+         paths are not symmetric and a browser confirm cannot say so. Opening is
+         all this markup does: js/modal.js contains focus and freezes the page
+         behind it, the way it does for every .overlay here. -->
+    <div class="overlay" id="backupOverlay" hidden>
+      <div class="name-card backup-choice" role="dialog" aria-modal="true" aria-labelledby="backupChoiceTitle">
+        <h2 id="backupChoiceTitle">پشتیبان وارد بشه</h2>
+        <p class="backup-when">پشتیبان <span id="backupWhen"></span> گرفته شده.</p>
+        <button type="button" class="backup-merge" id="backupMerge" data-autofocus>
+          <strong>ادغام با داده‌های فعلی</strong>
+          <span>چیزی که این‌جا هست نمی‌ره جای دیگه؛ فایل بهش اضافه می‌شه.</span>
+        </button>
+        <button type="button" class="backup-replace" id="backupReplace">
+          <strong>جایگزینی کامل</strong>
+          <span>همهٔ داده‌های این دستگاه با فایل عوض می‌شه و برنمی‌گرده.</span>
+        </button>
+        <button type="button" class="skip" id="backupCancel">انصراف</button>
       </div>
     </div>
 

@@ -48,6 +48,39 @@
 
 .settings-hint{color:var(--muted);font-size:12px;line-height:1.9;font-weight:400;margin:0}
 
+/* ═══ The import decision ═══
+   Replace and merge are not two flavours of one action, so they are not two
+   identical buttons: merge is the card's own primary action and speaks first,
+   replace is a plain outlined choice whose sub-line says what it costs, and
+   «انصراف» is the same quiet .skip every other dialog ends with. All copy is
+   static markup — the backup's contents never reach this card as HTML. */
+.backup-choice{text-align:start}
+.backup-choice h2{font-family:var(--font-personality);font-size:20px;font-weight:700;margin:0 0 2px}
+.backup-when{color:var(--muted);font-size:12.5px;line-height:1.8;font-weight:400;margin:0 0 14px}
+.backup-merge,.backup-replace{display:block;width:100%;text-align:start;
+  border:1.5px solid var(--border);border-radius:var(--radius-md);
+  background:var(--bg);color:var(--text);font-family:var(--font-ui);
+  padding:12px 14px;cursor:pointer;
+  transition:border-color var(--duration-fast),background var(--duration-fast)}
+.backup-merge{border-color:var(--accent);background:var(--accent-soft);margin-bottom:8px}
+.backup-merge strong{display:block;color:var(--color-accent-strong);font-size:14px;font-weight:700;line-height:1.7}
+.backup-replace strong{display:block;font-size:13.5px;font-weight:700;line-height:1.7}
+.backup-merge span,.backup-replace span{display:block;color:var(--muted);font-size:11.5px;line-height:1.8;font-weight:400;margin-top:2px}
+.backup-replace{margin-bottom:4px}
+@supports (-webkit-touch-callout: none){
+  .backup-merge,.backup-replace{padding-block:14px}
+}
+@media (hover:hover){
+  .backup-merge:hover{border-color:var(--color-accent-strong)}
+  .backup-replace:hover{border-color:var(--danger);color:var(--danger)}
+  .backup-replace:hover strong{color:var(--danger)}
+}
+.backup-merge:focus-visible,.backup-replace:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
+
+@media (max-width:480px){
+  .backup-choice{padding:24px 18px 18px}
+}
+
 @media (max-width:480px){
   .set-item{padding:12px 0}
   .settings-hint{font-size:11.5px}
