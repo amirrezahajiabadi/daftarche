@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  collectBackup, parseBackup, applyBackup, isBackupKey,
+  collectBackup, parseBackup, applyBackup, mergeBackup, isBackupKey,
   backupFileName, BACKUP_FORMAT, BACKUP_APP,
 } from '../js/backup.js';
 
@@ -131,6 +131,256 @@ test('parseBackup: an empty session value is legal (saveSession writes "" when i
 
 test('backupFileName: dated, zero-padded', () => {
   assert.equal(backupFileName(new Date(2026, 0, 5)), 'daftarche-backup-2026-01-05.json');
+});
+
+/* ── mergeBackup: the second way back in ──
+   Every rule exercised here is written down in js/backup.js's merge table;
+   these tests are that table's proof. */
+const J = JSON.stringify;
+
+test('merge keeps what is here, adds what the file brought, never removes', () => {
+  const dst = new FakeStorage({
+    'daftarche-v1': J([{ id: 't1', text: 'محلی', done: false }]),
+    'daftarche-name': 'امیر',
+    'theme': 'night',
+    'daftarche-pomo': '50',
+    'daftarche-seen-version': '2.6.0',
+  });
+  const backup = { app: BACKUP_APP, format: 1, data: {
+    'daftarche-v1': J([{ id: 't9', text: 'از فایل', done: false }]),
+    'daftarche-name': 'شیری',
+    'daftarche-moods': J({ '2026-09-01': 3 }),
+  } };
+  const res = mergeBackup(dst, backup);
+  assert.equal(res.ok, true);
+  assert.deepEqual(JSON.parse(dst.getItem('daftarche-v1')).map(t => t.id), ['t1', 't9']);
+  assert.equal(dst.getItem('daftarche-name'), 'امیر');       // a choice made here stands
+  assert.equal(dst.getItem('theme'), 'night');               // a key the file never mentions is untouched
+  assert.equal(dst.getItem('daftarche-pomo'), '50');
+  assert.deepEqual(JSON.parse(dst.getItem('daftarche-moods')), { '2026-09-01': 3 }); // absence filled
+  assert.equal(dst.getItem('daftarche-seen-version'), '2.6.0'); // device-local, outside all of this
+});
+
+test('merge tasks: a completion is a fact; two open copies keep this device\'s', () => {
+  const dst = new FakeStorage({ 'daftarche-v1': J([
+    { id: 'a', text: 'اینجا باز مونده', done: false },
+    { id: 'b', text: 'اینجا زودتر', done: true, doneAt: 100 },
+    { id: 'c', text: 'اینجا دوتایی', done: false },
+  ]) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-v1': J([
+    { id: 'a', text: 'اینجا باز مونده', done: true, doneAt: 500 },   // done beats open
+    { id: 'b', text: 'اینجا زودتر', done: true, doneAt: 900 },       // later doneAt wins
+    { id: 'c', text: 'اون‌جا دوتایی', done: false },                   // no stamp → local copy stands
+  ]) } };
+  assert.equal(mergeBackup(dst, backup).ok, true);
+  const tasks = JSON.parse(dst.getItem('daftarche-v1'));
+  assert.equal(tasks.length, 3);
+  assert.deepEqual(tasks[0], { id: 'a', text: 'اینجا باز مونده', done: true, doneAt: 500 });
+  assert.deepEqual(tasks[1], { id: 'b', text: 'اینجا زودتر', done: true, doneAt: 900 });
+  assert.equal(tasks[2].text, 'اینجا دوتایی');
+});
+
+test('merge tasks: id-less records are kept, but an identical one is not doubled', () => {
+  const dst = new FakeStorage({ 'daftarche-v1': J([{ text: 'بدون شناسه', done: false }]) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-v1': J([
+    { text: 'بدون شناسه', done: false },     // exact twin → not appended
+    { text: 'یکی دیگه', done: false },       // different → arrives
+  ]) } };
+  mergeBackup(dst, backup);
+  const tasks = JSON.parse(dst.getItem('daftarche-v1'));
+  assert.equal(tasks.length, 2);
+  assert.deepEqual(tasks.map(t => t.text), ['بدون شناسه', 'یکی دیگه']);
+});
+
+test('merge focus history: union by id, newest first, trimmed to the archive\'s own cap', () => {
+  const rec = (id, at) => ({ id, startedAt: at, endedAt: at + 1000, actualDurationMin: 10, rating: 'good', taskCompleted: false });
+  const local = Array.from({ length: 60 }, (_, i) => rec('l' + i, 1000 + i));          // ended 2000..2059
+  const incoming = Array.from({ length: 60 }, (_, i) => rec('f' + i, 1500 + i));        // ended 2500..2559, all newer
+  const dst = new FakeStorage({ 'daftarche-focus-history': J(local) });
+  mergeBackup(dst, { app: BACKUP_APP, format: 1, data: { 'daftarche-focus-history': J(incoming) } });
+  const merged = JSON.parse(dst.getItem('daftarche-focus-history'));
+  assert.equal(merged.length, 100);                       // the cap, not 120
+  assert.equal(merged[0].id, 'f59');                      // newest first
+  assert.equal(merged[99].id, 'l20');                     // the oldest twenty locals are trimmed
+  assert.equal(merged.filter(r => r.id.startsWith('f')).length, 60);  // every session from the file survives
+  assert.equal(new Set(merged.map(r => r.id)).size, 100); // every survivor is there once
+});
+
+test('merge books: facts grow, choices stay local, absence is filled', () => {
+  const dst = new FakeStorage({ 'daftarche-books-meta': J([{
+    id: 'b1', title: 'قلمری', addedAt: 200, numPages: 200, lastPage: 50, goal: null,
+    completedPages: [1, 2], stats: { '2026-09-01': { minutes: 10, pages: 3 } },
+    highlights: [{ id: 'h1', page: 3, text: 'نکته', color: '#eab13c' }],
+  }]) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-books-meta': J([
+    { id: 'b1', title: 'قلمری نو', addedAt: 100, numPages: 180, lastPage: 80,
+      goal: { type: 'days', n: 30 }, completedPages: [2, 3],
+      stats: { '2026-09-01': { minutes: 7, pages: 5 }, '2026-09-02': { minutes: 2, pages: 1 } },
+      notes: [{ id: 'n1', page: 4, text: 'یادداشت', createdAt: 300 }] },
+    { id: 'b2', title: 'کتاب تازه', addedAt: 400, numPages: 90, lastPage: 1, stats: {}, highlights: [], notes: [] },
+  ]) } };
+  mergeBackup(dst, backup);
+  const books = JSON.parse(dst.getItem('daftarche-books-meta'));
+  assert.deepEqual(books.map(b => b.id), ['b1', 'b2']);
+  const b1 = books[0];
+  assert.equal(b1.title, 'قلمری');                          // a choice made here
+  assert.equal(b1.addedAt, 100);                            // the earliest known day
+  assert.equal(b1.numPages, 200);                           // the wider page count
+  assert.equal(b1.lastPage, 80);                            // the furthest anyone reached
+  assert.deepEqual(b1.completedPages, [1, 2, 3]);           // pages read only grow
+  assert.deepEqual(b1.stats['2026-09-01'], { minutes: 10, pages: 5 }); // per field, the higher floor
+  assert.deepEqual(b1.stats['2026-09-02'], { minutes: 2, pages: 1 });
+  assert.deepEqual(b1.goal, { type: 'days', n: 30 });       // this device never chose one
+  assert.deepEqual(b1.highlights.map(h => h.id), ['h1']);
+  assert.deepEqual(b1.notes.map(n => n.id), ['n1']);
+});
+
+test('merge moods: this device\'s day stands, the file fills the empty days', () => {
+  const dst = new FakeStorage({ 'daftarche-moods': J({ '2026-09-01': 4 }) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-moods': J({ '2026-09-01': 2, '2026-09-02': 5 }) } };
+  mergeBackup(dst, backup);
+  assert.deepEqual(JSON.parse(dst.getItem('daftarche-moods')), { '2026-09-01': 4, '2026-09-02': 5 });
+});
+
+test('merge ledger: every day keeps the highest it ever showed', () => {
+  const dst = new FakeStorage({ 'daftarche-ledger': J({
+    v: 1, seededAt: '2026-08-10',
+    days: { '2026-09-01': { done: 5, focusMin: 40, sessions: 2 }, '2026-09-02': { done: 1, focusMin: 0, sessions: 0 } },
+  }) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-ledger': J({
+    v: 1, seededAt: '2026-08-20',
+    days: { '2026-09-01': { done: 3, focusMin: 60, sessions: 1 }, '2026-09-03': { done: 2, focusMin: 10, sessions: 1 } },
+  }) } };
+  mergeBackup(dst, backup);
+  const led = JSON.parse(dst.getItem('daftarche-ledger'));
+  assert.equal(led.v, 1);
+  assert.equal(led.seededAt, '2026-08-10');
+  assert.deepEqual(led.days['2026-09-01'], { done: 5, focusMin: 60, sessions: 2 });
+  assert.deepEqual(led.days['2026-09-02'], { done: 1, focusMin: 0, sessions: 0 });
+  assert.deepEqual(led.days['2026-09-03'], { done: 2, focusMin: 10, sessions: 1 });
+});
+
+test('merge ledger: a side that is not a ledger contributes nothing', () => {
+  // the file's copy is an older, unrecognized shape → this device's ledger is left byte-for-byte alone
+  const localLedger = J({ v: 1, seededAt: null, days: { '2026-09-01': { done: 1, focusMin: 0, sessions: 0 } } });
+  const dst = new FakeStorage({ 'daftarche-ledger': localLedger });
+  mergeBackup(dst, { app: BACKUP_APP, format: 1, data: { 'daftarche-ledger': J({ '2026-09-01': { done: 9 } }) } });
+  assert.equal(dst.getItem('daftarche-ledger'), localLedger);
+
+  // and the other way round: nothing readable here → the file's ledger arrives verbatim
+  const dst2 = new FakeStorage({ 'daftarche-ledger': 'not json' });
+  const fileLedger = J({ v: 1, seededAt: null, days: {} });
+  mergeBackup(dst2, { app: BACKUP_APP, format: 1, data: { 'daftarche-ledger': fileLedger } });
+  assert.equal(dst2.getItem('daftarche-ledger'), fileLedger);
+});
+
+test('merge achievements: a tier reached is a tier kept; recSeen keeps the later day', () => {
+  const dst = new FakeStorage({ 'daftarche-achievements': J({
+    v: 1, baselineAt: '2026-08-01',
+    unlocked: { firstTask: { tier: 1, at: '2026-08-02' }, tenTasks: { tier: 2, at: '2026-08-05' }, blank: { tier: 1, at: null } },
+    recSeen: { streak: '2026-09-01' },
+  }) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-achievements': J({
+    v: 1, baselineAt: '2026-08-15',
+    unlocked: { firstTask: { tier: 2, at: '2026-08-20' }, tenTasks: { tier: 1, at: '2026-08-03' }, blank: { tier: 1, at: '2026-08-04' }, reader: { tier: 1, at: '2026-08-09' } },
+    recSeen: { streak: '2026-09-03', pages: '2026-09-01' },
+  }) } };
+  mergeBackup(dst, backup);
+  const a = JSON.parse(dst.getItem('daftarche-achievements'));
+  assert.equal(a.v, 1);
+  assert.equal(a.baselineAt, '2026-08-01');
+  assert.deepEqual(a.unlocked.firstTask, { tier: 2, at: '2026-08-20' });  // higher tier arrives
+  assert.deepEqual(a.unlocked.tenTasks, { tier: 2, at: '2026-08-05' });   // equal tier → this device's day
+  assert.deepEqual(a.unlocked.blank, { tier: 1, at: '2026-08-04' });      // a real day beats a blank one
+  assert.deepEqual(a.unlocked.reader, { tier: 1, at: '2026-08-09' });     // new badge arrives
+  assert.deepEqual(a.recSeen, { streak: '2026-09-03', pages: '2026-09-01' });
+});
+
+test('merge history: the union of both calendars, sorted', () => {
+  const dst = new FakeStorage({ 'daftarche-history': J(['2026-09-02', '2026-09-01']) });
+  const backup = { app: BACKUP_APP, format: 1, data: { 'daftarche-history': J(['2026-09-01', '2026-08-31']) } };
+  mergeBackup(dst, backup);
+  assert.deepEqual(JSON.parse(dst.getItem('daftarche-history')), ['2026-08-31', '2026-09-01', '2026-09-02']);
+});
+
+test('merge single values: an idle focus session on this device is a value, not an absence', () => {
+  const dst = new FakeStorage({ 'daftarche-focus-session': '', 'daftarche-birthday': null });
+  const backup = { app: BACKUP_APP, format: 1, data: {
+    'daftarche-focus-session': J({ id: 's1', startedAt: 1, endedAt: 2 }),
+    'daftarche-birthday': J({ m: 7, d: 12 }),
+  } };
+  mergeBackup(dst, backup);
+  assert.equal(dst.getItem('daftarche-focus-session'), '');          // this device's timer state stands
+  assert.equal(dst.getItem('daftarche-birthday'), J({ m: 7, d: 12 })); // only true absence is filled
+});
+
+test('merge that changes nothing writes nothing at all', () => {
+  const dst = new FakeStorage({ 'daftarche-name': 'امیر', 'daftarche-v1': J([{ id: 'a', text: 'x', done: true, doneAt: 5 }]) });
+  const backup = { app: BACKUP_APP, format: 1, data: {
+    'daftarche-name': 'امیر',
+    'daftarche-v1': J([{ id: 'a', text: 'x', done: true, doneAt: 5 }]),
+  } };
+  const res = mergeBackup(dst, backup);
+  assert.equal(res.ok, true);
+  assert.equal(res.written, 0);
+  assert.equal(dst.sets, 0);
+});
+
+test('merge is all-or-nothing: a failed write puts every key back', () => {
+  const original = { 'daftarche-moods': J({ '2026-09-01': 4 }), 'unrelated': 'keep' };
+  // A storage that fails exactly once — on the second key the merge writes (the
+  // moods merge) — and lets the rollback's own writes through, unlike
+  // FakeStorage's persistent quota, so the promise under test is the one being
+  // observed: a half-written merge leaves nothing behind.
+  const map = new Map(Object.entries(original));
+  let failedOnce = false;
+  const dst = {
+    get length() { return map.size; },
+    key: i => [...map.keys()][i] ?? null,
+    getItem: k => (map.has(k) ? map.get(k) : null),
+    setItem(k, v) {
+      if (!failedOnce && k === 'daftarche-moods') { failedOnce = true; throw new Error('QuotaExceededError'); }
+      map.set(k, String(v));
+    },
+    removeItem: k => map.delete(k),
+    snapshot: () => Object.fromEntries(map),
+  };
+  const backup = { app: BACKUP_APP, format: 1, data: {
+    'daftarche-name': 'تازه',                       // absent here → the fill write, which succeeds
+    'daftarche-moods': J({ '2026-09-02': 5 }),       // differs → the write that fails
+  } };
+  const res = mergeBackup(dst, backup);
+  assert.equal(failedOnce, true);
+  assert.equal(res.ok, false);
+  assert.equal(typeof res.reason, 'string');
+  assert.deepEqual(dst.snapshot(), original);       // the filled name is taken back out again
+});
+
+test('mergeBackup refuses what parseBackup would have refused', () => {
+  const dst = new FakeStorage({ 'daftarche-name': 'امیر' });
+  assert.equal(mergeBackup(dst, { app: BACKUP_APP, format: 1, data: { 'evil-key': 'x' } }).ok, false);
+  assert.equal(mergeBackup(dst, { app: BACKUP_APP, format: 1, data: { 'daftarche-name': 5 } }).ok, false);
+  assert.equal(mergeBackup(dst, null).ok, false);
+  assert.deepEqual(dst.snapshot(), { 'daftarche-name': 'امیر' });   // refused means untouched
+});
+
+test('merge → export → parse → replace round-trips on a fresh device', () => {
+  // what a merge produced is an ordinary store: the next backup of it parses and restores whole
+  const dst = new FakeStorage({
+    'daftarche-v1': J([{ id: 'a', text: 'محلی', done: false }]),
+    'daftarche-history': J(['2026-09-01']),
+  });
+  mergeBackup(dst, { app: BACKUP_APP, format: 1, data: {
+    'daftarche-v1': J([{ id: 'b', text: 'از فایل', done: true, doneAt: 9 }]),
+    'daftarche-name': 'ادغام‌شده',
+  } });
+  const text = JSON.stringify(collectBackup(dst, { release: '2.6.0' }));
+  const parsed = parseBackup(text);
+  assert.equal(parsed.ok, true);
+  const fresh = new FakeStorage();
+  assert.equal(applyBackup(fresh, parsed.backup).ok, true);
+  assert.deepEqual(JSON.parse(fresh.getItem('daftarche-v1')).map(t => t.id), ['a', 'b']);
+  assert.equal(fresh.getItem('daftarche-name'), 'ادغام‌شده');
 });
 
 /* ── store.js: writes never throw, and a refused write is announced ── */

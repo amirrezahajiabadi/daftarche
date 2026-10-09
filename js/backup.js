@@ -13,7 +13,12 @@
    What is NOT in the file: the PDF files themselves and uploaded music. They
    live in IndexedDB and can be hundreds of megabytes; the book list, reading
    progress, highlights and notes travel with the backup, and a book whose file
-   is missing simply says so when opened, so it can be added again. */
+   is missing simply says so when opened, so it can be added again.
+
+   A file can come back in two ways. applyBackup replaces — the file is the
+   whole truth and the device obeys it. mergeBackup combines — the file and the
+   device have usually both moved on since they last met, so each key is merged
+   by the meaning it has in the rest of the app rather than overwritten. */
 
 export const BACKUP_APP = 'daftarche';
 export const BACKUP_FORMAT = 1;
@@ -150,3 +155,386 @@ export const backupFileName = (now = new Date()) => {
   const p = n => String(n).padStart(2, '0');
   return `daftarche-backup-${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}.json`;
 };
+
+/* ═══ Merge — the second way back in ═══
+   The rules are per key on purpose: there is no generic "combine two values"
+   here because the keys do not mean the same thing. Most of them follow rules
+   the app already lives by elsewhere, and where this file invents one it says
+   so. Every merger below takes the two stored strings and answers the string
+   to store, or null when the file has nothing to contribute to that key — in
+   which case the local value is left exactly as it is.
+
+     daftarche-v1            tasks, by id. A completion is a fact (the day book
+                             floors it, js/ledger.js), so the done copy of a
+                             task both sides have wins, and between two done
+                             copies the later doneAt. Two open copies have no
+                             edit stamp to compare, so the one already here
+                             stays. Order: this device's order first (it is the
+                             order the reader arranged), the file's new tasks
+                             appended after, in the file's own order.
+     daftarche-history       days the app was opened — the union of both
+                             calendars; a day opened anywhere was opened.
+     daftarche-focus-history finished sessions, by id. The copy this device
+                             archived is authoritative (a finished session never
+                             changes), the file's unknown ones join, newest first
+                             and trimmed to the same 100 the archive itself
+                             keeps (js/focushistory.js, HISTORY_CAP).
+     daftarche-books-meta    books, by id. For a book both sides have: pages
+                             read and per-day stats only grow (the day book's
+                             own floor rule), the reading position and the page
+                             count take the furthest anyone reached, the added
+                             day is the earliest known, highlights and notes
+                             join by their own ids (ties keep this device's
+                             copy), and every choice — title, cover, goal —
+                             stays as chosen here unless it was never chosen
+                             here at all.
+     daftarche-moods         per day: this device's mood stands (a day's mood
+                             is one choice with no history to compare); the
+                             file fills the days that have none.
+     daftarche-ledger        per day, per number: the higher floor stands —
+                             the rule bumpDay already enforces. A side that is
+                             missing or not the shape readLedger reads
+                             contributes nothing; if that side is this device,
+                             the file's ledger is stored verbatim rather than
+                             merged against nothing.
+     daftarche-achievements  a tier reached is a tier kept: the higher tier
+                             stands, and between equal tiers the day already
+                             written here does. recSeen keeps the later day.
+                             baselineAt keeps the earliest.
+     everything else         one value — a setting, a name, a photo, the theme,
+                             the live focus timer, keys a future release may
+                             add. If this device has one it stands; if it does
+                             not, the file's value arrives. Absence in the file
+                             is never an instruction to remove anything.
+
+   Records without a usable id (only a hand-edited store ever has them) cannot
+   be matched, so they are kept from both sides and deduplicated by their exact
+   text — nothing is dropped silently. */
+
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const pos = v => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 0);
+const numOr = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
+/* JSON.parse that never throws: undefined means "not parseable", which every
+   caller below treats as "that side contributes nothing". */
+const readJSONSafely = s => {
+  try { return JSON.parse(s); } catch { return undefined; }
+};
+const asArray = raw => {
+  const v = readJSONSafely(raw);
+  return Array.isArray(v) ? v : [];
+};
+
+/* The id a record can be matched by: a non-empty string. Tasks, focus
+   sessions, books, highlights and notes all carry one (a timestamp plus noise,
+   written once at creation and never changed). */
+const stableId = r => (r && typeof r === 'object' && typeof r.id === 'string' && r.id ? r.id : null);
+
+/* The earliest of two stored day keys, ignoring either that is not one. */
+const minDay = (a, b) => {
+  const av = typeof a === 'string' && DAY_RE.test(a) ? a : null;
+  const bv = typeof b === 'string' && DAY_RE.test(b) ? b : null;
+  if (av && bv) return av < bv ? av : bv;
+  return av || bv;
+};
+
+/* Two copies of one task exist only because a backup traveled between devices. */
+function pickTask(local, incoming) {
+  const localDone = local.done === true;
+  const incomingDone = incoming.done === true;
+  if (localDone !== incomingDone) return incomingDone ? incoming : local;
+  if (localDone) {
+    const lt = Number(local.doneAt), it = Number(incoming.doneAt);
+    if (Number.isFinite(it) && it > (Number.isFinite(lt) ? lt : -Infinity)) return incoming;
+  }
+  return local;
+}
+
+function mergeTaskList(localRaw, incomingRaw) {
+  const out = [];
+  const byId = new Map();   // id → position of its first occurrence in out
+  const texts = new Set();  // exact text of every id-less record kept so far
+  const keepText = t => {
+    const s = JSON.stringify(t);
+    if (texts.has(s)) return false;
+    texts.add(s);
+    return true;
+  };
+
+  for (const t of asArray(localRaw)) {
+    out.push(t);
+    const id = stableId(t);
+    if (id) { if (!byId.has(id)) byId.set(id, out.length - 1); }
+    else keepText(t);
+  }
+  for (const t of asArray(incomingRaw)) {
+    const id = stableId(t);
+    if (id) {
+      const at = byId.get(id);
+      if (at === undefined) { byId.set(id, out.length); out.push(t); }
+      else out[at] = pickTask(out[at], t);
+    } else if (keepText(t)) out.push(t);
+  }
+  return JSON.stringify(out);
+}
+
+function mergeDayList(localRaw, incomingRaw) {
+  const days = new Set();
+  for (const raw of [localRaw, incomingRaw]) {
+    for (const k of asArray(raw)) if (typeof k === 'string' && DAY_RE.test(k)) days.add(k);
+  }
+  return JSON.stringify([...days].sort());
+}
+
+/* Mirrors HISTORY_CAP in js/focushistory.js: the archive keeps the newest
+   hundred, so a merge of two archives must not leave more behind than the app
+   itself would have kept. */
+const FOCUS_HISTORY_CAP = 100;
+
+function mergeFocusHistory(localRaw, incomingRaw) {
+  const out = [];
+  const byId = new Set();
+  const texts = new Set();
+  for (const r of asArray(localRaw)) {
+    out.push(r);
+    const id = stableId(r);
+    if (id) byId.add(id);
+    else texts.add(JSON.stringify(r));
+  }
+  for (const r of asArray(incomingRaw)) {
+    const id = stableId(r);
+    if (id) { if (!byId.has(id)) { byId.add(id); out.push(r); } }
+    else { const s = JSON.stringify(r); if (!texts.has(s)) { texts.add(s); out.push(r); } }
+  }
+  const endedAt = r => (r && typeof r === 'object' && Number.isFinite(Number(r.endedAt)) ? Number(r.endedAt) : 0);
+  out.sort((a, b) => endedAt(b) - endedAt(a));
+  return JSON.stringify(out.slice(0, FOCUS_HISTORY_CAP));
+}
+
+/* Highlights and notes carry their own ids; the copy already here wins a tie —
+   the only field that can really differ is a note someone typed, and no stamp
+   says which typing is newer. */
+function unionById(localList, incomingList) {
+  if (!Array.isArray(localList)) return Array.isArray(incomingList) ? incomingList : localList;
+  if (!Array.isArray(incomingList)) return localList;
+  const out = [...localList];
+  const ids = new Set(), texts = new Set();
+  for (const r of out) {
+    const id = stableId(r);
+    if (id) ids.add(id);
+    else texts.add(JSON.stringify(r));
+  }
+  for (const r of incomingList) {
+    const id = stableId(r);
+    if (id) { if (!ids.has(id)) { ids.add(id); out.push(r); } }
+    else { const s = JSON.stringify(r); if (!texts.has(s)) { texts.add(s); out.push(r); } }
+  }
+  return out;
+}
+
+/* A page read is a fact; order never mattered to the reader (it is a Set the
+   moment the app reads it, js/library.js). */
+function unionPages(localPages, incomingPages) {
+  if (!Array.isArray(localPages)) return Array.isArray(incomingPages) ? incomingPages : localPages;
+  if (!Array.isArray(incomingPages)) return localPages;
+  return [...new Set([...localPages, ...incomingPages])];
+}
+
+/* Per day, per counter: the higher stands — the same floor the day book keeps. */
+function mergeBookStats(localStats, incomingStats) {
+  if (!isPlainObject(localStats)) return isPlainObject(incomingStats) ? incomingStats : localStats;
+  if (!isPlainObject(incomingStats)) return localStats;
+  const out = { ...localStats };
+  for (const [k, v] of Object.entries(incomingStats)) {
+    if (!DAY_RE.test(k) || !isPlainObject(v)) continue;
+    const cur = isPlainObject(out[k]) ? out[k] : {};
+    const day = { ...cur };
+    for (const f of ['minutes', 'pages']) {
+      const best = Math.max(pos(cur[f]), pos(v[f]));
+      if (best > 0) day[f] = best;
+      else if (cur[f] !== undefined) day[f] = cur[f];
+    }
+    if (Object.keys(day).length || out[k] !== undefined) out[k] = day;
+  }
+  return out;
+}
+
+function mergeBook(local, incoming) {
+  const m = { ...local };
+  m.completedPages = unionPages(local.completedPages, incoming.completedPages);
+  m.stats = mergeBookStats(local.stats, incoming.stats);
+  const wider = Math.max(numOr(local.numPages), numOr(incoming.numPages));
+  if (wider > 0 || local.numPages !== undefined) m.numPages = wider;
+  const further = Math.max(numOr(local.lastPage), numOr(incoming.lastPage));
+  if (further > 0 || local.lastPage !== undefined) m.lastPage = further;
+  const firstAdded = minPositive(local.addedAt, incoming.addedAt);
+  if (firstAdded !== null) m.addedAt = firstAdded;
+  m.highlights = unionById(local.highlights, incoming.highlights);
+  m.notes = unionById(local.notes, incoming.notes);
+  /* What is a choice rather than a fact stays as chosen here — unless this
+     device never chose, in which case the file's choice arrives. */
+  for (const k of ['title', 'cover', 'goal']) {
+    if ((m[k] === undefined || m[k] === null || m[k] === '') && incoming[k] !== undefined) m[k] = incoming[k];
+  }
+  return m;
+}
+
+/* addedAt/createdAt are timestamps, not day keys; the earliest one known is
+   the truth about when the thing happened. */
+function minPositive(a, b) {
+  const av = pos(a), bv = pos(b);
+  if (av && bv) return Math.min(av, bv);
+  return av || bv || null;
+}
+
+function mergeBooks(localRaw, incomingRaw) {
+  const out = [];
+  const byId = new Map();
+  const texts = new Set();
+  for (const b of asArray(localRaw)) {
+    out.push(b);
+    const id = stableId(b);
+    if (id) { if (!byId.has(id)) byId.set(id, out.length - 1); }
+    else texts.add(JSON.stringify(b));
+  }
+  for (const b of asArray(incomingRaw)) {
+    const id = stableId(b);
+    if (id) {
+      const at = byId.get(id);
+      if (at === undefined) { byId.set(id, out.length); out.push(b); }
+      else if (out[at] && typeof out[at] === 'object') out[at] = mergeBook(out[at], b);
+    } else {
+      const s = JSON.stringify(b);
+      if (!texts.has(s)) { texts.add(s); out.push(b); }
+    }
+  }
+  return JSON.stringify(out);
+}
+
+function mergeMoods(localRaw, incomingRaw) {
+  const local = readJSONSafely(localRaw);
+  const incoming = readJSONSafely(incomingRaw);
+  if (!isPlainObject(incoming)) return null;
+  if (!isPlainObject(local)) return JSON.stringify(incoming);
+  const out = { ...local };
+  for (const [k, v] of Object.entries(incoming)) if (!(k in out)) out[k] = v;
+  return JSON.stringify(out);
+}
+
+/* The shape readLedger reads (js/ledger.js): anything else is not a ledger,
+   and a merge never writes a shape the app would not recognize. */
+const ledgerShaped = raw => isPlainObject(raw) && raw.v === 1 && isPlainObject(raw.days);
+
+function mergeLedger(localRaw, incomingRaw) {
+  const local = readJSONSafely(localRaw);
+  const incoming = readJSONSafely(incomingRaw);
+  if (!ledgerShaped(incoming)) return null;
+  if (!ledgerShaped(local)) return JSON.stringify(incoming);
+  const days = {};
+  for (const [k, v] of Object.entries(local.days)) {
+    if (DAY_RE.test(k) && isPlainObject(v)) days[k] = { ...v };
+  }
+  for (const [k, v] of Object.entries(incoming.days)) {
+    if (!DAY_RE.test(k) || !isPlainObject(v)) continue;
+    const cur = isPlainObject(days[k]) ? days[k] : {};
+    days[k] = {
+      done: Math.max(pos(cur.done), pos(v.done)),
+      focusMin: Math.max(pos(cur.focusMin), pos(v.focusMin)),
+      sessions: Math.max(pos(cur.sessions), pos(v.sessions)),
+    };
+  }
+  return JSON.stringify({ v: 1, seededAt: minDay(local.seededAt, incoming.seededAt), days });
+}
+
+/* The shape the shelf writes (js/achievementsview.js writes v:1 always). */
+const achvShaped = raw => isPlainObject(raw) && raw.v === 1;
+
+function mergeAchv(localRaw, incomingRaw) {
+  const local = readJSONSafely(localRaw);
+  const incoming = readJSONSafely(incomingRaw);
+  if (!achvShaped(incoming)) return null;
+  if (!achvShaped(local)) return JSON.stringify(incoming);
+  const unlocked = { ...(isPlainObject(local.unlocked) ? local.unlocked : {}) };
+  const incomingUnlocked = isPlainObject(incoming.unlocked) ? incoming.unlocked : {};
+  for (const [id, rec] of Object.entries(incomingUnlocked)) {
+    const cur = unlocked[id];
+    if (!cur) { unlocked[id] = rec; continue; }
+    if (pos(rec.tier) > pos(cur.tier)) unlocked[id] = rec;
+    /* Equal tiers keep the day already written here — unless it is blank and
+       the file's copy knows the day, which is more truth, not less. */
+    else if (pos(rec.tier) === pos(cur.tier) && cur.at == null && rec && rec.at != null) unlocked[id] = rec;
+  }
+  /* recSeen is a "already celebrated this day" mark; the later day suppresses
+     more, which is the safe direction for a mark whose whole job is dedupe. */
+  const recSeen = { ...(isPlainObject(local.recSeen) ? local.recSeen : {}) };
+  const incomingSeen = isPlainObject(incoming.recSeen) ? incoming.recSeen : {};
+  for (const [k, v] of Object.entries(incomingSeen)) {
+    if (typeof v !== 'string') continue;
+    const cur = recSeen[k];
+    if (typeof cur !== 'string' || v > cur) recSeen[k] = v;
+  }
+  return JSON.stringify({ v: 1, baselineAt: minDay(local.baselineAt, incoming.baselineAt), unlocked, recSeen });
+}
+
+const MERGERS = {
+  'daftarche-v1': mergeTaskList,
+  'daftarche-history': mergeDayList,
+  'daftarche-focus-history': mergeFocusHistory,
+  'daftarche-books-meta': mergeBooks,
+  'daftarche-moods': mergeMoods,
+  'daftarche-ledger': mergeLedger,
+  'daftarche-achievements': mergeAchv,
+};
+
+/* Combine a validated backup with what is already on the device, one key at a
+   time, and write only the keys the file actually changed — keys the file does
+   not mention are not touched at all, unlike applyBackup, which removes them.
+   The whole merged result is built in memory and re-checked against SHAPES
+   before the first write, and a write that fails puts every key back, so a
+   failed merge leaves the person exactly where they were. Answers
+   { ok: true, written } or { ok: false, reason }. */
+export function mergeBackup(storage, backup) {
+  if (!backup || !isPlainObject(backup.data)) {
+    return { ok: false, reason: 'ساختار این پشتیبان درست نیست.' };
+  }
+
+  const writes = {};
+  for (const [k, v] of Object.entries(backup.data)) {
+    if (!isBackupKey(k)) return { ok: false, reason: 'این پشتیبان کلیدهای ناشناخته دارد و رد شد.' };
+    if (typeof v !== 'string') return { ok: false, reason: 'ساختار این پشتیبان درست نیست.' };
+    const local = storage.getItem(k);
+    const merged = MERGERS[k] ? MERGERS[k](local, v) : (local ?? v);
+    if (merged === null || merged === undefined) continue;   // the file adds nothing here
+    if (merged !== storage.getItem(k)) writes[k] = merged;
+  }
+
+  /* A merge must never leave a key in a shape the next boot would reject. */
+  for (const [k, v] of Object.entries(writes)) {
+    const shape = SHAPES[k];
+    if (!shape) continue;
+    const parsed = readJSONSafely(v);
+    const good = shape === 'array' ? Array.isArray(parsed) : isPlainObject(parsed);
+    if (!good) return { ok: false, reason: 'بخشی از این پشتیبان خراب است و رد شد.' };
+  }
+
+  if (!Object.keys(writes).length) return { ok: true, written: 0 };
+
+  const before = {};
+  for (const k of Object.keys(writes)) before[k] = storage.getItem(k);
+  const rollback = () => {
+    try {
+      for (const [k, v] of Object.entries(before)) {
+        if (v === null) storage.removeItem(k);
+        else storage.setItem(k, v);
+      }
+    } catch { /* nothing more can be done */ }
+  };
+
+  try {
+    for (const [k, v] of Object.entries(writes)) storage.setItem(k, v);
+  } catch {
+    rollback();
+    return { ok: false, reason: 'جا برای ادغام کافی نبود؛ چیزی عوض نشد.' };
+  }
+  return { ok: true, written: Object.keys(writes).length };
+}
